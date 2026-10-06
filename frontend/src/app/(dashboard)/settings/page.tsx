@@ -11,14 +11,14 @@ import { useTheme } from '@/components/providers/ThemeProvider';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { theme: globalTheme, setTheme: setGlobalTheme } = useTheme();
+  const { theme: globalTheme, mode: themeMode, setMode } = useTheme();
   const [activeTab, setActiveTab] = useState<'account' | 'security' | 'preferences' | 'danger'>('account');
   const [toast, setToast] = useState<string | null>(null);
 
   // Account State
   const [account, setAccount] = useState({
-    name: 'Alex Morgan',
-    email: 'alex.morgan@smartcard.id',
+    name: 'Smriti Jha',
+    email: 'smriti@smartcard.app',
     profilePhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
   });
 
@@ -426,43 +426,62 @@ export default function SettingsPage() {
                 <label className="text-xs font-mono font-bold uppercase text-gray-300">
                   Workspace Theme
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <button
                     type="button"
-                    onClick={() => { setGlobalTheme('dark'); showNotification('Global theme set to Neo Dark'); }}
+                    onClick={() => { setMode('dark'); showNotification('Theme set to Dark Mode'); }}
                     className={`p-4 rounded-xl border-2 text-left cursor-pointer transition-all ${
-                      globalTheme === 'dark'
+                      themeMode === 'dark'
                         ? 'bg-[#15233f] border-cyan-400 shadow-[3px_3px_0px_#06B6D4]'
                         : 'bg-[#090D16] border-black hover:border-gray-500 shadow-[2px_2px_0px_#000]'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <Moon size={20} className="text-cyan-400" />
-                      {globalTheme === 'dark' && (
+                      {themeMode === 'dark' && (
                         <span className="font-mono text-[10px] font-black uppercase bg-cyan-400 text-black px-1.5 py-0.2 rounded border border-black">Active</span>
                       )}
                     </div>
-                    <div className="text-sm font-black text-white">Neo Dark</div>
-                    <div className="text-[11px] font-mono text-gray-400 mt-0.5">High-contrast dark slate canvas</div>
+                    <div className="text-sm font-black text-white">Dark</div>
+                    <div className="text-[11px] font-mono text-gray-400 mt-0.5">Deep charcoal canvas</div>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => { setGlobalTheme('light'); showNotification('Global theme set to Contrast Light'); }}
+                    onClick={() => { setMode('light'); showNotification('Theme set to Light Mode'); }}
                     className={`p-4 rounded-xl border-2 text-left cursor-pointer transition-all ${
-                      globalTheme === 'light'
+                      themeMode === 'light'
                         ? 'bg-[#15233f] border-cyan-400 shadow-[3px_3px_0px_#06B6D4]'
                         : 'bg-[#090D16] border-black hover:border-gray-500 shadow-[2px_2px_0px_#000]'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <Sun size={20} className="text-amber-400" />
-                      {globalTheme === 'light' && (
+                      {themeMode === 'light' && (
                         <span className="font-mono text-[10px] font-black uppercase bg-cyan-400 text-black px-1.5 py-0.2 rounded border border-black">Active</span>
                       )}
                     </div>
-                    <div className="text-sm font-black text-white">Contrast Light</div>
-                    <div className="text-[11px] font-mono text-gray-400 mt-0.5">Crisp bright neo-brutalist canvas</div>
+                    <div className="text-sm font-black text-white">Light</div>
+                    <div className="text-[11px] font-mono text-gray-400 mt-0.5">Warm off-white canvas</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { setMode('system'); showNotification('Theme set to System Preference'); }}
+                    className={`p-4 rounded-xl border-2 text-left cursor-pointer transition-all ${
+                      themeMode === 'system'
+                        ? 'bg-[#15233f] border-cyan-400 shadow-[3px_3px_0px_#06B6D4]'
+                        : 'bg-[#090D16] border-black hover:border-gray-500 shadow-[2px_2px_0px_#000]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <Monitor size={20} className="text-emerald-400" />
+                      {themeMode === 'system' && (
+                        <span className="font-mono text-[10px] font-black uppercase bg-cyan-400 text-black px-1.5 py-0.2 rounded border border-black">Active</span>
+                      )}
+                    </div>
+                    <div className="text-sm font-black text-white">System</div>
+                    <div className="text-[11px] font-mono text-gray-400 mt-0.5">Auto-matches device OS</div>
                   </button>
                 </div>
               </div>

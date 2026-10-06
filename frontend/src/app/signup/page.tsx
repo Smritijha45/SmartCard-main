@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AuthLayout } from "@/components/layout/AuthLayout";
@@ -15,6 +15,15 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isAuth = localStorage.getItem("smartcard_authenticated");
+      if (isAuth === "true") {
+        router.replace("/dashboard");
+      }
+    }
+  }, [router]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,22 +56,17 @@ export default function SignUpPage() {
   };
 
   const handleDemoSignUp = async () => {
-    setName("Taylor Reed");
-    setEmail("taylor.reed@company.com");
+    setName("Smriti Jha");
+    setEmail("smriti.jha@smartcard.app");
     setPassword("demopassword123");
     
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: "taylor.reed@company.com", password: "demo", name: "Taylor Reed" }),
-      });
-      const data = await res.json();
-      if (data.data?.accessToken) {
-        localStorage.setItem('token', data.data.accessToken);
-      }
+      localStorage.setItem('smartcard_authenticated', 'true');
+      localStorage.setItem('token', 'dummy_token_' + Date.now());
+      localStorage.setItem('smartcard_user', JSON.stringify({ name: 'Smriti Jha', email: 'smriti.jha@smartcard.app' }));
       router.push('/dashboard');
+      router.refresh();
     } catch (err: any) {
       setError(err.message);
     } finally {

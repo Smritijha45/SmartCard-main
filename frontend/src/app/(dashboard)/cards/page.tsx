@@ -70,20 +70,20 @@ const LAYOUT_OPTIONS = [
 ];
 
 const DEFAULT_CARD = {
-  name: 'Alex Morgan',
-  role: 'Principal Product Designer',
-  company: 'HyperScale Systems',
-  bio: 'Leading product design and digital identity systems. Passionate about tactile interfaces, zero-friction connections, and bold web-native UX.',
+  name: 'Smriti Jha',
+  role: 'Full Stack Developer',
+  company: 'SmartCard Technologies',
+  bio: 'Building modern web experiences. High performance, zero NFC hardware, web-native digital identities.',
   profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
-  email: 'alex.morgan@hyperscale.io',
-  phone: '+1 (415) 892-4412',
-  location: 'San Francisco, CA • Remote',
-  website: 'https://alexmorgan.design',
+  email: 'smriti@smartcard.app',
+  phone: '+91 98765 43210',
+  location: 'Bengaluru, India • Remote',
+  website: 'https://smritijha.dev',
   socialLinks: {
-    linkedin: 'https://linkedin.com/in/alexmorgan-design',
-    github: 'https://github.com/alexmorgan',
-    instagram: 'https://instagram.com/alexmorgan.ui',
-    x: 'https://x.com/alexmorgan',
+    linkedin: 'https://linkedin.com/in/smritijha',
+    github: 'https://github.com/smritijha',
+    instagram: 'https://instagram.com/smritijha.dev',
+    x: 'https://x.com/smritijha',
   },
   appearance: {
     theme: 'modern-neo',

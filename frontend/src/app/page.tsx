@@ -108,12 +108,14 @@ export default function LandingPage() {
   };
 
   // Interactive How-It-Works & Features State
-  const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
+  const [activeStep, setActiveStep] = useState<1 | 2 | 3 | 4>(1);
+  const [selectedStyle, setSelectedStyle] = useState<'Minimal' | 'Professional' | 'Bold' | 'Dark' | 'Creative'>('Professional');
   const [copiedLinkToast, setCopiedLinkToast] = useState<string | null>(null);
   const [featureCustomTheme, setFeatureCustomTheme] = useState('#2563EB');
-  const [step1Name, setStep1Name] = useState('Alex Morgan');
-  const [step1Role, setStep1Role] = useState('Founder & Head of Product');
+  const [step1Name, setStep1Name] = useState('Smriti Jha');
+  const [step1Role, setStep1Role] = useState('Full Stack Developer');
   const [step2Theme, setStep2Theme] = useState('#2563EB');
+  const [step4ExchangeSubmitted, setStep4ExchangeSubmitted] = useState(false);
   const [step2Socials, setStep2Socials] = useState({
     linkedin: true,
     github: true,
@@ -175,7 +177,7 @@ export default function LandingPage() {
               href="#home" 
               className="px-3.5 py-1.5 text-sm font-bold text-gray-300 hover:text-white hover:bg-slate-800/80 rounded-md border-2 border-transparent hover:border-black transition-all"
             >
-              Home
+              Product
             </Link>
             <Link 
               href="#features" 
@@ -214,7 +216,7 @@ export default function LandingPage() {
                   size="sm" 
                   className="font-bold border-2 border-black bg-slate-900/90 text-white hover:bg-slate-800 shadow-[2px_2px_0px_#000] cursor-pointer"
                 >
-                  Login
+                  Log in
                 </Button>
                 <Button 
                   onClick={() => openAuth('signup')}
@@ -222,7 +224,7 @@ export default function LandingPage() {
                   size="sm" 
                   className="font-black uppercase tracking-wider text-xs bg-[#2563EB] hover:bg-[#1D4ED8] border-2 border-black shadow-[3px_3px_0px_#000000] cursor-pointer"
                 >
-                  Get Started Free
+                  Get Started
                 </Button>
               </>
             )}
@@ -258,7 +260,7 @@ export default function LandingPage() {
               onClick={() => setMobileMenuOpen(false)}
               className="block font-bold text-gray-200 py-1.5 hover:text-cyan-400"
             >
-              Home
+              Product
             </Link>
             <Link 
               href="#features" 
@@ -287,14 +289,14 @@ export default function LandingPage() {
                 onClick={() => { setMobileMenuOpen(false); openAuth('login'); }}
                 className="w-full text-center"
               >
-                Login
+                Log in
               </Button>
               <Button 
                 variant="primary" 
                 onClick={() => { setMobileMenuOpen(false); openAuth('signup'); }}
                 className="w-full text-center"
               >
-                Get Started Free
+                Get Started
               </Button>
             </div>
           </div>
@@ -307,38 +309,39 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             
             {/* Left Column: Headline, Copy, and CTAs */}
+            {/* Left Column: Headline, Copy, and CTAs */}
             <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
               
-              {/* Neo-brutalist badge with decorative sticker */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded bg-cyan-400 text-black border-2 border-black font-mono font-extrabold text-xs uppercase shadow-[3px_3px_0px_#000000] -rotate-1">
-                <Zap size={14} className="fill-black" />
-                <span>ZERO NFC REQUIRED • 100% DIGITAL IDENTITY</span>
+              {/* Product Hunt & Zero-NFC Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-cyan-400 text-black border-2 border-black font-mono font-black text-xs uppercase shadow-[3px_3px_0px_#000000] -rotate-1">
+                <Sparkles size={14} className="fill-black" />
+                <span>PRODUCT HUNT READY • ZERO NFC HARDWARE REQUIRED</span>
               </div>
 
-              {/* Main Headline */}
+              {/* Main Headline (Section 1 Core Positioning) */}
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-[1.04] tracking-tight">
-                Your Identity.<br />
-                <span className="inline-block bg-[#2563EB] text-white px-3 py-1 my-1 border-3 border-black shadow-[6px_6px_0px_#000] -rotate-1">
-                  One Smart Card.
+                Your professional identity,<br />
+                <span className="inline-block bg-[#2563EB] text-white px-3.5 py-1 my-1.5 border-3 border-black shadow-[5px_5px_0px_#000]">
+                  in one link.
                 </span>
               </h1>
 
-              {/* Supporting Text */}
+              {/* Supporting Text (Section 1 Supporting Message) */}
               <p className="text-gray-300 text-lg sm:text-xl max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
-                &ldquo;Create, customize, and share your professional digital business card — all from one simple platform.&rdquo;
+                Create a beautiful digital business card, share it anywhere, and make every connection count.
               </p>
 
               {/* Primary & Secondary CTAs */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
                 {isAuthenticated ? (
                   <Link href="/dashboard" className="w-full sm:w-auto">
                     <Button 
                       variant="primary" 
                       size="lg" 
-                      className="w-full sm:w-auto h-14 px-8 text-base font-black uppercase tracking-wide bg-[#2563EB] hover:bg-[#1D4ED8] border-3 border-black shadow-[5px_5px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none flex items-center justify-center gap-2"
+                      className="w-full sm:w-auto h-13 px-8 text-sm font-black uppercase tracking-wide bg-[#2563EB] hover:bg-[#1D4ED8] border-3 border-black shadow-[4px_4px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <span>Go to Dashboard</span>
-                      <span className="font-mono text-xl font-bold">→</span>
+                      <span className="font-mono text-lg font-bold">→</span>
                     </Button>
                   </Link>
                 ) : (
@@ -346,105 +349,85 @@ export default function LandingPage() {
                     onClick={() => openAuth('signup')}
                     variant="primary" 
                     size="lg" 
-                    className="w-full sm:w-auto h-14 px-8 text-base font-black uppercase tracking-wide bg-[#2563EB] hover:bg-[#1D4ED8] border-3 border-black shadow-[5px_5px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full sm:w-auto h-13 px-8 text-sm font-black uppercase tracking-wide bg-[#2563EB] hover:bg-[#1D4ED8] border-3 border-black shadow-[4px_4px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <span>Get Started</span>
-                    <span className="font-mono text-xl font-bold">→</span>
+                    <span>Create Your SmartCard</span>
+                    <span className="font-mono text-lg font-bold">→</span>
                   </Button>
                 )}
 
-                <a href="#how-it-works" className="w-full sm:w-auto">
+                <Link href="/smriti" className="w-full sm:w-auto">
                   <Button 
                     variant="secondary" 
                     size="lg" 
-                    className="w-full sm:w-auto h-14 px-7 text-base font-black bg-white text-black hover:bg-gray-100 border-3 border-black shadow-[5px_5px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none"
+                    className="w-full sm:w-auto h-13 px-6 text-sm font-black bg-white text-black hover:bg-gray-100 border-3 border-black shadow-[4px_4px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    See How It Works
+                    <Eye size={16} />
+                    <span>Explore a Demo Card</span>
+                  </Button>
+                </Link>
+
+                <a href="#how-it-works" className="w-full sm:w-auto">
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="w-full sm:w-auto h-13 px-5 text-sm font-bold bg-[#121c33] text-gray-200 hover:text-white border-2 border-black shadow-[3px_3px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none"
+                  >
+                    How It Works
                   </Button>
                 </a>
               </div>
 
-              {/* Value checklist */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2.5 pt-2 text-xs font-mono font-bold text-gray-300">
+              {/* Value checklist (5-Second comprehension) */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-2 pt-2 text-xs font-mono font-bold text-gray-300">
                 <span className="flex items-center gap-1.5 bg-[#0e1628] border-2 border-black px-2.5 py-1 rounded shadow-[2px_2px_0px_#000]">
                   <Check size={14} className="text-cyan-400 stroke-[3]" /> Instant Phone Camera Scan
                 </span>
                 <span className="flex items-center gap-1.5 bg-[#0e1628] border-2 border-black px-2.5 py-1 rounded shadow-[2px_2px_0px_#000]">
-                  <Check size={14} className="text-cyan-400 stroke-[3]" /> No App or Hardware Needed
+                  <Check size={14} className="text-cyan-400 stroke-[3]" /> Zero NFC Hardware
                 </span>
                 <span className="flex items-center gap-1.5 bg-[#0e1628] border-2 border-black px-2.5 py-1 rounded shadow-[2px_2px_0px_#000]">
-                  <Check size={14} className="text-cyan-400 stroke-[3]" /> 1-Tap .vcf vCard Download
+                  <Check size={14} className="text-cyan-400 stroke-[3]" /> Real-Time Analytics
                 </span>
               </div>
 
             </div>
 
-            {/* Right Column: Realistic SmartCard Preview with Layered Neo-Brutalist Depth */}
+            {/* Right Column: Refined Premium SmartCard Preview with Strategic Neo-Brutalist Depth */}
             <div className="lg:col-span-6 flex flex-col items-center relative py-6">
               
-              {/* Subtle Decorative Element: SCAN Sticker */}
-              <div className="absolute top-0 left-2 sm:left-8 z-30 bg-cyan-400 text-black border-2 border-black px-3 py-1 rounded font-mono font-black text-xs uppercase shadow-[3px_3px_0px_#000] -rotate-6 flex items-center gap-1 pointer-events-none">
-                <QrCode size={13} className="text-black" />
-                <span>SCAN</span>
-                <span>↗</span>
-              </div>
-
-              {/* Subtle Decorative Element: SMART Sticker */}
-              <div className="absolute top-4 right-2 sm:right-6 z-30 bg-[#2563EB] text-white border-2 border-black px-2.5 py-1 rounded font-mono font-black text-xs uppercase shadow-[3px_3px_0px_#000] rotate-3 flex items-center gap-1 pointer-events-none">
-                <span>★ SMART</span>
-              </div>
-
-              {/* Subtle Decorative Element: CONNECT Sticker */}
-              <div className="absolute bottom-2 left-0 sm:left-4 z-30 bg-yellow-400 text-black border-2 border-black px-3 py-1 rounded font-mono font-black text-xs uppercase shadow-[3px_3px_0px_#000] rotate-6 flex items-center gap-1 pointer-events-none">
-                <span>✦ CONNECT</span>
-              </div>
-
-              {/* Subtle Decorative Element: SHARE Sticker */}
-              <div className="absolute -bottom-3 right-2 sm:right-6 z-30 bg-emerald-400 text-black border-2 border-black px-3 py-1 rounded font-mono font-black text-xs uppercase shadow-[3px_3px_0px_#000] -rotate-3 flex items-center gap-1 pointer-events-none">
-                <Share2 size={13} className="text-black" />
-                <span>SHARE</span>
-                <span>➔</span>
-              </div>
-
-              {/* Small Geometric Shape & Star Accents */}
-              <div className="absolute top-1/2 -left-6 text-cyan-400/50 font-black text-xl pointer-events-none select-none hidden sm:block">
-                ★ ✦ ★
-              </div>
-              <div className="absolute top-1/4 -right-6 text-yellow-400/50 font-mono text-sm pointer-events-none select-none hidden sm:block">
-                ↘ + ↘
-              </div>
-
-              {/* LAYERED CARDS CONTAINER */}
+              {/* LAYERED CARDS CONTAINER (Refined Strategic Depth) */}
               <div className="relative w-full max-w-[390px]">
                 
-                {/* Back Layer 1: Cyan Background Card (-rotate-4) */}
-                <div 
-                  className="absolute inset-0 rounded-2xl border-3 border-black bg-[#06B6D4] shadow-[8px_8px_0px_#000] -rotate-4 -translate-y-2.5 -translate-x-3 pointer-events-none"
-                  aria-hidden="true"
-                >
-                  <div className="p-4 flex items-center justify-between opacity-70">
-                    <span className="font-mono text-[10px] font-black uppercase text-black bg-white px-2 py-0.5 rounded border border-black">
-                      DEVON VANCE • STUDIO NEON
-                    </span>
-                    <span className="font-mono text-xs font-black text-black">✦ 02</span>
-                  </div>
+                {/* 4 Controlled Decorative Labels (Item 9: CREATE, CUSTOMIZE, SHARE, CONNECT) */}
+                <div className="absolute -top-3.5 -left-3 z-30 bg-[#2563EB] text-white border-2 border-black px-2.5 py-0.5 rounded font-mono font-black text-[10px] uppercase shadow-[2px_2px_0px_#000] -rotate-3 pointer-events-none">
+                  CREATE
+                </div>
+                <div className="absolute -top-3.5 -right-3 z-30 bg-cyan-400 text-black border-2 border-black px-2.5 py-0.5 rounded font-mono font-black text-[10px] uppercase shadow-[2px_2px_0px_#000] rotate-3 pointer-events-none">
+                  CUSTOMIZE
+                </div>
+                <div className="absolute -bottom-3.5 -left-3 z-30 bg-emerald-400 text-black border-2 border-black px-2.5 py-0.5 rounded font-mono font-black text-[10px] uppercase shadow-[2px_2px_0px_#000] rotate-2 pointer-events-none">
+                  SHARE
+                </div>
+                <div className="absolute -bottom-3.5 -right-3 z-30 bg-amber-400 text-black border-2 border-black px-2.5 py-0.5 rounded font-mono font-black text-[10px] uppercase shadow-[2px_2px_0px_#000] -rotate-2 pointer-events-none">
+                  CONNECT
                 </div>
 
-                {/* Back Layer 2: Amber Background Card (rotate-3) */}
+                {/* Back Layer Card: Subtle Cyan Outline Card (-rotate-1.5) */}
                 <div 
-                  className="absolute inset-0 rounded-2xl border-3 border-black bg-[#F59E0B] shadow-[8px_8px_0px_#000] rotate-3 translate-y-2.5 translate-x-2.5 pointer-events-none"
+                  className="absolute inset-0 rounded-2xl border-3 border-black bg-[#06B6D4] shadow-[6px_6px_0px_#000] -rotate-2 -translate-y-2 -translate-x-2 pointer-events-none"
                   aria-hidden="true"
                 >
-                  <div className="p-4 flex items-center justify-between opacity-70">
-                    <span className="font-mono text-[10px] font-black uppercase text-black bg-white px-2 py-0.5 rounded border border-black">
-                      SARAH CHEN • APEX VENTURES
+                  <div className="p-3.5 flex items-center justify-between opacity-80">
+                    <span className="font-mono text-[9px] font-black uppercase text-black bg-white px-2 py-0.5 rounded border border-black">
+                      ALEX MORGAN • SMARTCARD PRO
                     </span>
-                    <span className="font-mono text-xs font-black text-black">★ 03</span>
+                    <span className="font-mono text-xs font-black text-black">✦ 01</span>
                   </div>
                 </div>
 
                 {/* Main Foreground SmartCard (Center Stage) */}
-                <div className="relative z-20 bg-[#0c1220] rounded-2xl border-3 border-black shadow-[10px_10px_0px_#000000] overflow-hidden">
+                <div className="relative z-20 bg-[#0c1220] rounded-2xl border-3 border-black shadow-[8px_8px_0px_#000000] overflow-hidden">
                   
                   {/* Card Banner Header */}
                   <div className="p-5 border-b-3 border-black bg-[#2563EB] text-white relative">
@@ -780,7 +763,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5. FEATURES SECTION */}
+      {/* 5. FEATURES SECTION (Item 13) */}
       <section id="features" className="py-20 border-b-2 border-black bg-[#0d1424]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
@@ -789,7 +772,7 @@ export default function LandingPage() {
               BUILT FOR HIGH IMPACT
             </span>
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-              Everything your professional identity needs.
+              Everything you need to be unforgettable.
             </h2>
             <p className="text-gray-300 text-sm sm:text-base font-medium">
               Every tool to design, distribute, and track your digital business card with zero friction.
@@ -798,29 +781,29 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             
-            {/* Feature 1: Create Your Card */}
+            {/* Feature 1: Beautiful Digital Identity */}
             <div className="bg-[#121c33] p-7 rounded-xl border-3 border-black shadow-[5px_5px_0px_#2563EB] -rotate-1 hover:rotate-0 hover:-translate-y-1 transition-all space-y-4">
               <div className="flex items-center justify-between">
                 <div className="w-12 h-12 rounded-lg bg-[#2563EB] border-2 border-black flex items-center justify-center text-white shadow-[3px_3px_0px_#000]">
                   <CreditCard size={24} />
                 </div>
                 <span className="font-mono text-[10px] font-black uppercase bg-black text-cyan-400 px-2 py-0.5 rounded border border-white/20">
-                  ⚡ 60 SEC
+                  ⚡ IDENTITY
                 </span>
               </div>
-              <h3 className="text-xl font-black text-white tracking-tight">Create Your Card</h3>
+              <h3 className="text-xl font-black text-white tracking-tight">Beautiful Digital Identity</h3>
               <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-medium">
-                Build a professional digital identity in minutes.
+                Create a professional profile that looks better than a traditional business card.
               </p>
               
               {/* Visual Element: Mini Identity Card */}
               <div className="p-3 bg-[#0a0f1c] rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-blue-500 border-2 border-black flex items-center justify-center font-black text-white text-sm shrink-0">
-                  AM
+                  SJ
                 </div>
                 <div className="truncate">
-                  <div className="text-xs font-black text-white truncate">Alex Morgan</div>
-                  <div className="text-[10px] font-mono text-cyan-400 truncate">smartcard.id/alex</div>
+                  <div className="text-xs font-black text-white truncate">Smriti Jha</div>
+                  <div className="text-[10px] font-mono text-cyan-400 truncate">smartcard.app/smriti</div>
                 </div>
                 <span className="ml-auto text-[10px] font-mono font-bold bg-emerald-400 text-black px-1.5 py-0.5 rounded border border-black">
                   READY
@@ -828,7 +811,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 2: Customize Everything */}
+            {/* Feature 2: Customize Your Card */}
             <div className="bg-[#121c33] p-7 rounded-xl border-3 border-black shadow-[5px_5px_0px_#06B6D4] rotate-1 hover:rotate-0 hover:-translate-y-1 transition-all space-y-4">
               <div className="flex items-center justify-between">
                 <div className="w-12 h-12 rounded-lg bg-[#06B6D4] border-2 border-black flex items-center justify-center text-black shadow-[3px_3px_0px_#000]">
@@ -838,9 +821,9 @@ export default function LandingPage() {
                   THEMES
                 </span>
               </div>
-              <h3 className="text-xl font-black text-white tracking-tight">Customize Everything</h3>
+              <h3 className="text-xl font-black text-white tracking-tight">Customize Your Card</h3>
               <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-medium">
-                Personalize colors, profile information, links and social accounts.
+                Control colors, layout, links and appearance.
               </p>
 
               {/* Visual Element: Interactive Theme Swatches & Toggles */}
@@ -869,34 +852,34 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 3: Share Anywhere */}
+            {/* Feature 3: One Link */}
             <div className="bg-[#121c33] p-7 rounded-xl border-3 border-black shadow-[5px_5px_0px_#10B981] -rotate-0.5 hover:rotate-0 hover:-translate-y-1 transition-all space-y-4">
               <div className="flex items-center justify-between">
                 <div className="w-12 h-12 rounded-lg bg-[#10B981] border-2 border-black flex items-center justify-center text-black shadow-[3px_3px_0px_#000]">
-                  <QrCode size={24} />
+                  <Link2 size={24} />
                 </div>
                 <span className="font-mono text-[10px] font-black uppercase bg-black text-emerald-400 px-2 py-0.5 rounded border border-white/20">
-                  CAMERA QR
+                  ONE URL
                 </span>
               </div>
-              <h3 className="text-xl font-black text-white tracking-tight">Share Anywhere</h3>
+              <h3 className="text-xl font-black text-white tracking-tight">One Link</h3>
               <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-medium">
-                Share your card using a unique link or QR code.
+                Share your entire professional identity through one simple URL.
               </p>
 
-              {/* Visual Element: Mini QR & Quick Copy Bar */}
+              {/* Visual Element: Mini Vanity URL & Quick Copy Bar */}
               <div className="p-3 bg-[#0a0f1c] rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 truncate">
                   <div className="bg-white p-1 rounded border border-black shrink-0">
-                    <QrCode size={20} className="text-black" />
+                    <Globe size={18} className="text-black" />
                   </div>
-                  <span className="text-[11px] font-mono text-gray-300 truncate font-bold">
-                    smartcard.id/alex
+                  <span className="text-[11px] font-mono text-cyan-400 truncate font-bold">
+                    smartcard.app/smriti
                   </span>
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleCopyLink('https://smartcard.id/c/alex')}
+                  onClick={() => handleCopyLink('https://smartcard.app/smriti')}
                   className="px-2 py-1 bg-white hover:bg-gray-100 text-black text-[10px] font-mono font-black uppercase rounded border border-black shadow-[1px_1px_0px_#000] shrink-0 cursor-pointer"
                 >
                   Copy
@@ -904,19 +887,46 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 4: Analytics */}
+            {/* Feature 4: QR Sharing */}
             <div className="bg-[#121c33] p-7 rounded-xl border-3 border-black shadow-[5px_5px_0px_#F59E0B] rotate-1 hover:rotate-0 hover:-translate-y-1 transition-all space-y-4">
               <div className="flex items-center justify-between">
                 <div className="w-12 h-12 rounded-lg bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black shadow-[3px_3px_0px_#000]">
-                  <BarChart3 size={24} />
+                  <QrCode size={24} />
                 </div>
                 <span className="font-mono text-[10px] font-black uppercase bg-black text-yellow-400 px-2 py-0.5 rounded border border-white/20">
-                  LIVE TELEMETRY
+                  INSTANT SCAN
+                </span>
+              </div>
+              <h3 className="text-xl font-black text-white tracking-tight">QR Sharing</h3>
+              <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-medium">
+                Let people connect instantly by scanning your QR code.
+              </p>
+
+              {/* Visual Element: Mini QR Widget */}
+              <div className="p-3 bg-[#0a0f1c] rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="text-[11px] font-bold text-white">Camera Scannable</div>
+                  <div className="text-[10px] font-mono text-gray-400">Zero apps needed to view</div>
+                </div>
+                <div className="bg-white p-1 rounded border border-black shrink-0">
+                  <QrCode size={30} className="text-black" />
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 5: Analytics */}
+            <div className="bg-[#121c33] p-7 rounded-xl border-3 border-black shadow-[5px_5px_0px_#8B5CF6] -rotate-1 hover:rotate-0 hover:-translate-y-1 transition-all space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-lg bg-[#8B5CF6] border-2 border-black flex items-center justify-center text-white shadow-[3px_3px_0px_#000]">
+                  <BarChart3 size={24} />
+                </div>
+                <span className="font-mono text-[10px] font-black uppercase bg-black text-purple-300 px-2 py-0.5 rounded border border-white/20">
+                  TELEMETRY
                 </span>
               </div>
               <h3 className="text-xl font-black text-white tracking-tight">Analytics</h3>
               <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-medium">
-                Understand how people interact with your profile.
+                See who is viewing and interacting with your profile.
               </p>
 
               {/* Visual Element: Mini Telemetry Widget */}
@@ -934,35 +944,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 5: Professional Profiles */}
-            <div className="bg-[#121c33] p-7 rounded-xl border-3 border-black shadow-[5px_5px_0px_#8B5CF6] -rotate-1 hover:rotate-0 hover:-translate-y-1 transition-all space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="w-12 h-12 rounded-lg bg-[#8B5CF6] border-2 border-black flex items-center justify-center text-white shadow-[3px_3px_0px_#000]">
-                  <Users size={24} />
-                </div>
-                <span className="font-mono text-[10px] font-black uppercase bg-black text-purple-300 px-2 py-0.5 rounded border border-white/20">
-                  100% ORGANIZED
-                </span>
-              </div>
-              <h3 className="text-xl font-black text-white tracking-tight">Professional Profiles</h3>
-              <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-medium">
-                Keep your professional information organized in one place.
-              </p>
-
-              {/* Visual Element: Organized Badge Chips */}
-              <div className="p-3 bg-[#0a0f1c] rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex flex-wrap gap-1.5">
-                <span className="text-[10px] font-mono font-bold bg-[#17223b] text-cyan-400 px-2 py-0.5 rounded border border-black">
-                  ✓ Verified LinkedIn
-                </span>
-                <span className="text-[10px] font-mono font-bold bg-[#17223b] text-purple-300 px-2 py-0.5 rounded border border-black">
-                  ✓ GitHub Dev
-                </span>
-                <span className="text-[10px] font-mono font-bold bg-[#17223b] text-yellow-300 px-2 py-0.5 rounded border border-black">
-                  ✓ Cal.com Link
-                </span>
-              </div>
-            </div>
-
             {/* Feature 6: Always Available */}
             <div className="bg-[#121c33] p-7 rounded-xl border-3 border-black shadow-[5px_5px_0px_#06B6D4] rotate-0.5 hover:rotate-0 hover:-translate-y-1 transition-all space-y-4">
               <div className="flex items-center justify-between">
@@ -975,7 +956,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-black text-white tracking-tight">Always Available</h3>
               <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-medium">
-                Your digital card works on any modern device.
+                Your professional identity is available anywhere, anytime.
               </p>
 
               {/* Visual Element: Multi-Device Matrix Pill */}
@@ -995,359 +976,476 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 6. HOW IT WORKS (VISUALLY INTERACTIVE 3-STEP SECTION) */}
+      {/* 14. HOW IT WORKS (SECTION 14: 4-STEP TIMELINE) */}
       <section id="how-it-works" className="py-20 border-b-2 border-black bg-[#090D16]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
             <span className="font-mono text-xs uppercase font-extrabold text-yellow-400 px-3 py-1 bg-black border-2 border-black rounded shadow-[2px_2px_0px_#000] inline-block rotate-1">
-              INTERACTIVE 3-STEP FLOW
+              STEP-BY-STEP PROCESS
             </span>
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
               How It Works
             </h2>
             <p className="text-gray-300 text-sm sm:text-base font-medium">
-              Click any step below to explore the live interactive demonstration.
+              From zero to an active, scannable professional identity in four seamless steps.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
-            {/* Left Column: 3 Interactive Step Cards */}
-            <div className="lg:col-span-5 space-y-4">
-              
-              {/* Step 01: Create */}
-              <button
-                type="button"
-                onClick={() => setActiveStep(1)}
-                className={`w-full text-left p-6 rounded-xl border-3 border-black transition-all cursor-pointer ${
-                  activeStep === 1 
-                    ? 'bg-[#121c33] shadow-[6px_6px_0px_#2563EB] -translate-y-1' 
-                    : 'bg-[#0d1424] opacity-80 hover:opacity-100 shadow-[3px_3px_0px_#000]'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-2xl font-black font-mono text-blue-400">
-                    01 — Create
-                  </span>
-                  {activeStep === 1 && (
-                    <span className="font-mono text-[10px] font-black uppercase bg-[#2563EB] text-white px-2 py-0.5 rounded border border-black">
-                      ACTIVE STAGE
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm font-bold text-gray-200">
-                  Create your SmartCard profile.
-                </p>
-                <p className="text-xs text-gray-400 mt-1 font-medium">
-                  Enter your core identity, job role, company and profile headshot in seconds.
-                </p>
-              </button>
+          {/* DESKTOP HORIZONTAL TIMELINE */}
+          <div className="hidden lg:block mb-12">
+            <div className="relative">
+              {/* Connecting Horizontal Line Behind Steps */}
+              <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-800 -translate-y-1/2 z-0 border-y border-black"></div>
 
-              {/* Step 02: Customize */}
-              <button
-                type="button"
-                onClick={() => setActiveStep(2)}
-                className={`w-full text-left p-6 rounded-xl border-3 border-black transition-all cursor-pointer ${
-                  activeStep === 2 
-                    ? 'bg-[#121c33] shadow-[6px_6px_0px_#06B6D4] -translate-y-1' 
-                    : 'bg-[#0d1424] opacity-80 hover:opacity-100 shadow-[3px_3px_0px_#000]'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-2xl font-black font-mono text-cyan-400">
-                    02 — Customize
-                  </span>
-                  {activeStep === 2 && (
-                    <span className="font-mono text-[10px] font-black uppercase bg-cyan-400 text-black px-2 py-0.5 rounded border border-black">
-                      ACTIVE STAGE
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm font-bold text-gray-200">
-                  Add your information, social links and professional details.
-                </p>
-                <p className="text-xs text-gray-400 mt-1 font-medium">
-                  Select brand color schemes, attach social handles, portfolio links and custom bio.
-                </p>
-              </button>
-
-              {/* Step 03: Share */}
-              <button
-                type="button"
-                onClick={() => setActiveStep(3)}
-                className={`w-full text-left p-6 rounded-xl border-3 border-black transition-all cursor-pointer ${
-                  activeStep === 3 
-                    ? 'bg-[#121c33] shadow-[6px_6px_0px_#10B981] -translate-y-1' 
-                    : 'bg-[#0d1424] opacity-80 hover:opacity-100 shadow-[3px_3px_0px_#000]'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-2xl font-black font-mono text-emerald-400">
-                    03 — Share
-                  </span>
-                  {activeStep === 3 && (
-                    <span className="font-mono text-[10px] font-black uppercase bg-emerald-400 text-black px-2 py-0.5 rounded border border-black">
-                      ACTIVE STAGE
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm font-bold text-gray-200">
-                  Share your SmartCard anywhere and connect instantly.
-                </p>
-                <p className="text-xs text-gray-400 mt-1 font-medium">
-                  Hold up your camera QR code, send via WhatsApp, or share your vanity web URL.
-                </p>
-              </button>
-
-              {/* Step Navigation Bar */}
-              <div className="flex items-center justify-between pt-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveStep((prev) => (prev > 1 ? (prev - 1 as 1 | 2 | 3) : 3))}
-                  className="px-3.5 py-1.5 text-xs font-mono font-bold bg-[#0e1628] hover:bg-slate-800 text-gray-300 rounded border-2 border-black shadow-[2px_2px_0px_#000] cursor-pointer"
-                >
-                  ← Previous Step
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveStep((prev) => (prev < 3 ? (prev + 1 as 1 | 2 | 3) : 1))}
-                  className="px-3.5 py-1.5 text-xs font-mono font-bold bg-[#2563EB] hover:bg-blue-600 text-white rounded border-2 border-black shadow-[2px_2px_0px_#000] cursor-pointer"
-                >
-                  Next Step →
-                </button>
-              </div>
-
-            </div>
-
-            {/* Right Column: Visually Interactive Demonstration Stage */}
-            <div className="lg:col-span-7">
-              <div className="bg-[#121c33] p-7 sm:p-8 rounded-2xl border-3 border-black shadow-[8px_8px_0px_#000000] min-h-[420px] flex flex-col justify-between">
+              <div className="grid grid-cols-4 gap-6 relative z-10">
                 
-                {/* Stage Header */}
-                <div className="flex items-center justify-between border-b-2 border-black pb-4 mb-6">
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-red-400 border border-black"></span>
-                    <span className="w-3 h-3 rounded-full bg-yellow-400 border border-black"></span>
-                    <span className="w-3 h-3 rounded-full bg-emerald-400 border border-black"></span>
-                    <span className="text-xs font-mono font-bold text-gray-400 uppercase ml-2">
-                      Interactive Simulation • Step 0{activeStep}
+                {/* Step 01: Create */}
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(1)}
+                  className={`text-left p-5 rounded-xl border-3 border-black transition-all cursor-pointer ${
+                    activeStep === 1
+                      ? 'bg-[#121c33] shadow-[6px_6px_0px_#2563EB] -translate-y-1.5 ring-2 ring-[#2563EB]'
+                      : 'bg-[#0d1424] opacity-80 hover:opacity-100 shadow-[3px_3px_0px_#000]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-2xl font-black font-mono text-blue-400">
+                      01 — Create
                     </span>
+                    <span className={`w-3 h-3 rounded-full border border-black ${activeStep === 1 ? 'bg-blue-500 animate-pulse' : 'bg-slate-700'}`}></span>
                   </div>
-                  <span className="font-mono text-xs font-bold text-cyan-400 bg-black px-2.5 py-1 rounded border border-white/20">
-                    {activeStep === 1 ? 'CREATE MODE' : activeStep === 2 ? 'CUSTOMIZE STUDIO' : 'SHARE STATION'}
-                  </span>
-                </div>
+                  <h3 className="text-sm font-black text-white">
+                    Build your professional identity.
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-1 font-medium leading-relaxed">
+                    Set up your name, job role, company, bio, and profile headshot in 45 seconds.
+                  </p>
+                </button>
 
-                {/* DYNAMIC STAGE CONTENT BASED ON ACTIVESTEP */}
-                {activeStep === 1 && (
-                  <div className="space-y-5 animate-fadeIn">
-                    <div className="space-y-1">
-                      <h4 className="text-xl font-black text-white">01 — Create Your Profile</h4>
-                      <p className="text-xs text-gray-300">
-                        Test entering your details below to see how fast a SmartCard initializes:
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-mono font-bold uppercase text-gray-300">Your Name</label>
-                        <input 
-                          type="text" 
-                          value={step1Name}
-                          onChange={(e) => setStep1Name(e.target.value)}
-                          className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3 text-sm font-bold text-white shadow-[2px_2px_0px_#000]"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-mono font-bold uppercase text-gray-300">Job Title</label>
-                        <input 
-                          type="text" 
-                          value={step1Role}
-                          onChange={(e) => setStep1Role(e.target.value)}
-                          className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3 text-sm font-bold text-white shadow-[2px_2px_0px_#000]"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Genesis Preview Card */}
-                    <div className="p-4 bg-[#0a0f1c] rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-xl bg-blue-600 border-2 border-black flex items-center justify-center text-white font-black text-xl shadow-[2px_2px_0px_#000] shrink-0">
-                        {step1Name.charAt(0) || 'U'}
-                      </div>
-                      <div className="truncate">
-                        <div className="text-base font-black text-white truncate">{step1Name || 'Your Name'}</div>
-                        <div className="text-xs font-bold text-gray-300 truncate">{step1Role || 'Your Title'}</div>
-                        <div className="text-[10px] font-mono text-cyan-400 font-bold">smartcard.id/c/{step1Name.toLowerCase().replace(/\s+/g, '')}</div>
-                      </div>
-                      <div className="ml-auto text-right shrink-0">
-                        <span className="font-mono text-[10px] font-extrabold uppercase bg-emerald-400 text-black px-2 py-0.5 rounded border border-black">
-                          ✓ Initialized
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="p-3 bg-[#0d1424] rounded-lg border border-black text-xs font-mono text-gray-300 flex items-center justify-between">
-                      <span>✓ Setup Time: ~45 seconds</span>
-                      <button 
-                        onClick={() => setActiveStep(2)}
-                        className="text-cyan-400 font-bold hover:underline cursor-pointer"
-                      >
-                        Proceed to Customize →
-                      </button>
-                    </div>
+                {/* Step 02: Customize */}
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(2)}
+                  className={`text-left p-5 rounded-xl border-3 border-black transition-all cursor-pointer ${
+                    activeStep === 2
+                      ? 'bg-[#121c33] shadow-[6px_6px_0px_#06B6D4] -translate-y-1.5 ring-2 ring-[#06B6D4]'
+                      : 'bg-[#0d1424] opacity-80 hover:opacity-100 shadow-[3px_3px_0px_#000]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-2xl font-black font-mono text-cyan-400">
+                      02 — Customize
+                    </span>
+                    <span className={`w-3 h-3 rounded-full border border-black ${activeStep === 2 ? 'bg-cyan-400 animate-pulse' : 'bg-slate-700'}`}></span>
                   </div>
-                )}
+                  <h3 className="text-sm font-black text-white">
+                    Make your SmartCard yours.
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-1 font-medium leading-relaxed">
+                    Personalize accent colors, brand aesthetics, verified social links, and layout styling.
+                  </p>
+                </button>
 
-                {activeStep === 2 && (
-                  <div className="space-y-5 animate-fadeIn">
-                    <div className="space-y-1">
-                      <h4 className="text-xl font-black text-white">02 — Customize Information &amp; Social Links</h4>
-                      <p className="text-xs text-gray-300">
-                        Toggle theme colors and social accounts to personalize your profile:
-                      </p>
-                    </div>
-
-                    {/* Interactive Palette Selector */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-mono font-bold uppercase text-gray-300">Select Accent Color</label>
-                      <div className="flex items-center gap-3">
-                        {[
-                          { color: '#2563EB', name: 'Electric Blue' },
-                          { color: '#06B6D4', name: 'Cyan' },
-                          { color: '#F59E0B', name: 'Amber' },
-                          { color: '#10B981', name: 'Emerald' }
-                        ].map((c) => (
-                          <button
-                            key={c.color}
-                            type="button"
-                            onClick={() => setStep2Theme(c.color)}
-                            className={`px-3 py-1.5 rounded-lg border-2 border-black font-mono text-xs font-bold shadow-[2px_2px_0px_#000] cursor-pointer transition-transform ${
-                              step2Theme === c.color ? 'scale-105 ring-2 ring-white text-black' : 'text-black opacity-80'
-                            }`}
-                            style={{ backgroundColor: c.color }}
-                          >
-                            {c.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Social Link Toggles */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-mono font-bold uppercase text-gray-300">Active Profile Badges</label>
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setStep2Socials(prev => ({ ...prev, linkedin: !prev.linkedin }))}
-                          className={`px-3 py-1.5 rounded-lg border-2 border-black text-xs font-bold font-mono shadow-[2px_2px_0px_#000] cursor-pointer ${
-                            step2Socials.linkedin ? 'bg-[#0077b5] text-white' : 'bg-slate-800 text-gray-400'
-                          }`}
-                        >
-                          {step2Socials.linkedin ? '✓ LinkedIn Added' : '+ Add LinkedIn'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setStep2Socials(prev => ({ ...prev, github: !prev.github }))}
-                          className={`px-3 py-1.5 rounded-lg border-2 border-black text-xs font-bold font-mono shadow-[2px_2px_0px_#000] cursor-pointer ${
-                            step2Socials.github ? 'bg-black text-white' : 'bg-slate-800 text-gray-400'
-                          }`}
-                        >
-                          {step2Socials.github ? '✓ GitHub Added' : '+ Add GitHub'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setStep2Socials(prev => ({ ...prev, twitter: !prev.twitter }))}
-                          className={`px-3 py-1.5 rounded-lg border-2 border-black text-xs font-bold font-mono shadow-[2px_2px_0px_#000] cursor-pointer ${
-                            step2Socials.twitter ? 'bg-black text-white' : 'bg-slate-800 text-gray-400'
-                          }`}
-                        >
-                          {step2Socials.twitter ? '✓ X Profile Added' : '+ Add X'}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Live Themed Preview Strip */}
-                    <div 
-                      className="p-4 rounded-xl border-2 border-black shadow-[3px_3px_0px_#000] text-white flex items-center justify-between"
-                      style={{ backgroundColor: step2Theme }}
-                    >
-                      <div>
-                        <div className="text-xs font-black uppercase">Live Theme Preview</div>
-                        <div className="text-[11px] font-mono opacity-90">Custom styling applied in real time</div>
-                      </div>
-                      <button 
-                        onClick={() => setActiveStep(3)}
-                        className="px-3 py-1 bg-black text-white font-mono text-xs font-bold rounded border border-white/20 cursor-pointer"
-                      >
-                        Proceed to Share →
-                      </button>
-                    </div>
+                {/* Step 03: Share */}
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(3)}
+                  className={`text-left p-5 rounded-xl border-3 border-black transition-all cursor-pointer ${
+                    activeStep === 3
+                      ? 'bg-[#121c33] shadow-[6px_6px_0px_#10B981] -translate-y-1.5 ring-2 ring-[#10B981]'
+                      : 'bg-[#0d1424] opacity-80 hover:opacity-100 shadow-[3px_3px_0px_#000]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-2xl font-black font-mono text-emerald-400">
+                      03 — Share
+                    </span>
+                    <span className={`w-3 h-3 rounded-full border border-black ${activeStep === 3 ? 'bg-emerald-400 animate-pulse' : 'bg-slate-700'}`}></span>
                   </div>
-                )}
+                  <h3 className="text-sm font-black text-white">
+                    Send your link or QR code.
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-1 font-medium leading-relaxed">
+                    Hold up your instant camera QR code or text your personalized vanity web URL.
+                  </p>
+                </button>
 
-                {activeStep === 3 && (
-                  <div className="space-y-5 animate-fadeIn">
-                    <div className="space-y-1">
-                      <h4 className="text-xl font-black text-white">03 — Share Instantly Anywhere</h4>
-                      <p className="text-xs text-gray-300">
-                        Scan with your phone camera, copy your link, or send via WhatsApp:
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center bg-[#0a0f1c] p-5 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000]">
-                      <div className="flex flex-col items-center text-center p-3 bg-white rounded-lg border-2 border-black shadow-[3px_3px_0px_#000]">
-                        <QrCode size={120} className="text-black" />
-                        <span className="font-mono text-[10px] font-black text-black mt-2 uppercase">
-                          Point Phone Camera Here
-                        </span>
-                      </div>
-
-                      <div className="space-y-3">
-                        <button
-                          type="button"
-                          onClick={() => handleCopyLink('https://smartcard.id/c/alex')}
-                          className="w-full py-2.5 px-3 bg-white hover:bg-gray-100 text-black font-mono font-black text-xs uppercase rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] flex items-center justify-center gap-2 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
-                        >
-                          <Copy size={14} />
-                          <span>Copy Smart Card Link</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={triggerSaveContact}
-                          className="w-full py-2.5 px-3 bg-cyan-400 hover:bg-cyan-300 text-black font-mono font-black text-xs uppercase rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] flex items-center justify-center gap-2 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
-                        >
-                          <Download size={14} />
-                          <span>Simulate vCard Save (.vcf)</span>
-                        </button>
-
-                        <div className="text-center font-mono text-[11px] text-emerald-400 font-bold">
-                          ✓ Works on 100% of modern smartphones
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-3 bg-[#0d1424] rounded-lg border border-black text-xs font-mono text-gray-300 text-center">
-                      Zero hardware needed. No NFC cards. No app download for receiver.
-                    </div>
+                {/* Step 04: Connect */}
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(4)}
+                  className={`text-left p-5 rounded-xl border-3 border-black transition-all cursor-pointer ${
+                    activeStep === 4
+                      ? 'bg-[#121c33] shadow-[6px_6px_0px_#F59E0B] -translate-y-1.5 ring-2 ring-[#F59E0B]'
+                      : 'bg-[#0d1424] opacity-80 hover:opacity-100 shadow-[3px_3px_0px_#000]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-2xl font-black font-mono text-yellow-400">
+                      04 — Connect
+                    </span>
+                    <span className={`w-3 h-3 rounded-full border border-black ${activeStep === 4 ? 'bg-yellow-400 animate-pulse' : 'bg-slate-700'}`}></span>
                   </div>
-                )}
-
-                {/* Stage Footer Call-to-action */}
-                <div className="pt-4 border-t-2 border-black flex items-center justify-between">
-                  <span className="text-xs font-mono text-gray-400">
-                    Ready to build your digital card?
-                  </span>
-                  <Link href="/signup">
-                    <Button variant="primary" size="sm" className="text-xs font-black uppercase tracking-wider">
-                      Get Started Free →
-                    </Button>
-                  </Link>
-                </div>
+                  <h3 className="text-sm font-black text-white">
+                    Turn views into meaningful connections.
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-1 font-medium leading-relaxed">
+                    Recipients save your vCard directly and can exchange their details back into your lead inbox.
+                  </p>
+                </button>
 
               </div>
             </div>
+          </div>
+
+          {/* MOBILE VERTICAL TIMELINE */}
+          <div className="lg:hidden space-y-4 mb-10 pl-4 border-l-3 border-[#2563EB] ml-2">
+            
+            <button
+              type="button"
+              onClick={() => setActiveStep(1)}
+              className={`w-full text-left p-4 rounded-xl border-2 border-black transition-all ${
+                activeStep === 1 ? 'bg-[#121c33] shadow-[4px_4px_0px_#2563EB]' : 'bg-[#0d1424] opacity-80'
+              }`}
+            >
+              <span className="text-xs font-mono font-black text-blue-400 block mb-0.5">01 — Create</span>
+              <h4 className="text-sm font-black text-white">Build your professional identity.</h4>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveStep(2)}
+              className={`w-full text-left p-4 rounded-xl border-2 border-black transition-all ${
+                activeStep === 2 ? 'bg-[#121c33] shadow-[4px_4px_0px_#06B6D4]' : 'bg-[#0d1424] opacity-80'
+              }`}
+            >
+              <span className="text-xs font-mono font-black text-cyan-400 block mb-0.5">02 — Customize</span>
+              <h4 className="text-sm font-black text-white">Make your SmartCard yours.</h4>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveStep(3)}
+              className={`w-full text-left p-4 rounded-xl border-2 border-black transition-all ${
+                activeStep === 3 ? 'bg-[#121c33] shadow-[4px_4px_0px_#10B981]' : 'bg-[#0d1424] opacity-80'
+              }`}
+            >
+              <span className="text-xs font-mono font-black text-emerald-400 block mb-0.5">03 — Share</span>
+              <h4 className="text-sm font-black text-white">Send your link or QR code.</h4>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveStep(4)}
+              className={`w-full text-left p-4 rounded-xl border-2 border-black transition-all ${
+                activeStep === 4 ? 'bg-[#121c33] shadow-[4px_4px_0px_#F59E0B]' : 'bg-[#0d1424] opacity-80'
+              }`}
+            >
+              <span className="text-xs font-mono font-black text-yellow-400 block mb-0.5">04 — Connect</span>
+              <h4 className="text-sm font-black text-white">Turn views into meaningful connections.</h4>
+            </button>
+
+          </div>
+
+          {/* INTERACTIVE STAGE FOR CURRENT STEP */}
+          <div className="bg-[#121c33] p-6 sm:p-8 rounded-2xl border-3 border-black shadow-[8px_8px_0px_#000000] max-w-4xl mx-auto">
+            
+            {/* Stage Bar */}
+            <div className="flex items-center justify-between border-b-2 border-black pb-4 mb-6">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-red-400 border border-black"></span>
+                <span className="w-3 h-3 rounded-full bg-yellow-400 border border-black"></span>
+                <span className="w-3 h-3 rounded-full bg-emerald-400 border border-black"></span>
+                <span className="text-xs font-mono font-bold text-gray-400 uppercase ml-2">
+                  Simulation Studio • Step 0{activeStep}
+                </span>
+              </div>
+              <span className="font-mono text-xs font-bold text-cyan-400 bg-black px-2.5 py-1 rounded border border-white/20">
+                {activeStep === 1 ? 'CREATE MODE' : activeStep === 2 ? 'CUSTOMIZE STUDIO' : activeStep === 3 ? 'SHARE STATION' : 'CONNECT INBOX'}
+              </span>
+            </div>
+
+            {/* Step 1: Create */}
+            {activeStep === 1 && (
+              <div className="space-y-5 animate-fadeIn">
+                <div className="space-y-1">
+                  <h4 className="text-xl font-black text-white">01 — Create Your Profile</h4>
+                  <p className="text-xs text-gray-300">
+                    Test typing below to see how fast a SmartCard initializes:
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-mono font-bold uppercase text-gray-300">Your Full Name</label>
+                    <input 
+                      type="text" 
+                      value={step1Name}
+                      onChange={(e) => setStep1Name(e.target.value)}
+                      className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3 text-sm font-bold text-white shadow-[2px_2px_0px_#000]"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-mono font-bold uppercase text-gray-300">Job Title</label>
+                    <input 
+                      type="text" 
+                      value={step1Role}
+                      onChange={(e) => setStep1Role(e.target.value)}
+                      className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3 text-sm font-bold text-white shadow-[2px_2px_0px_#000]"
+                    />
+                  </div>
+                </div>
+
+                {/* Genesis Preview Card */}
+                <div className="p-4 bg-[#0a0f1c] rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-blue-600 border-2 border-black flex items-center justify-center text-white font-black text-xl shadow-[2px_2px_0px_#000] shrink-0">
+                    {step1Name.charAt(0) || 'S'}
+                  </div>
+                  <div className="truncate">
+                    <div className="text-base font-black text-white truncate">{step1Name || 'Your Name'}</div>
+                    <div className="text-xs font-bold text-gray-300 truncate">{step1Role || 'Your Title'}</div>
+                    <div className="text-[10px] font-mono text-cyan-400 font-bold">smartcard.app/{step1Name.toLowerCase().replace(/\s+/g, '')}</div>
+                  </div>
+                  <div className="ml-auto text-right shrink-0">
+                    <span className="font-mono text-[10px] font-extrabold uppercase bg-emerald-400 text-black px-2 py-0.5 rounded border border-black">
+                      ✓ Profile Ready
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-[#0d1424] rounded-lg border border-black text-xs font-mono text-gray-300 flex items-center justify-between">
+                  <span>✓ Zero app download needed</span>
+                  <button 
+                    onClick={() => setActiveStep(2)}
+                    className="text-cyan-400 font-bold hover:underline cursor-pointer"
+                  >
+                    Next: Customize Style →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Customize */}
+            {activeStep === 2 && (
+              <div className="space-y-5 animate-fadeIn">
+                <div className="space-y-1">
+                  <h4 className="text-xl font-black text-white">02 — Customize Information &amp; Social Links</h4>
+                  <p className="text-xs text-gray-300">
+                    Pick accent colors and toggle verified social links:
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-mono font-bold uppercase text-gray-300">Select Accent Color</label>
+                  <div className="flex items-center gap-3">
+                    {[
+                      { color: '#2563EB', name: 'Electric Blue' },
+                      { color: '#06B6D4', name: 'Cyan' },
+                      { color: '#F59E0B', name: 'Amber' },
+                      { color: '#10B981', name: 'Emerald' }
+                    ].map((c) => (
+                      <button
+                        key={c.color}
+                        type="button"
+                        onClick={() => setStep2Theme(c.color)}
+                        className={`px-3 py-1.5 rounded-lg border-2 border-black font-mono text-xs font-bold shadow-[2px_2px_0px_#000] cursor-pointer transition-transform ${
+                          step2Theme === c.color ? 'scale-105 ring-2 ring-white text-black' : 'text-black opacity-80'
+                        }`}
+                        style={{ backgroundColor: c.color }}
+                      >
+                        {c.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-mono font-bold uppercase text-gray-300">Active Profile Badges</label>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setStep2Socials(prev => ({ ...prev, linkedin: !prev.linkedin }))}
+                      className={`px-3 py-1.5 rounded-lg border-2 border-black text-xs font-bold font-mono shadow-[2px_2px_0px_#000] cursor-pointer ${
+                        step2Socials.linkedin ? 'bg-[#0077b5] text-white' : 'bg-slate-800 text-gray-400'
+                      }`}
+                    >
+                      {step2Socials.linkedin ? '✓ LinkedIn Attached' : '+ Add LinkedIn'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStep2Socials(prev => ({ ...prev, github: !prev.github }))}
+                      className={`px-3 py-1.5 rounded-lg border-2 border-black text-xs font-bold font-mono shadow-[2px_2px_0px_#000] cursor-pointer ${
+                        step2Socials.github ? 'bg-black text-white' : 'bg-slate-800 text-gray-400'
+                      }`}
+                    >
+                      {step2Socials.github ? '✓ GitHub Attached' : '+ Add GitHub'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStep2Socials(prev => ({ ...prev, twitter: !prev.twitter }))}
+                      className={`px-3 py-1.5 rounded-lg border-2 border-black text-xs font-bold font-mono shadow-[2px_2px_0px_#000] cursor-pointer ${
+                        step2Socials.twitter ? 'bg-black text-white' : 'bg-slate-800 text-gray-400'
+                      }`}
+                    >
+                      {step2Socials.twitter ? '✓ X Profile Attached' : '+ Add X'}
+                    </button>
+                  </div>
+                </div>
+
+                <div 
+                  className="p-4 rounded-xl border-2 border-black shadow-[3px_3px_0px_#000] text-white flex items-center justify-between"
+                  style={{ backgroundColor: step2Theme }}
+                >
+                  <div>
+                    <div className="text-xs font-black uppercase">Live Theme Preview</div>
+                    <div className="text-[11px] font-mono opacity-90">Custom styling applied in real time</div>
+                  </div>
+                  <button 
+                    onClick={() => setActiveStep(3)}
+                    className="px-3 py-1 bg-black text-white font-mono text-xs font-bold rounded border border-white/20 cursor-pointer"
+                  >
+                    Next: Share Station →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Share */}
+            {activeStep === 3 && (
+              <div className="space-y-5 animate-fadeIn">
+                <div className="space-y-1">
+                  <h4 className="text-xl font-black text-white">03 — Share Your Link or QR Code</h4>
+                  <p className="text-xs text-gray-300">
+                    Scan with any modern phone camera, copy your link, or send via messaging apps:
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center bg-[#0a0f1c] p-5 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000]">
+                  <div className="flex flex-col items-center text-center p-3 bg-white rounded-lg border-2 border-black shadow-[3px_3px_0px_#000]">
+                    <QrCode size={110} className="text-black" />
+                    <span className="font-mono text-[10px] font-black text-black mt-2 uppercase">
+                      Point Phone Camera Here
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
+                    <button
+                      type="button"
+                      onClick={() => handleCopyLink('https://smartcard.app/smriti')}
+                      className="w-full py-2.5 px-3 bg-white hover:bg-gray-100 text-black font-mono font-black text-xs uppercase rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] flex items-center justify-center gap-2 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                    >
+                      <Copy size={14} />
+                      <span>Copy smartcard.app/smriti</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={triggerSaveContact}
+                      className="w-full py-2.5 px-3 bg-cyan-400 hover:bg-cyan-300 text-black font-mono font-black text-xs uppercase rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] flex items-center justify-center gap-2 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                    >
+                      <Download size={14} />
+                      <span>Download .vcf Contact</span>
+                    </button>
+
+                    <div className="text-center font-mono text-[11px] text-emerald-400 font-bold">
+                      ✓ Zero hardware needed. 100% digital.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-[#0d1424] rounded-lg border border-black text-xs font-mono text-gray-300 flex items-center justify-between">
+                  <span>Hold up card at conferences or meetings</span>
+                  <button 
+                    onClick={() => setActiveStep(4)}
+                    className="text-cyan-400 font-bold hover:underline cursor-pointer"
+                  >
+                    Next: Connect &amp; Exchange →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Connect */}
+            {activeStep === 4 && (
+              <div className="space-y-5 animate-fadeIn">
+                <div className="space-y-1">
+                  <h4 className="text-xl font-black text-white">04 — Turn Views Into Meaningful Connections</h4>
+                  <p className="text-xs text-gray-300">
+                    When someone scans your card, they can instantly exchange their contact details back to you:
+                  </p>
+                </div>
+
+                <div className="p-5 bg-[#0a0f1c] rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] space-y-4">
+                  <div className="flex items-center justify-between border-b border-gray-800 pb-2">
+                    <span className="font-mono text-xs font-bold uppercase text-yellow-400">
+                      Two-Way Contact Exchange Simulator
+                    </span>
+                    <span className="font-mono text-[10px] text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-500">
+                      Zero Friction
+                    </span>
+                  </div>
+
+                  {!step4ExchangeSubmitted ? (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input 
+                          type="text" 
+                          placeholder="Visitor Name (e.g. Priya Sharma)"
+                          defaultValue="Priya Sharma"
+                          className="h-10 bg-[#121c33] border-2 border-black rounded-lg px-3 text-xs font-bold text-white shadow-[2px_2px_0px_#000]"
+                        />
+                        <input 
+                          type="email" 
+                          placeholder="Visitor Email (e.g. priya@apex.dev)"
+                          defaultValue="priya@apex.dev"
+                          className="h-10 bg-[#121c33] border-2 border-black rounded-lg px-3 text-xs font-bold text-white shadow-[2px_2px_0px_#000]"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setStep4ExchangeSubmitted(true)}
+                        className="w-full py-2.5 bg-yellow-400 hover:bg-yellow-300 text-black font-mono font-black text-xs uppercase rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] cursor-pointer"
+                      >
+                        Simulate Visitor Sending Contact Back →
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-emerald-950/80 border-2 border-emerald-500 rounded-lg text-emerald-300 space-y-2">
+                      <div className="flex items-center gap-2 font-bold text-sm">
+                        <Check size={18} className="text-emerald-400 stroke-[3]" />
+                        <span>Lead captured directly in your SmartCard inbox!</span>
+                      </div>
+                      <p className="text-xs text-gray-300 font-mono">
+                        Priya Sharma &lt;priya@apex.dev&gt; logged into your Contacts tab with date stamp and intent score.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setStep4ExchangeSubmitted(false)}
+                        className="text-xs font-mono font-bold text-cyan-400 underline cursor-pointer"
+                      >
+                        Reset simulation
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 flex items-center justify-between">
+                  <span className="text-xs font-mono text-gray-400">
+                    Ready to build your SmartCard?
+                  </span>
+                  <Button 
+                    onClick={() => openAuth('signup')}
+                    variant="primary" 
+                    size="sm" 
+                    className="text-xs font-black uppercase tracking-wider bg-[#2563EB] border-2 border-black shadow-[2px_2px_0px_#000]"
+                  >
+                    Create Your SmartCard →
+                  </Button>
+                </div>
+              </div>
+            )}
 
           </div>
 
@@ -1474,7 +1572,7 @@ export default function LandingPage() {
                       + Share Card
                     </button>
                     <Link
-                      href="/c/card_alex"
+                      href="/smriti"
                       target="_blank"
                       className="px-3.5 py-2 bg-[#2563EB] hover:bg-blue-600 text-white font-mono font-black text-xs uppercase rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5"
                     >
@@ -1618,148 +1716,168 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 8. INTERACTIVE PLAYGROUND (TRY IT LIVE!) */}
-      <section id="playground" className="py-20 border-b-2 border-black bg-[#0d1424]">
+      {/* 15. PRODUCT SHOWCASE (SECTION 15: YOUR SMARTCARD. YOUR WAY.) */}
+      <section id="showcase" className="py-24 border-b-2 border-black bg-[#0d1424]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
             <span className="font-mono text-xs uppercase font-extrabold text-cyan-400 px-3 py-1 bg-black border-2 border-black rounded shadow-[2px_2px_0px_#06B6D4] inline-block -rotate-1">
-              Live Interactive Sandbox
+              CUSTOMIZATION SHOWCASE
             </span>
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-              Test Customize Your SmartCard Right Now
+              Your SmartCard. Your way.
             </h2>
             <p className="text-gray-300 text-sm sm:text-base font-medium">
-              Tweak the details on the left and watch the Neo-Brutalist card render in real time.
+              Switch between five signature card styles tailored for founders, creators, executives, and engineers.
             </p>
+
+            {/* Style Selector Buttons */}
+            <div className="pt-6 flex flex-wrap items-center justify-center gap-2.5">
+              {(['Minimal', 'Professional', 'Bold', 'Dark', 'Creative'] as const).map((style) => (
+                <button
+                  key={style}
+                  type="button"
+                  onClick={() => setSelectedStyle(style)}
+                  className={`px-4 py-2 rounded-lg font-mono text-xs font-black uppercase transition-all cursor-pointer ${
+                    selectedStyle === style
+                      ? 'bg-yellow-400 text-black border-2 border-black shadow-[3px_3px_0px_#000] -translate-y-0.5'
+                      : 'bg-[#121c33] text-gray-300 border-2 border-black hover:bg-[#1a2745] hover:text-white shadow-[2px_2px_0px_#000]'
+                  }`}
+                >
+                  {style}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center max-w-5xl mx-auto">
+          {/* Interactive Card Style Stage */}
+          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-[#090D16] p-6 sm:p-10 rounded-2xl border-3 border-black shadow-[8px_8px_0px_#000]">
             
-            {/* Left Controls */}
-            <div className="lg:col-span-6 bg-[#121c33] p-7 rounded-xl border-2 border-black shadow-[6px_6px_0px_#000] space-y-5">
-              <h3 className="text-lg font-black text-white uppercase tracking-wider font-mono">
-                Card Customizer Controls
+            {/* Left Info Column */}
+            <div className="md:col-span-5 space-y-4">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-black border border-white/20 font-mono text-xs text-yellow-400 font-bold uppercase">
+                <span>Selected: {selectedStyle} Aesthetic</span>
+              </div>
+
+              <h3 className="text-2xl font-black text-white tracking-tight">
+                {selectedStyle === 'Minimal' && 'Ultra-Clean Essentialist'}
+                {selectedStyle === 'Professional' && 'Executive Enterprise'}
+                {selectedStyle === 'Bold' && 'High-Voltage Neo-Brutalist'}
+                {selectedStyle === 'Dark' && 'Midnight Neon Tech'}
+                {selectedStyle === 'Creative' && 'Vibrant Creator Studio'}
               </h3>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Your Full Name</label>
-                <input
-                  type="text"
-                  value={playName}
-                  onChange={(e) => setPlayName(e.target.value)}
-                  className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-[2px_2px_0px_#000]"
-                />
-              </div>
+              <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-medium">
+                {selectedStyle === 'Minimal' && 'Stripped down to purest essentials with high readability, subtle hairline borders, and calm contrast.'}
+                {selectedStyle === 'Professional' && 'Refined corporate navy tones, structured authority, and crisp verification tags tailored for client meetings.'}
+                {selectedStyle === 'Bold' && 'Loud high-contrast cyber yellow and jet black, heavy offset shadows, and unmistakable tactile energy.'}
+                {selectedStyle === 'Dark' && 'Sleek dark mode with electric cyan accents, obsidian panels, and ultra-crisp developer styling.'}
+                {selectedStyle === 'Creative' && 'Rich gradient accents, vibrant social badges, and lively design aesthetics made for portfolio showreels.'}
+              </p>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Job Title / Specialty</label>
-                <input
-                  type="text"
-                  value={playRole}
-                  onChange={(e) => setPlayRole(e.target.value)}
-                  className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-[2px_2px_0px_#000]"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Company or Brand</label>
-                <input
-                  type="text"
-                  value={playCompany}
-                  onChange={(e) => setPlayCompany(e.target.value)}
-                  className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-[2px_2px_0px_#000]"
-                />
-              </div>
-
-              {/* Accent Color Switcher */}
-              <div className="space-y-2">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Palette Theme</label>
-                <div className="flex items-center gap-3">
-                  {[
-                    { color: '#2563EB', label: 'Electric Blue' },
-                    { color: '#06B6D4', label: 'Cyan' },
-                    { color: '#F59E0B', label: 'Amber' },
-                    { color: '#10B981', label: 'Emerald' },
-                    { color: '#8B5CF6', label: 'Violet' },
-                  ].map((c) => (
-                    <button
-                      key={c.color}
-                      type="button"
-                      onClick={() => setPlayColor(c.color)}
-                      className={`w-9 h-9 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] cursor-pointer transition-transform ${
-                        playColor === c.color ? 'scale-115 ring-2 ring-white' : 'hover:scale-105'
-                      }`}
-                      style={{ backgroundColor: c.color }}
-                      title={c.label}
-                    />
-                  ))}
+              <div className="pt-2 space-y-2 text-xs font-mono font-bold text-gray-300">
+                <div className="flex items-center gap-2">
+                  <Check size={14} className="text-emerald-400 stroke-[3]" />
+                  <span>Instant camera QR scannable</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check size={14} className="text-emerald-400 stroke-[3]" />
+                  <span>Two-way contact exchange included</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check size={14} className="text-emerald-400 stroke-[3]" />
+                  <span>Real-time persistence in localStorage</span>
                 </div>
               </div>
 
-              <div className="pt-2">
-                <Link href="/signup">
-                  <Button variant="primary" className="w-full h-12 uppercase font-black text-sm tracking-wider">
-                    Claim This Card Free →
-                  </Button>
-                </Link>
+              <div className="pt-3">
+                <Button 
+                  onClick={() => openAuth('signup')}
+                  variant="primary" 
+                  size="sm" 
+                  className="font-black uppercase text-xs tracking-wider bg-[#2563EB] border-2 border-black shadow-[3px_3px_0px_#000]"
+                >
+                  Use This Style Now →
+                </Button>
               </div>
-
             </div>
 
-            {/* Right Live Preview */}
-            <div className="lg:col-span-6 flex justify-center">
-              <div className="w-full max-w-[340px] bg-[#090D16] rounded-xl border-3 border-black shadow-[8px_8px_0px_#000] overflow-hidden">
-                <div 
-                  className="p-5 border-b-3 border-black text-white relative transition-colors duration-200"
-                  style={{ backgroundColor: playColor }}
-                >
+            {/* Right Interactive Mockup Column */}
+            <div className="md:col-span-7 flex justify-center">
+              <div className={`w-full max-w-[340px] rounded-2xl border-3 border-black transition-all duration-300 overflow-hidden ${
+                selectedStyle === 'Minimal' ? 'bg-[#FAFAF9] text-black shadow-[6px_6px_0px_#D4D4D8]' :
+                selectedStyle === 'Professional' ? 'bg-[#0E172A] text-white shadow-[6px_6px_0px_#2563EB]' :
+                selectedStyle === 'Bold' ? 'bg-[#F59E0B] text-black shadow-[8px_8px_0px_#000000]' :
+                selectedStyle === 'Dark' ? 'bg-[#090D16] text-white shadow-[6px_6px_0px_#06B6D4] ring-1 ring-cyan-500/50' :
+                'bg-gradient-to-b from-[#2E1065] to-[#0c0a1f] text-white shadow-[6px_6px_0px_#8B5CF6]'
+              }`}>
+                
+                {/* Header Banner */}
+                <div className={`p-5 border-b-2 border-black ${
+                  selectedStyle === 'Minimal' ? 'bg-white' :
+                  selectedStyle === 'Professional' ? 'bg-[#1E3A8A]' :
+                  selectedStyle === 'Bold' ? 'bg-black text-yellow-400' :
+                  selectedStyle === 'Dark' ? 'bg-[#10192E]' :
+                  'bg-gradient-to-r from-purple-600 to-pink-600'
+                }`}>
                   <div className="flex items-start justify-between">
                     <div>
-                      <span className="font-mono text-[9px] font-black uppercase tracking-wider bg-black text-white px-2 py-0.5 rounded border border-white/20">
-                        PREVIEW
+                      <span className={`text-[9px] font-mono font-black uppercase px-2 py-0.5 rounded border border-black ${
+                        selectedStyle === 'Minimal' ? 'bg-gray-100 text-gray-800' :
+                        selectedStyle === 'Bold' ? 'bg-yellow-400 text-black' :
+                        'bg-black text-cyan-300'
+                      }`}>
+                        {selectedStyle.toUpperCase()} • SMARTCARD
                       </span>
-                      <h4 className="text-xl font-black text-white mt-1">
-                        {playName || 'Your Name'}
-                      </h4>
-                      <p className="text-xs font-bold text-white/90">
-                        {playRole || 'Your Title'}
+                      <h4 className="text-xl font-black mt-1">Smriti Jha</h4>
+                      <p className={`text-xs font-bold ${selectedStyle === 'Minimal' ? 'text-gray-600' : 'text-blue-200'}`}>
+                        Full Stack Developer
                       </p>
-                      <p className="text-[11px] font-mono text-white/80">
-                        {playCompany || 'Your Company'}
+                      <p className={`text-[11px] font-mono ${selectedStyle === 'Minimal' ? 'text-gray-500' : 'text-cyan-300'}`}>
+                        smritijha.dev
                       </p>
                     </div>
 
-                    <div className="w-14 h-14 rounded-lg border-2 border-black bg-white overflow-hidden shadow-[2px_2px_0px_#000] flex items-center justify-center font-black text-xl text-black">
-                      {(playName || 'U').charAt(0)}
+                    <div className="w-14 h-14 rounded-xl border-2 border-black bg-blue-600 overflow-hidden shadow-[2px_2px_0px_#000] flex items-center justify-center font-black text-xl text-white shrink-0">
+                      SJ
                     </div>
                   </div>
                 </div>
 
-                <div className="p-5 space-y-3 bg-[#0d1424]">
-                  <div className="p-2.5 bg-[#141e35] rounded-lg border-2 border-black text-xs font-medium text-gray-300">
-                    &quot;Excited to connect! Tap below to save my contact info or exchange yours.&quot;
-                  </div>
+                {/* Card Body */}
+                <div className={`p-5 space-y-3 ${
+                  selectedStyle === 'Minimal' ? 'bg-white text-gray-800' :
+                  selectedStyle === 'Bold' ? 'bg-yellow-50 text-black' :
+                  'bg-[#0a0f1c] text-gray-200'
+                }`}>
+                  <p className={`text-xs font-medium p-2.5 rounded-lg border-2 border-black ${
+                    selectedStyle === 'Minimal' ? 'bg-gray-50' :
+                    selectedStyle === 'Bold' ? 'bg-white' :
+                    'bg-[#121c33]'
+                  }`}>
+                    &ldquo;Building modern web experiences. High performance, zero NFC hardware.&rdquo;
+                  </p>
 
                   <div className="grid grid-cols-2 gap-2 text-xs font-bold">
-                    <div className="p-2 bg-[#17223b] rounded border-2 border-black text-center text-gray-200">
-                      📱 Call Phone
+                    <div className={`p-2 rounded border-2 border-black text-center truncate ${
+                      selectedStyle === 'Minimal' ? 'bg-gray-100 text-black' : 'bg-[#17223b] text-white'
+                    }`}>
+                      ✉️ Email Contact
                     </div>
-                    <div className="p-2 bg-[#17223b] rounded border-2 border-black text-center text-gray-200">
-                      ✉️ Send Email
+                    <div className={`p-2 rounded border-2 border-black text-center truncate ${
+                      selectedStyle === 'Minimal' ? 'bg-gray-100 text-black' : 'bg-[#17223b] text-white'
+                    }`}>
+                      💼 LinkedIn
                     </div>
-                  </div>
-
-                  <div className="w-full py-2 bg-white text-black font-extrabold text-xs uppercase text-center rounded border-2 border-black shadow-[2px_2px_0px_#000]">
-                    Save Contact to Phone
                   </div>
 
                   <div className="pt-2 border-t-2 border-black flex items-center justify-between">
-                    <div className="text-[10px] font-mono font-bold text-gray-400">
-                      SCAN WITH CAMERA →
+                    <div>
+                      <div className="text-[10px] font-mono font-bold uppercase">Camera Scan</div>
+                      <div className="text-[9px] text-gray-400">Zero apps needed</div>
                     </div>
-                    <div className="bg-white p-1 rounded border-2 border-black">
-                      <QrCode size={36} className="text-black" />
+                    <div className="bg-white p-1 rounded border-2 border-black shadow-[2px_2px_0px_#000]">
+                      <QrCode size={34} className="text-black" />
                     </div>
                   </div>
                 </div>
@@ -1772,36 +1890,196 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 8. TESTIMONIALS */}
-      <section className="py-20 border-b-2 border-black bg-[#090D16]">
+      {/* 16. ANALYTICS SHOWCASE (SECTION 16) */}
+      <section id="analytics" className="py-24 border-b-2 border-black bg-[#090D16]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <span className="font-mono text-xs uppercase font-extrabold text-emerald-400 px-3 py-1 bg-black border-2 border-black rounded shadow-[2px_2px_0px_#000] inline-block rotate-1">
-              Social Proof
+            <span className="font-mono text-xs uppercase font-extrabold text-emerald-400 px-3 py-1 bg-black border-2 border-black rounded shadow-[2px_2px_0px_#10B981] inline-block rotate-1">
+              REAL-TIME TELEMETRY
             </span>
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-              Loved by Founders, Reps &amp; Speakers
+              Understand how the world interacts with your card.
             </h2>
             <p className="text-gray-300 text-sm sm:text-base font-medium">
-              Over 50,000 professionals rely on SmartCard at conferences, dinners, and everyday networking.
+              Every camera QR scan, WhatsApp share, and contact download tracked in real time.
+            </p>
+          </div>
+
+          {/* SaaS Analytics Interface Frame */}
+          <div className="max-w-5xl mx-auto bg-[#0c1322] rounded-2xl border-3 border-black shadow-[8px_8px_0px_#000] p-6 sm:p-8 space-y-8">
+            
+            {/* Top Stat Counters (Exact prompt metrics: 1284 views, 438 link clicks, 126 shares, 84 contacts) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              
+              <div className="p-5 bg-[#121c33] rounded-xl border-2 border-black shadow-[4px_4px_0px_#2563EB]">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono text-xs font-bold text-gray-400 uppercase">Profile Views</span>
+                  <Eye size={16} className="text-blue-400" />
+                </div>
+                <div className="text-3xl sm:text-4xl font-black text-white">1,284</div>
+                <span className="text-[11px] font-mono text-emerald-400 font-bold mt-1 block">↑ +24.8% this week</span>
+              </div>
+
+              <div className="p-5 bg-[#121c33] rounded-xl border-2 border-black shadow-[4px_4px_0px_#F59E0B]">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono text-xs font-bold text-gray-400 uppercase">Link Clicks</span>
+                  <Link2 size={16} className="text-yellow-400" />
+                </div>
+                <div className="text-3xl sm:text-4xl font-black text-white">438</div>
+                <span className="text-[11px] font-mono text-cyan-400 font-bold mt-1 block">↑ Portfolio &amp; LinkedIn</span>
+              </div>
+
+              <div className="p-5 bg-[#121c33] rounded-xl border-2 border-black shadow-[4px_4px_0px_#06B6D4]">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono text-xs font-bold text-gray-400 uppercase">Shares</span>
+                  <Share2 size={16} className="text-cyan-400" />
+                </div>
+                <div className="text-3xl sm:text-4xl font-black text-white">126</div>
+                <span className="text-[11px] font-mono text-emerald-400 font-bold mt-1 block">↑ WhatsApp &amp; vCard</span>
+              </div>
+
+              <div className="p-5 bg-[#121c33] rounded-xl border-2 border-black shadow-[4px_4px_0px_#10B981]">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono text-xs font-bold text-gray-400 uppercase">Contacts</span>
+                  <Users size={16} className="text-emerald-400" />
+                </div>
+                <div className="text-3xl sm:text-4xl font-black text-white">84</div>
+                <span className="text-[11px] font-mono text-yellow-400 font-bold mt-1 block">Two-way lead forms</span>
+              </div>
+
+            </div>
+
+            {/* Visual SaaS Bar Chart & Distribution */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              
+              {/* Engagement Trend Chart */}
+              <div className="lg:col-span-8 bg-[#090D16] p-5 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+                  <div>
+                    <h4 className="text-sm font-black text-white">Weekly Profile Traffic &amp; Scans</h4>
+                    <span className="text-[11px] font-mono text-gray-400">Total Views over the last 7 days</span>
+                  </div>
+                  <span className="font-mono text-xs font-bold text-emerald-400 bg-black px-2 py-0.5 rounded border border-black">
+                    Live Stream
+                  </span>
+                </div>
+
+                {/* Neo-Brutalist CSS Bar Chart */}
+                <div className="h-44 flex items-end justify-between gap-3 pt-4 px-2">
+                  {[
+                    { day: 'Mon', views: 140, pct: 45 },
+                    { day: 'Tue', views: 185, pct: 60 },
+                    { day: 'Wed', views: 240, pct: 80 },
+                    { day: 'Thu', views: 210, pct: 70 },
+                    { day: 'Fri', views: 290, pct: 95 },
+                    { day: 'Sat', views: 120, pct: 40 },
+                    { day: 'Sun', views: 199, pct: 65 },
+                  ].map((bar) => (
+                    <div key={bar.day} className="flex-1 flex flex-col items-center gap-2 group">
+                      <span className="text-[10px] font-mono text-cyan-300 opacity-0 group-hover:opacity-100 transition-opacity font-bold">
+                        {bar.views}
+                      </span>
+                      <div className="w-full bg-black/60 rounded-t h-32 flex items-end p-0.5">
+                        <div 
+                          className="w-full bg-[#2563EB] group-hover:bg-cyan-400 transition-all rounded-t border-t-2 border-x-2 border-black shadow-[1px_1px_0px_#000]"
+                          style={{ height: `${bar.pct}%` }}
+                        />
+                      </div>
+                      <span className="text-[11px] font-mono font-bold text-gray-400">{bar.day}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Channels Breakdown */}
+              <div className="lg:col-span-4 bg-[#090D16] p-5 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] space-y-4">
+                <h4 className="text-sm font-black text-white border-b border-gray-800 pb-2">
+                  Acquisition Channel
+                </h4>
+
+                <div className="space-y-3 font-mono text-xs">
+                  <div>
+                    <div className="flex justify-between font-bold text-gray-300 mb-1">
+                      <span>Camera QR Scans</span>
+                      <span className="text-cyan-400">58%</span>
+                    </div>
+                    <div className="w-full h-2.5 bg-black rounded-full overflow-hidden border border-black">
+                      <div className="h-full bg-cyan-400 w-[58%]"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between font-bold text-gray-300 mb-1">
+                      <span>WhatsApp Direct</span>
+                      <span className="text-emerald-400">24%</span>
+                    </div>
+                    <div className="w-full h-2.5 bg-black rounded-full overflow-hidden border border-black">
+                      <div className="h-full bg-emerald-400 w-[24%]"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between font-bold text-gray-300 mb-1">
+                      <span>LinkedIn Profile Link</span>
+                      <span className="text-blue-400">18%</span>
+                    </div>
+                    <div className="w-full h-2.5 bg-black rounded-full overflow-hidden border border-black">
+                      <div className="h-full bg-blue-500 w-[18%]"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 text-[10px] font-mono text-gray-400 text-center">
+                  Zero hardware dependencies • 100% digital
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* 17. SOCIAL PROOF (SECTION 17: BUILT FOR PEOPLE WHO WANT TO STAND OUT) */}
+      <section id="testimonials" className="py-24 border-b-2 border-black bg-[#0d1424]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <span className="font-mono text-xs uppercase font-extrabold text-yellow-400 px-3 py-1 bg-black border-2 border-black rounded shadow-[2px_2px_0px_#000] inline-block rotate-1">
+              VERIFIED COMMUNITY
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+              Built for people who want to stand out.
+            </h2>
+            <p className="text-gray-300 text-sm sm:text-base font-medium">
+              Join founders, developers, designers, and consultants replacing paper cards with one smart link.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             
-            <div className="bg-[#0e1628] p-7 rounded-xl border-2 border-black shadow-[5px_5px_0px_#000] space-y-4">
-              <div className="flex items-center gap-1 text-yellow-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} className="fill-yellow-400" />
-                ))}
+            {/* Testimonial 1 */}
+            <div className="bg-[#121c33] p-7 rounded-xl border-3 border-black shadow-[5px_5px_0px_#2563EB] space-y-4 -rotate-1 hover:rotate-0 transition-transform flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1 text-yellow-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={15} className="fill-yellow-400" />
+                    ))}
+                  </div>
+                  <span className="font-mono text-[9px] font-bold text-gray-400 bg-black px-2 py-0.5 rounded border border-white/10 uppercase">
+                    DEMO TESTIMONIAL
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-gray-200 font-medium leading-relaxed">
+                  &ldquo;I used to order 500 paper cards before every tech summit. Half got thrown away and my title changed twice. SmartCard replaced everything with one clean link and instant camera QR.&rdquo;
+                </p>
               </div>
-              <p className="text-xs sm:text-sm text-gray-200 font-medium leading-relaxed">
-                &quot;I used to order 500 paper cards before every tech summit. Half got lost and info changed every quarter. 
-                SmartCard paid for itself on day one. Everyone loves the fast camera QR.&quot;
-              </p>
-              <div className="pt-2 border-t-2 border-gray-800 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full border-2 border-black bg-blue-600 flex items-center justify-center font-bold text-white">
+
+              <div className="pt-3 border-t-2 border-slate-800 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full border-2 border-black bg-blue-600 flex items-center justify-center font-bold text-white text-sm">
                   MK
                 </div>
                 <div>
@@ -1811,44 +2089,60 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="bg-[#0e1628] p-7 rounded-xl border-2 border-black shadow-[5px_5px_0px_#06B6D4] space-y-4 -rotate-1">
-              <div className="flex items-center gap-1 text-yellow-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} className="fill-yellow-400" />
-                ))}
+            {/* Testimonial 2 */}
+            <div className="bg-[#121c33] p-7 rounded-xl border-3 border-black shadow-[5px_5px_0px_#06B6D4] space-y-4 rotate-1 hover:rotate-0 transition-transform flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1 text-yellow-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={15} className="fill-yellow-400" />
+                    ))}
+                  </div>
+                  <span className="font-mono text-[9px] font-bold text-gray-400 bg-black px-2 py-0.5 rounded border border-white/10 uppercase">
+                    DEMO TESTIMONIAL
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-gray-200 font-medium leading-relaxed">
+                  &ldquo;The two-way contact exchange is genius. When investors scan my SmartCard, they enter their email and it lands straight in my contacts inbox. Captured 140 leads during our launch week.&rdquo;
+                </p>
               </div>
-              <p className="text-xs sm:text-sm text-gray-200 font-medium leading-relaxed">
-                &quot;The two-way lead capture feature is genius. At our booth, prospects scanned my card and instantly 
-                shared their email and phone. Captured 140 hot leads in 48 hours.&quot;
-              </p>
-              <div className="pt-2 border-t-2 border-gray-800 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full border-2 border-black bg-cyan-500 flex items-center justify-center font-bold text-black">
+
+              <div className="pt-3 border-t-2 border-slate-800 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full border-2 border-black bg-cyan-500 flex items-center justify-center font-bold text-black text-sm">
                   SL
                 </div>
                 <div>
                   <h4 className="text-xs font-black text-white">Sarah Lin</h4>
-                  <p className="text-[11px] text-gray-400 font-mono">VP Sales @ Horizon Growth</p>
+                  <p className="text-[11px] text-gray-400 font-mono">VP Growth @ Horizon Ventures</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-[#0e1628] p-7 rounded-xl border-2 border-black shadow-[5px_5px_0px_#000] space-y-4">
-              <div className="flex items-center gap-1 text-yellow-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} className="fill-yellow-400" />
-                ))}
+            {/* Testimonial 3 */}
+            <div className="bg-[#121c33] p-7 rounded-xl border-3 border-black shadow-[5px_5px_0px_#10B981] space-y-4 -rotate-0.5 hover:rotate-0 transition-transform flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1 text-yellow-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={15} className="fill-yellow-400" />
+                    ))}
+                  </div>
+                  <span className="font-mono text-[9px] font-bold text-gray-400 bg-black px-2 py-0.5 rounded border border-white/10 uppercase">
+                    DEMO TESTIMONIAL
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-gray-200 font-medium leading-relaxed">
+                  &ldquo;We looked at plastic NFC cards, but team members kept losing them and NFC is useless over Zoom calls! SmartCard works everywhere — on phone screens, slide decks, and WhatsApp.&rdquo;
+                </p>
               </div>
-              <p className="text-xs sm:text-sm text-gray-200 font-medium leading-relaxed">
-                &quot;We evaluated physical NFC cards, but reps kept losing them and NFC doesn’t work on Zoom calls! 
-                SmartCard works anywhere — on phone screens, slides, and WhatsApp.&quot;
-              </p>
-              <div className="pt-2 border-t-2 border-gray-800 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full border-2 border-black bg-amber-500 flex items-center justify-center font-bold text-black">
+
+              <div className="pt-3 border-t-2 border-slate-800 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full border-2 border-black bg-amber-500 flex items-center justify-center font-bold text-black text-sm">
                   KP
                 </div>
                 <div>
                   <h4 className="text-xs font-black text-white">Kiran Patel</h4>
-                  <p className="text-[11px] text-gray-400 font-mono">Head of Ops @ Veloce Tech</p>
+                  <p className="text-[11px] text-gray-400 font-mono">Head of Product @ Studio Veloce</p>
                 </div>
               </div>
             </div>
@@ -1858,162 +2152,130 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 9. PRICING SECTION */}
-      <section id="pricing" className="py-20 border-b-2 border-black bg-[#0d1424]">
+      {/* 18. PRICING (SECTION 18: INR CURRENCY ₹) */}
+      <section id="pricing" className="py-24 border-b-2 border-black bg-[#090D16]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
             <span className="font-mono text-xs uppercase font-extrabold text-cyan-400 px-3 py-1 bg-black border-2 border-black rounded shadow-[2px_2px_0px_#000] inline-block">
-              Clear Pricing
+              TRANSPARENT PRICING
             </span>
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
               Start Free. Upgrade As You Scale.
             </h2>
             <p className="text-gray-300 text-sm sm:text-base font-medium">
-              Transparent plans with zero hardware fees, zero hidden contracts, and unlimited scans.
+              Zero hardware fees, zero hidden lock-in, and unlimited scans across all tiers.
             </p>
-
-            {/* Billing Toggle */}
-            <div className="pt-4 flex items-center justify-center gap-3">
-              <button
-                onClick={() => setBillingCycle('monthly')}
-                className={`px-4 py-1.5 rounded text-xs font-mono font-bold cursor-pointer transition-all ${
-                  billingCycle === 'monthly'
-                    ? 'bg-white text-black border-2 border-black shadow-[2px_2px_0px_#000]'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setBillingCycle('annual')}
-                className={`px-4 py-1.5 rounded text-xs font-mono font-bold cursor-pointer transition-all relative ${
-                  billingCycle === 'annual'
-                    ? 'bg-white text-black border-2 border-black shadow-[2px_2px_0px_#000]'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <span>Annual Billing</span>
-                <span className="ml-1.5 bg-yellow-400 text-black px-1.5 py-0.2 rounded text-[10px] font-black border border-black">
-                  -20%
-                </span>
-              </button>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
             
             {/* Free Tier */}
-            <div className="bg-[#121c33] p-7 rounded-xl border-2 border-black shadow-[5px_5px_0px_#000] flex flex-col justify-between space-y-6">
+            <div className="bg-[#121c33] p-7 rounded-2xl border-3 border-black shadow-[6px_6px_0px_#000] flex flex-col justify-between space-y-6">
               <div className="space-y-4">
-                <span className="font-mono text-xs font-black uppercase text-gray-400">Starter</span>
-                <h3 className="text-3xl font-black text-white">$0 <span className="text-sm font-normal text-gray-400">/ forever</span></h3>
+                <span className="font-mono text-xs font-black uppercase text-gray-400">Free Starter</span>
+                <h3 className="text-4xl font-black text-white">
+                  ₹0 <span className="text-sm font-normal text-gray-400">/ forever</span>
+                </h3>
                 <p className="text-xs text-gray-300 font-medium">
-                  Ideal for individuals and students starting out with a clean digital card.
+                  Ideal for individuals and students getting started with a clean digital card.
                 </p>
 
-                <ul className="space-y-3 text-xs text-gray-200 font-medium pt-2 border-t-2 border-slate-800">
+                <ul className="space-y-3 text-xs text-gray-200 font-medium pt-3 border-t-2 border-slate-800">
                   <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> 1 Professional Digital Card
+                    <Check size={16} className="text-cyan-400 stroke-[3]" /> 1 SmartCard
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> Unlimited Camera QR Scans
+                    <Check size={16} className="text-cyan-400 stroke-[3]" /> Basic customization
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> Direct vCard Download
+                    <Check size={16} className="text-cyan-400 stroke-[3]" /> Public profile
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> Basic Profile Analytics
+                    <Check size={16} className="text-cyan-400 stroke-[3]" /> QR sharing
                   </li>
                 </ul>
               </div>
 
-              <Link href="/signup">
-                <Button variant="secondary" className="w-full uppercase font-black text-xs">
-                  Get Started Free
-                </Button>
-              </Link>
+              <button
+                type="button"
+                onClick={() => openAuth('signup')}
+                className="w-full h-12 bg-white hover:bg-gray-100 text-black uppercase font-mono font-black text-xs rounded-xl border-2 border-black shadow-[3px_3px_0px_#000] cursor-pointer"
+              >
+                Create Free Card →
+              </button>
             </div>
 
-            {/* Pro Tier (Featured) */}
-            <div className="bg-[#152342] p-7 rounded-xl border-3 border-black shadow-[8px_8px_0px_#2563EB] flex flex-col justify-between space-y-6 relative -translate-y-2">
-              <div className="absolute -top-3.5 right-6 bg-yellow-400 text-black font-mono font-black text-xs uppercase px-3 py-0.5 rounded border-2 border-black shadow-[2px_2px_0px_#000] -rotate-1">
+            {/* Pro Tier (VISUALLY PROMINENT) */}
+            <div className="bg-[#18294e] p-8 rounded-2xl border-4 border-black shadow-[10px_10px_0px_#2563EB] flex flex-col justify-between space-y-6 relative -translate-y-3 ring-2 ring-yellow-400">
+              <div className="absolute -top-4 right-6 bg-yellow-400 text-black font-mono font-black text-xs uppercase px-3 py-1 rounded border-2 border-black shadow-[2px_2px_0px_#000] -rotate-1">
                 ★ MOST POPULAR
               </div>
 
               <div className="space-y-4">
-                <span className="font-mono text-xs font-black uppercase text-cyan-400">Pro Identity</span>
+                <span className="font-mono text-xs font-black uppercase text-yellow-400">Pro Identity</span>
                 <h3 className="text-4xl font-black text-white">
-                  {billingCycle === 'annual' ? '$7' : '$9'} 
-                  <span className="text-sm font-normal text-gray-400">/ month</span>
+                  ₹199 <span className="text-sm font-normal text-gray-300">/ month</span>
                 </h3>
                 <p className="text-xs text-gray-200 font-medium">
-                  For active founders, sales reps, consultants, and leaders who network regularly.
+                  For active founders, developers, creators, and sales professionals.
                 </p>
 
-                <ul className="space-y-3 text-xs text-gray-100 font-bold pt-2 border-t-2 border-slate-700">
+                <ul className="space-y-3 text-xs text-gray-100 font-bold pt-3 border-t-2 border-slate-700">
                   <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> Everything in Starter
+                    <Check size={16} className="text-yellow-400 stroke-[3]" /> Advanced customization
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> Unlimited Digital Cards
+                    <Check size={16} className="text-yellow-400 stroke-[3]" /> Analytics
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> Two-Way Lead Capture Inbox
+                    <Check size={16} className="text-yellow-400 stroke-[3]" /> Multiple cards
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> Portfolio &amp; Case Study Attachments
+                    <Check size={16} className="text-yellow-400 stroke-[3]" /> Custom themes
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> Cal.com Booking Link Integration
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> Advanced Analytics &amp; CSV Export
+                    <Check size={16} className="text-yellow-400 stroke-[3]" /> Advanced sharing
                   </li>
                 </ul>
               </div>
 
-              <Link href="/signup">
-                <Button variant="primary" className="w-full uppercase font-black text-xs h-12 shadow-[4px_4px_0px_#000]">
-                  Start 14-Day Free Pro Trial
-                </Button>
-              </Link>
+              <button
+                type="button"
+                onClick={() => openAuth('signup')}
+                className="w-full h-12 bg-yellow-400 hover:bg-yellow-300 text-black uppercase font-mono font-black text-xs rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] cursor-pointer"
+              >
+                Start Pro Trial →
+              </button>
             </div>
 
-            {/* Enterprise Tier */}
-            <div className="bg-[#121c33] p-7 rounded-xl border-2 border-black shadow-[5px_5px_0px_#000] flex flex-col justify-between space-y-6">
+            {/* Business Tier */}
+            <div className="bg-[#121c33] p-7 rounded-2xl border-3 border-black shadow-[6px_6px_0px_#000] flex flex-col justify-between space-y-6">
               <div className="space-y-4">
-                <span className="font-mono text-xs font-black uppercase text-gray-400">Team / Enterprise</span>
+                <span className="font-mono text-xs font-black uppercase text-gray-400">Business / Teams</span>
                 <h3 className="text-3xl font-black text-white">
-                  {billingCycle === 'annual' ? '$24' : '$29'} 
-                  <span className="text-sm font-normal text-gray-400">/ seat / mo</span>
+                  Contact us
                 </h3>
                 <p className="text-xs text-gray-300 font-medium">
-                  For companies that want unified branding and centralized lead management.
+                  For companies requiring organization-wide digital cards and unified branding.
                 </p>
 
-                <ul className="space-y-3 text-xs text-gray-200 font-medium pt-2 border-t-2 border-slate-800">
+                <ul className="space-y-3 text-xs text-gray-200 font-medium pt-3 border-t-2 border-slate-800">
                   <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> Everything in Pro
+                    <Check size={16} className="text-cyan-400 stroke-[3]" /> Team cards
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> Centralized Admin Console
+                    <Check size={16} className="text-cyan-400 stroke-[3]" /> Organization management
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> Company Brand Guidelines Lock
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> Employee Codes &amp; Directory Sync
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={15} className="text-cyan-400 stroke-[3]" /> CRM Webhooks &amp; Salesforce Export
+                    <Check size={16} className="text-cyan-400 stroke-[3]" /> Advanced analytics
                   </li>
                 </ul>
               </div>
 
-              <a href="mailto:sales@smartcard.id?subject=Enterprise%20Inquiry">
-                <Button variant="outline" className="w-full uppercase font-black text-xs bg-slate-900 border-2 border-black">
-                  Contact Enterprise Sales
+              <a href="mailto:sales@smartcard.app?subject=Business%20Inquiry">
+                <Button variant="outline" className="w-full uppercase font-black text-xs bg-slate-900 border-2 border-black text-white">
+                  Contact Us →
                 </Button>
               </a>
             </div>
@@ -2023,8 +2285,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 10. FAQ ACCORDION */}
-      <section className="py-20 border-b-2 border-black bg-[#090D16]">
+      {/* FAQ SECTION */}
+      <section className="py-20 border-b-2 border-black bg-[#0d1424]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center mb-14 space-y-3">
@@ -2048,22 +2310,18 @@ export default function LandingPage() {
               },
               {
                 q: "How does the two-way lead capture feature work?",
-                a: "When someone views your SmartCard, they see a prominent 'Exchange Contact' button. They can submit their name, email, phone number, and a note which directly appears in your SmartCard inbox with an intent score."
+                a: "When someone views your SmartCard, they see a prominent 'Exchange Contact' button. They can submit their name, email, phone number, and a note which directly appears in your SmartCard inbox."
               },
               {
-                q: "Can I update my job title or phone number after sharing my card?",
+                q: "Can I update my details after sharing my card?",
                 a: "Yes! Any update you make in your SmartCard dashboard is instantly live. If someone scans your QR code or clicks your link tomorrow, they will always see your most up-to-date information."
-              },
-              {
-                q: "Can I use SmartCard for my entire sales team or company?",
-                a: "Yes. SmartCard Teams lets you provision employee codes (e.g. SMART-001, APEX-772), enforce brand guidelines, and export all captured relationship leads directly to CSV or your CRM."
               }
             ].map((faq, index) => {
               const isOpen = openFaq === index;
               return (
                 <div 
                   key={index}
-                  className="bg-[#0e1628] rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] overflow-hidden"
+                  className="bg-[#121c33] rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] overflow-hidden"
                 >
                   <button
                     onClick={() => setOpenFaq(isOpen ? null : index)}
@@ -2085,24 +2343,24 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 8. BOLD FINAL CTA SECTION */}
-      <section className="py-20 bg-[#0d1424] border-b-2 border-black">
+      {/* 19. FINAL CTA (SECTION 19) */}
+      <section className="py-24 bg-[#090D16] border-b-2 border-black">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[#2563EB] rounded-2xl border-3 border-black p-8 sm:p-14 shadow-[10px_10px_0px_#000000] text-center space-y-6 relative overflow-hidden">
+          <div className="bg-[#2563EB] rounded-2xl border-4 border-black p-8 sm:p-14 shadow-[12px_12px_0px_#000000] text-center space-y-6 relative overflow-hidden">
             
             <div className="inline-block bg-black text-yellow-400 font-mono font-black text-xs uppercase px-3.5 py-1 rounded border-2 border-black shadow-[2px_2px_0px_#000] rotate-1">
-              ⚡ NO NFC HARDWARE • 100% FREE TO START
+              ⚡ ZERO NFC HARDWARE • 100% DIGITAL
             </div>
 
             <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.08] max-w-3xl mx-auto">
-              Ready to upgrade your professional identity?
+              Stop handing out boring business cards.
             </h2>
 
-            <p className="text-blue-100 text-base sm:text-lg font-medium max-w-xl mx-auto">
-              &ldquo;Create your SmartCard and start connecting smarter.&rdquo;
+            <p className="text-blue-100 text-lg sm:text-xl font-medium max-w-xl mx-auto">
+              Create your digital identity today.
             </p>
 
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-4">
               <button
                 type="button"
                 onClick={() => openAuth('signup')}
@@ -2117,12 +2375,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 9. FOOTER */}
+      {/* 20. FOOTER (SECTION 20: WITH THEME TOGGLE) */}
       <footer className="py-14 bg-[#090D16] text-gray-400 text-xs border-t-2 border-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 border-b-2 border-black pb-10">
             
-            {/* Logo and Tagline (5 cols) */}
+            {/* Logo and Tagline */}
             <div className="md:col-span-5 space-y-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-lg bg-[#2563EB] border-2 border-black flex items-center justify-center font-black text-white shadow-[2px_2px_0px_#000]">
@@ -2130,15 +2388,18 @@ export default function LandingPage() {
                 </div>
                 <span className="font-black text-2xl text-white tracking-tight">SmartCard</span>
               </div>
-              <p className="text-sm font-bold text-gray-300">
-                Your identity. One smart card.
+              <p className="text-sm font-bold text-gray-200">
+                Your professional identity, in one link.
               </p>
               <p className="text-xs text-gray-400 max-w-sm leading-relaxed">
-                The modern digital business card platform. Zero NFC plastic, 100% web-native, instant camera QR scans.
+                Create, customize, and share your digital business card. Zero NFC hardware, camera-scannable QR, real-time analytics.
               </p>
+              <div className="pt-2">
+                <ThemeToggle />
+              </div>
             </div>
 
-            {/* Links: Product, Features, Pricing, About, Contact, Privacy, Terms (7 cols) */}
+            {/* Links: Product, Features, Pricing, Demo, About, Contact, Privacy, Terms */}
             <div className="md:col-span-7 flex flex-wrap gap-8 sm:gap-14 md:justify-end">
               <div className="space-y-2">
                 <span className="font-mono text-xs font-black uppercase text-white tracking-wider">Product</span>
@@ -2146,6 +2407,7 @@ export default function LandingPage() {
                   <li><a href="#home" className="hover:text-cyan-400 transition-colors">Product</a></li>
                   <li><a href="#features" className="hover:text-cyan-400 transition-colors">Features</a></li>
                   <li><a href="#pricing" className="hover:text-cyan-400 transition-colors">Pricing</a></li>
+                  <li><Link href="/smriti" className="hover:text-cyan-400 transition-colors text-yellow-400">Demo Card ↗</Link></li>
                 </ul>
               </div>
 
@@ -2153,7 +2415,7 @@ export default function LandingPage() {
                 <span className="font-mono text-xs font-black uppercase text-white tracking-wider">Company</span>
                 <ul className="space-y-1.5 text-xs font-mono font-bold">
                   <li><a href="#how-it-works" className="hover:text-cyan-400 transition-colors">About</a></li>
-                  <li><a href="mailto:hello@smartcard.id" className="hover:text-cyan-400 transition-colors">Contact</a></li>
+                  <li><a href="mailto:hello@smartcard.app" className="hover:text-cyan-400 transition-colors">Contact</a></li>
                 </ul>
               </div>
 

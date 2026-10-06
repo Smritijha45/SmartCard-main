@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/layout/Sidebar';
-import { Menu, CreditCard, ShieldAlert } from 'lucide-react';
+import { Menu, CreditCard, ShieldAlert, LayoutDashboard, Users, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
@@ -81,19 +81,19 @@ export default function DashboardLayout({
       {/* Mobile Bottom Navigation Bar (Section 22) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0c1322] border-t-2 border-black px-2 py-2 flex items-center justify-around shadow-[0_-2px_0_0_#000]">
         <Link href="/dashboard" className="flex flex-col items-center gap-1 font-mono text-[9px] font-bold uppercase text-gray-300 hover:text-cyan-400">
-          <CreditCard size={18} />
+          <LayoutDashboard size={18} />
           <span>Home</span>
         </Link>
         <Link href="/cards" className="flex flex-col items-center gap-1 font-mono text-[9px] font-bold uppercase text-gray-300 hover:text-cyan-400">
           <CreditCard size={18} />
           <span>My Card</span>
         </Link>
-        <Link href="/leads" className="flex flex-col items-center gap-1 font-mono text-[9px] font-bold uppercase text-gray-300 hover:text-cyan-400">
-          <Menu size={18} />
+        <Link href="/contacts" className="flex flex-col items-center gap-1 font-mono text-[9px] font-bold uppercase text-gray-300 hover:text-cyan-400">
+          <Users size={18} />
           <span>Contacts</span>
         </Link>
         <Link href="/settings" className="flex flex-col items-center gap-1 font-mono text-[9px] font-bold uppercase text-gray-300 hover:text-cyan-400">
-          <CreditCard size={18} />
+          <Settings size={18} />
           <span>Settings</span>
         </Link>
       </nav>

@@ -17,8 +17,8 @@ interface SidebarProps {
 export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [userName, setUserName] = useState('Alex Morgan');
-  const [userRole, setUserRole] = useState('Head of Product');
+  const [userName, setUserName] = useState('Smriti Jha');
+  const [userRole, setUserRole] = useState('Full Stack Developer');
   const [userAvatar, setUserAvatar] = useState('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80');
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
     { name: 'My SmartCard', href: '/cards', icon: CreditCard },
     { name: 'Analytics', href: '/analytics', icon: TrendingUp },
-    { name: 'Contacts', href: '/leads', icon: Users, badge: '86' },
+    { name: 'Contacts', href: '/contacts', icon: Users, badge: '86' },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AuthLayout } from "@/components/layout/AuthLayout";
@@ -14,6 +14,15 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isAuth = localStorage.getItem("smartcard_authenticated");
+      if (isAuth === "true") {
+        router.replace("/dashboard");
+      }
+    }
+  }, [router]);
 
   const performLogin = async (loginEmail: string, loginPass: string) => {
     setLoading(true);
@@ -29,7 +38,7 @@ export default function LoginPage() {
 
       localStorage.setItem('smartcard_authenticated', 'true');
       localStorage.setItem('token', data.data?.accessToken || ('dummy_token_' + Date.now()));
-      localStorage.setItem('smartcard_user', JSON.stringify(data.data?.user || { name: loginEmail.split('@')[0] || 'Alex Morgan', email: loginEmail }));
+      localStorage.setItem('smartcard_user', JSON.stringify(data.data?.user || { name: loginEmail.split('@')[0] || 'Smriti Jha', email: loginEmail }));
 
       router.push('/dashboard');
       router.refresh();
@@ -37,7 +46,7 @@ export default function LoginPage() {
       // Local fallback for offline/dummy auth
       localStorage.setItem('smartcard_authenticated', 'true');
       localStorage.setItem('token', 'dummy_token_' + Date.now());
-      localStorage.setItem('smartcard_user', JSON.stringify({ name: loginEmail.split('@')[0] || 'Alex Morgan', email: loginEmail }));
+      localStorage.setItem('smartcard_user', JSON.stringify({ name: loginEmail.split('@')[0] || 'Smriti Jha', email: loginEmail }));
       router.push('/dashboard');
     } finally {
       setLoading(false);
@@ -50,9 +59,9 @@ export default function LoginPage() {
   };
 
   const handleDemoLogin = async () => {
-    setEmail("alex.morgan@smartcard.id");
+    setEmail("smriti.jha@smartcard.app");
     setPassword("demopassword123");
-    await performLogin("alex.morgan@smartcard.id", "demopassword123");
+    await performLogin("smriti.jha@smartcard.app", "demopassword123");
   };
 
   return (
@@ -88,7 +97,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full h-10 bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold text-xs tracking-wide uppercase rounded border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer flex items-center justify-center gap-2"
           >
-            <span>Enter Dashboard as Alex Morgan</span>
+            <span>Enter Dashboard as Smriti Jha</span>
             <ArrowRight size={14} />
           </button>
         </div>

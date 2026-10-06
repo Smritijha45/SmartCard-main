@@ -2,14 +2,35 @@
 @source "../../components";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #090d16;
+  --background: #FAF7F2;
+  --foreground: #121316;
+  --card-bg: #FFFFFF;
+  --card-elevated: #F4EFEA;
   --color-primary: #2563EB;
   --color-primary-dark: #1D4ED8;
   --color-primary-light: #3B82F6;
   --color-accent: #06B6D4;
   --color-accent-dark: #0891B2;
   --color-accent-light: #22D3EE;
+  --color-amber: #F59E0B;
+  --color-emerald: #10B981;
+  --border-color: #000000;
+}
+
+html.dark {
+  --background: #121316;
+  --foreground: #F8FAFC;
+  --card-bg: #181B22;
+  --card-elevated: #1F232D;
+  --color-primary: #2563EB;
+  --color-primary-dark: #1D4ED8;
+  --color-primary-light: #3B82F6;
+  --color-accent: #06B6D4;
+  --color-accent-dark: #0891B2;
+  --color-accent-light: #22D3EE;
+  --color-amber: #F59E0B;
+  --color-emerald: #10B981;
+  --border-color: #000000;
 }
 
 @theme {
@@ -174,19 +195,19 @@ html.light {
 }
 
 html.light body {
-  background-color: #F8FAFC !important;
-  color: #090D16 !important;
+  background-color: #FAF7F2 !important;
+  color: #121316 !important;
 }
 
 /* Light dot grid */
 html.light .bg-neo-dots {
-  background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px) !important;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.10) 1.5px, transparent 1.5px) !important;
 }
 
 /* Background conversions in Light mode */
 html.light .bg-\[\#090D16\],
 html.light .bg-\[\#090d16\] {
-  background-color: #F8FAFC !important;
+  background-color: #FAF7F2 !important;
 }
 
 html.light .bg-\[\#0c1322\],
@@ -204,7 +225,7 @@ html.light .bg-\[\#14203a\],
 html.light .bg-\[\#15233f\],
 html.light .bg-\[\#17223b\],
 html.light .bg-\[\#10192e\] {
-  background-color: #F1F5F9 !important;
+  background-color: #F4EFEA !important;
 }
 
 /* Typography conversions in Light mode */

@@ -74,9 +74,9 @@ export function AuthModal({ isOpen, onClose, initialTab = 'signup' }: AuthModalP
       localStorage.setItem(
         'smartcard_user',
         JSON.stringify({
-          name: userData.name || 'Alex Morgan',
-          email: userData.email || 'alex@smartcard.id',
-          role: 'Head of Product',
+          name: userData.name || 'Smriti Jha',
+          email: userData.email || 'smriti@smartcard.app',
+          role: 'Full Stack Developer',
           company: 'SmartCard Technologies',
           avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
         })

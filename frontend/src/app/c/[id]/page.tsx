@@ -9,6 +9,7 @@ import {
   ShieldCheck, Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export default function PublicCardView({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -30,6 +31,23 @@ export default function PublicCardView({ params }: { params: Promise<{ id: strin
   };
 
   useEffect(() => {
+    if (resolvedParams.id === 'smriti' || resolvedParams.id === 'demo') {
+      setCard({
+        name: 'Smriti Jha',
+        role: 'Full Stack Developer',
+        company: 'SmartCard Platform',
+        bio: 'Building modern web experiences.',
+        profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80',
+        email: 'smriti@smartcard.app',
+        phone: '+1 (415) 555-0192',
+        website: 'https://smritijha.dev',
+        themeColor: '#2563EB',
+        employeeCode: 'SMART-002',
+      });
+      setLoading(false);
+      return;
+    }
+
     fetch(`/api/cards/${resolvedParams.id}`)
       .then(res => res.json())
       .then(data => {
@@ -191,7 +209,7 @@ export default function PublicCardView({ params }: { params: Promise<{ id: strin
     <div className="min-h-screen bg-[#090D16] text-gray-100 font-sans flex flex-col justify-between items-center p-4 sm:p-6 bg-neo-dots relative selection:bg-[#2563EB] selection:text-white">
       
       {/* Top Banner Bar */}
-      <div className="w-full max-w-md flex items-center justify-between mb-4 z-10">
+      <div className="w-full max-w-md flex items-center justify-between mb-4 z-10 gap-2">
         <Link href="/" className="flex items-center gap-2 group">
           <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-cyan-400 bg-black border-2 border-black px-2.5 py-1 rounded shadow-[2px_2px_0px_#000] flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
@@ -199,9 +217,12 @@ export default function PublicCardView({ params }: { params: Promise<{ id: strin
           </span>
         </Link>
 
-        <span className="font-mono text-[10px] uppercase font-bold bg-[#121c33] border-2 border-black px-2.5 py-1 rounded text-gray-300 shadow-[2px_2px_0px_#000]">
-          Zero NFC • 100% Web
-        </span>
+        <div className="flex items-center gap-2">
+          <ThemeToggle compact showLabel={false} />
+          <span className="font-mono text-[10px] uppercase font-bold bg-[#121c33] border-2 border-black px-2.5 py-1 rounded text-gray-300 shadow-[2px_2px_0px_#000]">
+            Zero NFC
+          </span>
+        </div>
       </div>
 
       {/* Main Neo-Brutalist Digital Business Card */}

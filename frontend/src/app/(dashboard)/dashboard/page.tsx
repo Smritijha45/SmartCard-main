@@ -47,18 +47,19 @@ const ANALYTICS_DATA_30D = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [userName, setUserName] = useState('Alex Morgan');
-  const [userRole, setUserRole] = useState('Head of Product');
+  const [userName, setUserName] = useState('Smriti Jha');
+  const [userRole, setUserRole] = useState('Full Stack Developer');
   const [userCompany, setUserCompany] = useState('SmartCard Technologies');
-  const [userBio, setUserBio] = useState('Scaling digital identity platforms. 100% digital, zero NFC hardware needed.');
+  const [userBio, setUserBio] = useState('Building modern web experiences. 100% digital, zero NFC hardware needed.');
   const [userAvatar, setUserAvatar] = useState('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80');
-  const [userEmail, setUserEmail] = useState('alex@smartcard.id');
-  const [userPhone, setUserPhone] = useState('+1 (415) 555-0192');
-  const [userWebsite, setUserWebsite] = useState('smartcard.id/alex');
+  const [userEmail, setUserEmail] = useState('smriti@smartcard.app');
+  const [userPhone, setUserPhone] = useState('+91 98765 43210');
+  const [userWebsite, setUserWebsite] = useState('smartcard.app/smriti');
   const [cardThemeColor, setCardThemeColor] = useState('#2563EB');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [chartTimeframe, setChartTimeframe] = useState<'7D' | '30D'>('7D');
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -102,7 +103,7 @@ export default function DashboardPage() {
   };
 
   const handleCopyLink = () => {
-    const url = 'https://smartcard.id/c/card_alex';
+    const url = 'https://smartcard.app/smriti';
     if (typeof navigator !== 'undefined') {
       navigator.clipboard?.writeText(url);
     }
@@ -128,7 +129,7 @@ export default function DashboardPage() {
               Good morning, {userName} 👋
             </h1>
             <p className="text-gray-300 text-sm font-medium mt-1">
-              &ldquo;Here&apos;s what&apos;s happening with your SmartCard.&rdquo;
+              &ldquo;Here&apos;s how your SmartCard is performing.&rdquo;
             </p>
           </div>
 
@@ -142,7 +143,7 @@ export default function DashboardPage() {
               <span>Share Card</span>
             </button>
             <Link
-              href="/c/card_alex"
+              href="/smriti"
               target="_blank"
               className="h-11 px-4 bg-[#2563EB] hover:bg-blue-600 text-white font-mono font-black text-xs uppercase rounded-xl border-2 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5"
             >
@@ -152,80 +153,99 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* 4 Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* 5 Stats Cards (Section 24: Views, Shares, Clicks, Contacts, Completion) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           
           {/* Stat 1: Profile Views */}
-          <div className="p-6 bg-[#0c1322] rounded-xl border-3 border-black shadow-[5px_5px_0px_#2563EB] -rotate-1 hover:rotate-0 transition-transform">
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-mono text-xs font-black uppercase text-gray-400 tracking-wider">
+          <div className="p-5 bg-[#0c1322] rounded-xl border-3 border-black shadow-[4px_4px_0px_#2563EB] -rotate-1 hover:rotate-0 transition-transform">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-mono text-[11px] font-black uppercase text-gray-400 tracking-wider">
                 Profile Views
               </span>
-              <div className="w-9 h-9 rounded-lg bg-[#2563EB] border-2 border-black flex items-center justify-center text-white shadow-[2px_2px_0px_#000]">
-                <Eye size={18} />
+              <div className="w-8 h-8 rounded-lg bg-[#2563EB] border-2 border-black flex items-center justify-center text-white shadow-[1px_1px_0px_#000]">
+                <Eye size={15} />
               </div>
             </div>
-            <div className="text-4xl font-black text-white tracking-tight">
+            <div className="text-3xl font-black text-white tracking-tight">
               1,284
             </div>
-            <div className="flex items-center gap-1.5 mt-2 font-mono text-[11px] font-bold text-emerald-400">
+            <div className="flex items-center gap-1 mt-1.5 font-mono text-[10px] font-bold text-emerald-400">
               <span>↑ +18.4%</span>
               <span className="text-gray-400 font-normal">vs last week</span>
             </div>
           </div>
 
           {/* Stat 2: Card Shares */}
-          <div className="p-6 bg-[#0c1322] rounded-xl border-3 border-black shadow-[5px_5px_0px_#06B6D4] rotate-1 hover:rotate-0 transition-transform">
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-mono text-xs font-black uppercase text-gray-400 tracking-wider">
+          <div className="p-5 bg-[#0c1322] rounded-xl border-3 border-black shadow-[4px_4px_0px_#06B6D4] rotate-1 hover:rotate-0 transition-transform">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-mono text-[11px] font-black uppercase text-gray-400 tracking-wider">
                 Card Shares
               </span>
-              <div className="w-9 h-9 rounded-lg bg-[#06B6D4] border-2 border-black flex items-center justify-center text-black shadow-[2px_2px_0px_#000]">
-                <Share2 size={18} />
+              <div className="w-8 h-8 rounded-lg bg-[#06B6D4] border-2 border-black flex items-center justify-center text-black shadow-[1px_1px_0px_#000]">
+                <Share2 size={15} />
               </div>
             </div>
-            <div className="text-4xl font-black text-white tracking-tight">
+            <div className="text-3xl font-black text-white tracking-tight">
               342
             </div>
-            <div className="flex items-center gap-1.5 mt-2 font-mono text-[11px] font-bold text-cyan-400">
+            <div className="flex items-center gap-1 mt-1.5 font-mono text-[10px] font-bold text-cyan-400">
               <span>↑ +12.6%</span>
               <span className="text-gray-400 font-normal">QR &amp; links</span>
             </div>
           </div>
 
-          {/* Stat 3: Contacts */}
-          <div className="p-6 bg-[#0c1322] rounded-xl border-3 border-black shadow-[5px_5px_0px_#10B981] -rotate-1 hover:rotate-0 transition-transform">
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-mono text-xs font-black uppercase text-gray-400 tracking-wider">
-                Contacts
+          {/* Stat 3: Link Clicks */}
+          <div className="p-5 bg-[#0c1322] rounded-xl border-3 border-black shadow-[4px_4px_0px_#F59E0B] -rotate-0.5 hover:rotate-0 transition-transform">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-mono text-[11px] font-black uppercase text-gray-400 tracking-wider">
+                Link Clicks
               </span>
-              <div className="w-9 h-9 rounded-lg bg-[#10B981] border-2 border-black flex items-center justify-center text-black shadow-[2px_2px_0px_#000]">
-                <Users size={18} />
+              <div className="w-8 h-8 rounded-lg bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black shadow-[1px_1px_0px_#000]">
+                <Globe size={15} />
               </div>
             </div>
-            <div className="text-4xl font-black text-white tracking-tight">
+            <div className="text-3xl font-black text-white tracking-tight">
+              438
+            </div>
+            <div className="flex items-center gap-1 mt-1.5 font-mono text-[10px] font-bold text-yellow-400">
+              <span>↑ +29.1%</span>
+              <span className="text-gray-400 font-normal">vCard &amp; links</span>
+            </div>
+          </div>
+
+          {/* Stat 4: Contacts */}
+          <div className="p-5 bg-[#0c1322] rounded-xl border-3 border-black shadow-[4px_4px_0px_#10B981] rotate-0.5 hover:rotate-0 transition-transform">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-mono text-[11px] font-black uppercase text-gray-400 tracking-wider">
+                Contacts
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-[#10B981] border-2 border-black flex items-center justify-center text-black shadow-[1px_1px_0px_#000]">
+                <Users size={15} />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-white tracking-tight">
               86
             </div>
-            <div className="flex items-center gap-1.5 mt-2 font-mono text-[11px] font-bold text-emerald-400">
+            <div className="flex items-center gap-1 mt-1.5 font-mono text-[10px] font-bold text-emerald-400">
               <span>↑ +24 new</span>
               <span className="text-gray-400 font-normal">leads collected</span>
             </div>
           </div>
 
-          {/* Stat 4: Profile Completion */}
-          <div className="p-6 bg-[#0c1322] rounded-xl border-3 border-black shadow-[5px_5px_0px_#F59E0B] rotate-1 hover:rotate-0 transition-transform">
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-mono text-xs font-black uppercase text-gray-400 tracking-wider">
-                Profile Completion
+          {/* Stat 5: Profile Completion */}
+          <div className="p-5 bg-[#0c1322] rounded-xl border-3 border-black shadow-[4px_4px_0px_#8B5CF6] -rotate-1 hover:rotate-0 transition-transform col-span-2 sm:col-span-1">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-mono text-[11px] font-black uppercase text-gray-400 tracking-wider">
+                Completion
               </span>
-              <div className="w-9 h-9 rounded-lg bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black shadow-[2px_2px_0px_#000]">
-                <Sparkles size={18} />
+              <div className="w-8 h-8 rounded-lg bg-[#8B5CF6] border-2 border-black flex items-center justify-center text-white shadow-[1px_1px_0px_#000]">
+                <Sparkles size={15} />
               </div>
             </div>
-            <div className="text-4xl font-black text-white tracking-tight">
+            <div className="text-3xl font-black text-white tracking-tight">
               92%
             </div>
-            <div className="w-full h-2.5 bg-black rounded border border-black overflow-hidden mt-2 p-0.5">
+            <div className="w-full h-2 bg-black rounded border border-black overflow-hidden mt-2 p-0.5">
               <div className="h-full bg-yellow-400 rounded-sm w-[92%]"></div>
             </div>
           </div>
@@ -364,14 +384,14 @@ export default function DashboardPage() {
 
           </div>
 
-          {/* Buttons: Edit Card & Share Card */}
-          <div className="grid grid-cols-2 gap-4 pt-1">
+          {/* 4 Section 25 Buttons: Edit Card, Share, View Public Profile, QR Code */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
             <Link href="/cards">
               <Button 
                 variant="outline" 
-                className="w-full h-12 uppercase font-black text-xs tracking-wider border-2 border-black bg-slate-900 text-white hover:bg-slate-800 shadow-[3px_3px_0px_#000] flex items-center justify-center gap-2"
+                className="w-full h-11 uppercase font-black text-[11px] tracking-wider border-2 border-black bg-slate-900 text-white hover:bg-slate-800 shadow-[2px_2px_0px_#000] flex items-center justify-center gap-1.5"
               >
-                <Edit3 size={15} />
+                <Edit3 size={13} />
                 <span>Edit Card</span>
               </Button>
             </Link>
@@ -379,10 +399,29 @@ export default function DashboardPage() {
             <Button 
               onClick={handleCopyLink}
               variant="primary" 
-              className="w-full h-12 uppercase font-black text-xs tracking-wider bg-[#2563EB] hover:bg-blue-600 border-2 border-black shadow-[3px_3px_0px_#000] flex items-center justify-center gap-2"
+              className="w-full h-11 uppercase font-black text-[11px] tracking-wider bg-[#2563EB] hover:bg-blue-600 border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center gap-1.5"
             >
-              <Share2 size={15} />
-              <span>Share Card</span>
+              <Share2 size={13} />
+              <span>Share</span>
+            </Button>
+
+            <Link href="/smriti" target="_blank">
+              <Button 
+                variant="outline" 
+                className="w-full h-11 uppercase font-black text-[11px] tracking-wider border-2 border-black bg-[#121c33] text-cyan-300 hover:bg-[#1a284a] shadow-[2px_2px_0px_#000] flex items-center justify-center gap-1.5"
+              >
+                <ExternalLink size={13} />
+                <span>View Public</span>
+              </Button>
+            </Link>
+
+            <Button 
+              onClick={() => setQrModalOpen(true)}
+              variant="secondary" 
+              className="w-full h-11 uppercase font-black text-[11px] tracking-wider bg-yellow-400 hover:bg-yellow-300 text-black border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center gap-1.5"
+            >
+              <QrCode size={13} />
+              <span>QR Code</span>
             </Button>
           </div>
 
@@ -698,6 +737,55 @@ export default function DashboardPage() {
         </div>
 
       </div>
+
+      {/* QR Code Modal */}
+      {qrModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#0c1322] border-3 border-black rounded-2xl shadow-[8px_8px_0px_#000] p-6 max-w-sm w-full space-y-5 text-center relative">
+            <div className="flex items-center justify-between border-b-2 border-black pb-3">
+              <span className="font-mono text-xs font-black uppercase text-yellow-400">
+                Camera Scannable QR
+              </span>
+              <button 
+                onClick={() => setQrModalOpen(false)}
+                className="w-7 h-7 rounded border border-black bg-slate-800 text-gray-300 hover:text-white flex items-center justify-center font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="bg-white p-4 rounded-xl border-2 border-black inline-block shadow-[4px_4px_0px_#000]">
+              <QrCode size={180} className="text-black" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="text-lg font-black text-white">{userName}</h3>
+              <p className="text-xs text-cyan-400 font-mono font-bold">smartcard.app/smriti</p>
+              <p className="text-[11px] text-gray-400">Point any phone camera to view profile instantly</p>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="flex-1 py-2.5 bg-white text-black font-mono font-bold text-xs uppercase rounded-lg border-2 border-black shadow-[2px_2px_0px_#000]"
+              >
+                Copy Link
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  showToast('QR Code saved to camera roll!');
+                  setQrModalOpen(false);
+                }}
+                className="flex-1 py-2.5 bg-[#2563EB] text-white font-mono font-bold text-xs uppercase rounded-lg border-2 border-black shadow-[2px_2px_0px_#000]"
+              >
+                Save Image
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating Action Toast */}
       {toastMessage && (
