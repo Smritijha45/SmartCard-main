@@ -1,0 +1,275 @@
+@import "tailwindcss";
+@source "../../components";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #090d16;
+  --color-primary: #2563EB;
+  --color-primary-dark: #1D4ED8;
+  --color-primary-light: #3B82F6;
+  --color-accent: #06B6D4;
+  --color-accent-dark: #0891B2;
+  --color-accent-light: #22D3EE;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  --font-mono: var(--font-geist-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+  
+  --color-primary: #2563EB;
+  --color-primary-dark: #1D4ED8;
+  --color-primary-light: #3B82F6;
+  --color-accent: #06B6D4;
+  --color-accent-dark: #0891B2;
+  --color-accent-light: #22D3EE;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #090d16;
+  color: #f1f5f9;
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Neo-Brutalist Core Styles */
+.neo-border {
+  border: 2px solid #000000;
+}
+
+.neo-border-3 {
+  border: 3px solid #000000;
+}
+
+.neo-shadow {
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.neo-shadow-sm {
+  box-shadow: 2px 2px 0px #000000;
+}
+
+.neo-shadow-lg {
+  box-shadow: 6px 6px 0px #000000;
+}
+
+.neo-shadow-xl {
+  box-shadow: 8px 8px 0px #000000;
+}
+
+.neo-shadow-primary {
+  box-shadow: 4px 4px 0px #2563EB;
+}
+
+.neo-shadow-accent {
+  box-shadow: 4px 4px 0px #06B6D4;
+}
+
+.neo-shadow-white {
+  box-shadow: 4px 4px 0px #ffffff;
+}
+
+/* Neo Button Press Effect */
+.neo-btn {
+  border: 2px solid #000000;
+  box-shadow: 3px 3px 0px #000000;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  font-weight: 700;
+}
+
+.neo-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.neo-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px #000000;
+}
+
+.neo-btn-primary {
+  background-color: #2563EB;
+  color: #ffffff;
+  border: 2px solid #000000;
+  box-shadow: 3px 3px 0px #000000;
+}
+
+.neo-btn-primary:hover {
+  background-color: #1D4ED8;
+}
+
+/* Neo Tactile Button Press (Section 24) */
+.neo-tactile {
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neo-tactile:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #000000;
+}
+
+.neo-tactile:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0px 0px 0px #000000;
+}
+
+@keyframes neo-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-neo-float {
+  animation: neo-float 4s ease-in-out infinite;
+}
+
+
+/* Background Patterns */
+.bg-neo-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+.bg-neo-dots-dark {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.15) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+.bg-neo-grid {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090d16;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border: 2px solid #000000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
+}
+
+/* ========================================================
+   GLOBAL LIGHT THEME ENGINE (Section 28)
+   ======================================================== */
+html.light {
+  color-scheme: light;
+}
+
+html.light body {
+  background-color: #F8FAFC !important;
+  color: #090D16 !important;
+}
+
+/* Light dot grid */
+html.light .bg-neo-dots {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px) !important;
+}
+
+/* Background conversions in Light mode */
+html.light .bg-\[\#090D16\],
+html.light .bg-\[\#090d16\] {
+  background-color: #F8FAFC !important;
+}
+
+html.light .bg-\[\#0c1322\],
+html.light .bg-\[\#0e1628\],
+html.light .bg-\[\#0e1424\],
+html.light .bg-\[\#0d1424\],
+html.light .bg-\[\#10182c\] {
+  background-color: #FFFFFF !important;
+}
+
+html.light .bg-\[\#121c33\],
+html.light .bg-\[\#131d33\],
+html.light .bg-\[\#141e35\],
+html.light .bg-\[\#14203a\],
+html.light .bg-\[\#15233f\],
+html.light .bg-\[\#17223b\],
+html.light .bg-\[\#10192e\] {
+  background-color: #F1F5F9 !important;
+}
+
+/* Typography conversions in Light mode */
+html.light .text-white {
+  color: #090D16 !important;
+}
+
+html.light .text-gray-100,
+html.light .text-gray-200 {
+  color: #1E293B !important;
+}
+
+html.light .text-gray-300 {
+  color: #334155 !important;
+}
+
+html.light .text-gray-400 {
+  color: #64748B !important;
+}
+
+/* Keep white text inside primary brand elements in light mode */
+html.light .bg-\[\#2563EB\] .text-white,
+html.light .bg-\[\#2563EB\].text-white,
+html.light .bg-blue-600 .text-white,
+html.light .bg-blue-600.text-white,
+html.light .bg-black .text-white,
+html.light .bg-black.text-white,
+html.light .bg-red-600 .text-white,
+html.light .bg-red-600.text-white,
+html.light button.bg-\[\#2563EB\],
+html.light button.bg-blue-600,
+html.light button.bg-black,
+html.light a.bg-\[\#2563EB\],
+html.light a.bg-blue-600,
+html.light a.bg-black {
+  color: #FFFFFF !important;
+}
+
+/* Badges with dark text */
+html.light .bg-cyan-400,
+html.light .bg-amber-400,
+html.light .bg-yellow-400,
+html.light .bg-emerald-400 {
+  color: #000000 !important;
+}
+
+/* Inputs in light mode */
+html.light input,
+html.light textarea,
+html.light select {
+  background-color: #FFFFFF !important;
+  color: #090D16 !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Scrollbar in light mode */
+html.light ::-webkit-scrollbar-track {
+  background: #F8FAFC !important;
+}
+html.light ::-webkit-scrollbar-thumb {
+  background: #CBD5E1 !important;
+  border: 2px solid #000000 !important;
+}
+
