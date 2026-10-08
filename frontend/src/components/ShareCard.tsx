@@ -249,4 +249,5 @@ export function ShareCard({
   );
 }
 
+export const ShareSmartCard = ShareCard;
 export default ShareCard;

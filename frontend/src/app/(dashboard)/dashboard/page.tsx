@@ -385,22 +385,38 @@ export default function DashboardPage() {
                 </a>
               </div>
 
-              {/* QR Code section */}
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
-                <div className="space-y-0.5">
-                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
-                    Scannable QR Code
-                  </span>
-                  <p className="text-xs font-medium text-slate-800 dark:text-slate-200">
-                    Point camera to open profile
-                  </p>
-                  <p className="text-[11px] text-slate-400">
-                    Direct vCard address book save
-                  </p>
+              {/* QR Code section: Your SmartCard QR */}
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+                      Your SmartCard
+                    </span>
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                      Scan to connect
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setQrModalOpen(true)}
+                    className="text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    Expand
+                  </button>
                 </div>
 
-                <div className="bg-white p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs shrink-0">
-                  <QrCode size={44} className="text-slate-900" />
+                <div className="bg-slate-50 dark:bg-slate-900/40 p-3 rounded-2xl border border-slate-100 dark:border-slate-800/80 flex flex-col items-center gap-2.5">
+                  <QRCodeComponent
+                    value={typeof window !== 'undefined' ? `${window.location.origin}/${userUsername}` : `https://smartcard.app/${userUsername}`}
+                    username={userUsername}
+                    name={userName}
+                    size={150}
+                    accentColor={cardThemeColor}
+                    compact={true}
+                    showDownload={true}
+                    showCopy={true}
+                    showShare={true}
+                  />
                 </div>
               </div>
 
@@ -422,7 +438,7 @@ export default function DashboardPage() {
             </Link>
 
             <Button 
-              onClick={handleCopyLink}
+              onClick={() => setShareModalOpen(true)}
               variant="secondary" 
               size="sm"
               className="w-full text-xs"

@@ -250,4 +250,5 @@ export function QRCodeComponent({
   );
 }
 
+export const QRCode = QRCodeComponent;
 export default QRCodeComponent;
