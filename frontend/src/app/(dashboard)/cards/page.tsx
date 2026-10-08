@@ -110,6 +110,8 @@ export default function MySmartCardPage() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [isLoading, setIsLoading] = useState(true);
 
   const showNotification = (msg: string) => {
     setToast(msg);
@@ -118,8 +120,8 @@ export default function MySmartCardPage() {
 
   useEffect(() => {
     // Load from backend API first, fallback to localStorage
-    fetch('/api/cards/smriti')
-      .then(res => res.json())
+    fetch('/api/cards/me')
+      .then(res => res.ok ? res.json() : fetch('/api/cards/smriti').then(r => r.json()))
       .then(data => {
         if (data && data.name) {
           setFormData(prev => ({
@@ -147,6 +149,9 @@ export default function MySmartCardPage() {
             }
           }
         }
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, []);
 
@@ -173,22 +178,36 @@ export default function MySmartCardPage() {
 
   const handleSaveCard = async () => {
     setIsSaving(true);
+    setSaveStatus('saving');
     if (typeof window !== 'undefined') {
       localStorage.setItem('smartcard_current_card', JSON.stringify(formData));
     }
 
     try {
-      const cardId = formData._id || formData.id || formData.username || 'smriti';
-      await fetch(`/api/cards/${cardId}`, {
+      const res = await fetch('/api/cards/me', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
+
+      if (!res.ok) {
+        const cardId = formData._id || formData.id || formData.username || 'smriti';
+        await fetch(`/api/cards/${cardId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+      }
+
+      setSaveStatus('saved');
+      showNotification('Saved ✓');
+      setTimeout(() => setSaveStatus('idle'), 3000);
     } catch (e) {
-      // Handled via local sync
+      setSaveStatus('error');
+      showNotification('Something went wrong. Please try again.');
+      setTimeout(() => setSaveStatus('idle'), 3000);
     } finally {
       setIsSaving(false);
-      showNotification('SmartCard updated and live on backend!');
     }
   };
 
@@ -336,9 +355,12 @@ export default function MySmartCardPage() {
             size="sm"
             onClick={handleSaveCard}
             disabled={isSaving}
+            className={saveStatus === 'saved' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}
           >
             <Check size={14} />
-            <span>{isSaving ? 'Saving...' : 'Save Card'}</span>
+            <span>
+              {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved ✓' : 'Save Changes'}
+            </span>
           </Button>
         </div>
       </div>

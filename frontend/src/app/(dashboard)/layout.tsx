@@ -18,14 +18,33 @@ export default function DashboardLayout({
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isAuth = localStorage.getItem('smartcard_authenticated');
-      if (isAuth !== 'true') {
+    let isMounted = true;
+    async function verifySession() {
+      try {
+        const isLocalAuth = typeof window !== 'undefined' && localStorage.getItem('smartcard_authenticated') === 'true';
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const user = await res.json();
+          if (user && user.email) {
+            if (isMounted) setIsAuthorized(true);
+            return;
+          }
+        }
+        if (isLocalAuth) {
+          if (isMounted) setIsAuthorized(true);
+          return;
+        }
         router.replace('/login');
-      } else {
-        setIsAuthorized(true);
+      } catch {
+        if (typeof window !== 'undefined' && localStorage.getItem('smartcard_authenticated') === 'true') {
+          if (isMounted) setIsAuthorized(true);
+        } else {
+          router.replace('/login');
+        }
       }
     }
+    verifySession();
+    return () => { isMounted = false; };
   }, [router]);
 
   if (isAuthorized === null) {

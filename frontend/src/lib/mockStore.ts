@@ -526,6 +526,11 @@ export const mockStore = {
     return newLead;
   },
 
+  deleteLead: (id: string) => {
+    mockLeads = mockLeads.filter(l => l.id !== id && (l as any)._id !== id);
+    return true;
+  },
+
   getAnalytics: () => {
     const totalViews = mockCards.reduce((acc, c) => acc + (c.totalViews || 0), 0);
     const totalShares = mockCards.reduce((acc, c) => acc + (c.totalShares || 0), 0);
