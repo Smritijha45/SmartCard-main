@@ -53,6 +53,49 @@ export class CardController {
     }
   };
 
+  getMyCard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.id;
+      const card = await this.cardService.getMyCard(userId);
+
+      res.status(200).json({
+        success: true,
+        data: card
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateMyCard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.id;
+      const card = await this.cardService.updateMyCard(userId, req.body);
+
+      res.status(200).json({
+        success: true,
+        message: 'SmartCard updated successfully',
+        data: card
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteMyCard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.id;
+      await this.cardService.deleteMyCard(userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'SmartCard deleted successfully'
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getMyCards = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.user!.id;

@@ -9,9 +9,14 @@ const controller = new CardController();
 
 // Publicly accessible view endpoints
 router.get('/public/:username', controller.getPublicCard);
-router.get('/:id', controller.getOne);
 
 // Protected routes (require auth)
+router.get('/me', authenticate, controller.getMyCard);
+router.put('/me', authenticate, validateRequest(updateCardSchema), controller.updateMyCard);
+router.delete('/me', authenticate, controller.deleteMyCard);
+
+router.get('/:id', controller.getOne);
+
 router.use(authenticate);
 
 router.post('/', validateRequest(createCardSchema), controller.create);

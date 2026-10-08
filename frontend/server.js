@@ -170,7 +170,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.post('/api/auth/signup', async (req, res) => {
+async function handleRegister(req, res) {
   try {
     const { email, password, name } = req.body || {};
     if (!email || !password || !name) {
@@ -215,7 +215,10 @@ app.post('/api/auth/signup', async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message || 'Signup failed' });
   }
-});
+}
+
+app.post('/api/auth/signup', handleRegister);
+app.post('/api/auth/register', handleRegister);
 
 app.post('/api/auth/login', async (req, res) => {
   try {
@@ -375,6 +378,93 @@ app.post('/api/cards', async (req, res) => {
     res.status(201).json(mapCard(card));
   } catch (error) {
     res.status(500).json({ message: error.message || 'Failed to save card' });
+  }
+});
+
+app.get('/api/cards/me', authMiddleware, async (req, res) => {
+  try {
+    const database = await connectToDatabase();
+    await seedDefaultCardIfNecessary(database);
+    let card = await database.collection('cards').findOne({ userId: req.user.sub });
+    if (!card) {
+      card = await database.collection('cards').findOne({ username: 'smriti' });
+    }
+    if (!card) {
+      return res.status(404).json({ message: 'No card found for current user' });
+    }
+    res.json(mapCard(card));
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Failed to load card' });
+  }
+});
+
+app.put('/api/cards/me', authMiddleware, async (req, res) => {
+  try {
+    const database = await connectToDatabase();
+    const cardsCollection = database.collection('cards');
+    const { _id, id, ...rest } = req.body || {};
+
+    let target = await cardsCollection.findOne({ userId: req.user.sub });
+    if (!target) {
+      const newId = createId();
+      const username = slugify(rest.username || rest.name || req.user.email?.split('@')[0] || 'card');
+      const newCard = {
+        _id: newId,
+        id: newId,
+        userId: req.user.sub,
+        username,
+        ...rest,
+        qrCodeUrl: `https://smartcard.app/${username}`,
+        updatedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+      };
+      await cardsCollection.insertOne(newCard);
+      return res.json(mapCard(newCard));
+    }
+
+    let updatedUsername = target.username;
+    if (rest.username && rest.username.toLowerCase() !== target.username) {
+      updatedUsername = slugify(rest.username);
+      const conflict = await cardsCollection.findOne({ username: updatedUsername, _id: { $ne: target._id } });
+      if (conflict) {
+        let counter = 1;
+        while (await cardsCollection.findOne({ username: `${updatedUsername}-${counter}`, _id: { $ne: target._id } })) {
+          counter += 1;
+        }
+        updatedUsername = `${updatedUsername}-${counter}`;
+      }
+    }
+
+    const updateDoc = {
+      ...rest,
+      username: updatedUsername,
+      qrCodeUrl: `https://smartcard.app/${updatedUsername}`,
+      updatedAt: new Date().toISOString()
+    };
+
+    const updated = await cardsCollection.findOneAndUpdate(
+      { _id: target._id },
+      { $set: updateDoc },
+      { returnDocument: 'after' }
+    );
+
+    const doc = updated.value || updated;
+    res.json(mapCard(doc || { ...target, ...updateDoc }));
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Failed to update card' });
+  }
+});
+
+app.delete('/api/cards/me', authMiddleware, async (req, res) => {
+  try {
+    const database = await connectToDatabase();
+    const result = await database.collection('cards').deleteOne({ userId: req.user.sub });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'No card found to delete' });
+    }
+    res.json({ message: 'Card deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Failed to delete card' });
   }
 });
 

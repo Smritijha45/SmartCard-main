@@ -158,6 +158,31 @@ export class CardService {
     return toCardResponseDTO(updated);
   }
 
+  async getMyCard(userId: string): Promise<CardResponseDTO> {
+    const cards = await this.cardRepository.findByUser(userId);
+    if (!cards || cards.length === 0) {
+      throw new NotFoundError('No SmartCard found for current user');
+    }
+    return toCardResponseDTO(cards[0]);
+  }
+
+  async updateMyCard(userId: string, updateData: any): Promise<CardResponseDTO> {
+    const cards = await this.cardRepository.findByUser(userId);
+    if (!cards || cards.length === 0) {
+      return this.createCard(userId, undefined, updateData);
+    }
+    const cardId = cards[0]._id.toString();
+    return this.updateCard(cardId, userId, updateData);
+  }
+
+  async deleteMyCard(userId: string): Promise<void> {
+    const cards = await this.cardRepository.findByUser(userId);
+    if (!cards || cards.length === 0) {
+      throw new NotFoundError('No SmartCard found to delete');
+    }
+    await this.deleteCard(cards[0]._id.toString(), userId);
+  }
+
   async deleteCard(cardId: string, actorId: string): Promise<void> {
     const card = await this.cardRepository.findByIdOrUsername(cardId);
     if (!card) {

@@ -92,7 +92,11 @@ export default function DynamicPublicCardPage({ params }: { params: Promise<{ us
           new URLSearchParams(window.location.search).get('qr') === '1'
         );
 
-        const res = await fetch(`/api/cards/${usernameParam}`);
+        let res = await fetch(`/api/cards/public/${usernameParam}`);
+        if (!res.ok && res.status !== 403) {
+          res = await fetch(`/api/cards/${usernameParam}`);
+        }
+
         if (res.status === 403) {
           if (isMounted) {
             setIsPrivate(true);
