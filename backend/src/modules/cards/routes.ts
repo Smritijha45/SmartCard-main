@@ -7,7 +7,8 @@ import { createCardSchema, updateCardSchema } from './validation';
 const router = Router();
 const controller = new CardController();
 
-// Publicly accessible view endpoint
+// Publicly accessible view endpoints
+router.get('/public/:username', controller.getPublicCard);
 router.get('/:id', controller.getOne);
 
 // Protected routes (require auth)

@@ -1,5 +1,5 @@
-import SmritiProfilePage from '../smriti/page';
+import DynamicPublicCardPage from '../[username]/page';
 
 export default function DemoPage() {
-  return <SmritiProfilePage isDemo={true} />;
+  return <DynamicPublicCardPage params={Promise.resolve({ username: 'demo' })} />;
 }

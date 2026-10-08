@@ -4,21 +4,38 @@
 export interface SmartCardData {
   _id: string;
   id: string;
+  username: string;
   name: string;
+  title?: string;
   role: string;
   company: string;
   email: string;
   phone: string;
   website: string;
+  location?: string;
   themeColor: string;
   template: string;
+  cardTheme?: string;
+  cardLayout?: string;
+  isPublic?: boolean;
   profileImage: string;
   employeeCode: string;
   socialLinks: {
     linkedin?: string;
     twitter?: string;
+    x?: string;
     instagram?: string;
     github?: string;
+  };
+  github?: string;
+  linkedin?: string;
+  instagram?: string;
+  twitter?: string;
+  appearance?: {
+    theme?: string;
+    accentColor?: string;
+    font?: string;
+    layout?: string;
   };
   resumeUrl?: string;
   calendarUrl?: string;
@@ -31,6 +48,7 @@ export interface SmartCardData {
   leadsCount: number;
   qrCodeUrl?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface LeadData {
@@ -61,28 +79,76 @@ export interface NotificationData {
 
 const INITIAL_USER = {
   id: 'usr_demo_101',
-  name: 'Alex Morgan',
-  email: 'alex.morgan@smartcard.id',
-  role: 'Founder & Head of Product',
+  name: 'Smriti Jha',
+  email: 'smriti@smartcard.app',
+  role: 'Full Stack Developer',
   company: 'SmartCard Technologies',
-  profilePhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
+  profilePhoto: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80',
   createdAt: '2026-01-15T08:00:00.000Z',
   user_metadata: {
-    name: 'Alex Morgan',
-    full_name: 'Alex Morgan',
+    name: 'Smriti Jha',
+    full_name: 'Smriti Jha',
   }
 };
 
 const INITIAL_CARDS: SmartCardData[] = [
   {
+    _id: 'smriti-default-card',
+    id: 'smriti-default-card',
+    username: 'smriti',
+    name: 'Smriti Jha',
+    title: 'Full Stack Developer',
+    role: 'Full Stack Developer',
+    company: 'SmartCard Technologies',
+    bio: 'Building modern digital experiences.',
+    profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80',
+    email: 'smriti@smartcard.app',
+    phone: '+91 98765 43210',
+    website: 'https://smritijha.dev',
+    location: 'Bengaluru, India • Remote',
+    github: 'https://github.com/smritijha',
+    linkedin: 'https://linkedin.com/in/smritijha',
+    instagram: 'https://instagram.com/smritijha.dev',
+    twitter: 'https://x.com/smritijha',
+    cardTheme: 'minimal-modern',
+    cardLayout: 'vertical',
+    themeColor: '#2563EB',
+    template: 'modern',
+    employeeCode: 'SMART-002',
+    isPublic: true,
+    socialLinks: {
+      linkedin: 'https://linkedin.com/in/smritijha',
+      twitter: 'https://x.com/smritijha',
+      x: 'https://x.com/smritijha',
+      instagram: 'https://instagram.com/smritijha.dev',
+      github: 'https://github.com/smritijha'
+    },
+    appearance: {
+      theme: 'minimal-modern',
+      accentColor: '#2563EB',
+      font: 'sans',
+      layout: 'vertical',
+    },
+    totalViews: 320,
+    totalShares: 85,
+    uniqueViews: 240,
+    leadsCount: 18,
+    qrCodeUrl: 'https://smartcard.app/smriti',
+    createdAt: '2026-01-01T10:00:00.000Z',
+    updatedAt: '2026-01-01T10:00:00.000Z'
+  },
+  {
     _id: 'card_alex',
     id: 'card_alex',
+    username: 'alex-morgan',
     name: 'Alex Morgan',
+    title: 'Founder & Head of Product',
     role: 'Founder & Head of Product',
     company: 'SmartCard Technologies',
     email: 'alex@smartcard.id',
     phone: '+1 415 555 0192',
     website: 'https://smartcard.id',
+    location: 'San Francisco, CA',
     themeColor: '#2563EB',
     template: 'modern',
     profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
@@ -91,23 +157,13 @@ const INITIAL_CARDS: SmartCardData[] = [
     socialLinks: {
       linkedin: 'https://linkedin.com/in/alexmorgan',
       twitter: 'https://twitter.com/alexmorgan_dev',
+      x: 'https://twitter.com/alexmorgan_dev',
       instagram: 'https://instagram.com/alex_builds',
       github: 'https://github.com/alexmorgan'
     },
     calendarUrl: 'https://cal.com/alex-smartcard',
     resumeUrl: 'https://smartcard.id/resume.pdf',
-    projects: [
-      {
-        title: 'SmartCard Core Platform',
-        description: 'High-impact digital visiting card SaaS engineered for modern founders and enterprise sales teams.',
-        link: 'https://smartcard.id'
-      },
-      {
-        title: 'OpenConnect Protocol',
-        description: 'Zero-hardware contact exchange standard compatible with every iOS and Android device.',
-        link: 'https://smartcard.id'
-      }
-    ],
+    isPublic: true,
     testimonials: [
       {
         quote: 'SmartCard helped our sales team generate 3x more qualified follow-ups at conferences than paper business cards ever did.',
@@ -119,12 +175,13 @@ const INITIAL_CARDS: SmartCardData[] = [
     totalShares: 384,
     uniqueViews: 980,
     leadsCount: 48,
-    qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://smartcard.id/c/card_alex',
+    qrCodeUrl: 'https://smartcard.app/alex-morgan',
     createdAt: '2026-01-20T10:00:00.000Z'
   },
   {
     _id: 'card_sarah',
     id: 'card_sarah',
+    username: 'sarah-chen',
     name: 'Sarah Chen',
     role: 'VP of Strategic Partnerships',
     company: 'Apex Ventures',
@@ -159,12 +216,13 @@ const INITIAL_CARDS: SmartCardData[] = [
     totalShares: 215,
     uniqueViews: 640,
     leadsCount: 29,
-    qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://smartcard.id/c/card_sarah',
+    qrCodeUrl: 'https://smartcard.app/sarah-chen',
     createdAt: '2026-02-01T12:00:00.000Z'
   },
   {
     _id: 'card_devon',
     id: 'card_devon',
+    username: 'devon-vance',
     name: 'Devon Vance',
     role: 'Principal Design Architect',
     company: 'Studio Neon',
@@ -191,7 +249,7 @@ const INITIAL_CARDS: SmartCardData[] = [
     totalShares: 132,
     uniqueViews: 410,
     leadsCount: 19,
-    qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://smartcard.id/c/card_devon',
+    qrCodeUrl: 'https://smartcard.app/devon-vance',
     createdAt: '2026-02-15T15:00:00.000Z'
   }
 ];
@@ -315,26 +373,71 @@ export const mockStore = {
   getCards: () => [...mockCards],
 
   getCardById: (id: string) => {
-    return mockCards.find(c => c._id === id || c.id === id) || null;
+    if (!id) return null;
+    const clean = id.toLowerCase().trim();
+    return mockCards.find(c => 
+      c._id === id || 
+      c.id === id || 
+      c.username?.toLowerCase() === clean ||
+      (clean === 'smriti' && (c.username === 'smriti' || c._id === 'smriti-default-card')) ||
+      (clean === 'demo' && (c.username === 'smriti' || c._id === 'smriti-default-card'))
+    ) || null;
   },
 
   createCard: (data: Partial<SmartCardData>) => {
     const newId = `card_${Date.now()}`;
+    const baseUsername = (data.username || data.name || 'user')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9_-]/g, '') || 'card';
+    
+    let username = baseUsername;
+    let counter = 1;
+    while (mockCards.some(c => c.username === username)) {
+      counter += 1;
+      username = `${baseUsername}-${counter}`;
+    }
+
     const newCard: SmartCardData = {
       _id: newId,
       id: newId,
+      username,
       name: data.name || 'New Profile',
-      role: data.role || 'Professional',
+      title: data.title || data.role || 'Professional',
+      role: data.role || data.title || 'Professional',
       company: data.company || 'SmartCard User',
       email: data.email || 'user@example.com',
       phone: data.phone || '+1 555 000 0000',
-      website: data.website || 'https://smartcard.id',
+      website: data.website || 'https://smartcard.app',
+      location: data.location || '',
       themeColor: data.themeColor || '#2563EB',
       template: data.template || 'modern',
+      cardTheme: data.cardTheme || 'minimal-modern',
+      cardLayout: data.cardLayout || 'vertical',
+      isPublic: data.isPublic !== undefined ? data.isPublic : true,
       profileImage: data.profileImage || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&auto=format&fit=crop&q=80',
       employeeCode: data.employeeCode || `SMART-${Math.floor(100 + Math.random() * 900)}`,
       bio: data.bio || '',
-      socialLinks: data.socialLinks || {},
+      socialLinks: {
+        github: data.github || data.socialLinks?.github,
+        linkedin: data.linkedin || data.socialLinks?.linkedin,
+        instagram: data.instagram || data.socialLinks?.instagram,
+        twitter: data.twitter || data.socialLinks?.twitter || data.socialLinks?.x,
+        x: data.twitter || data.socialLinks?.twitter || data.socialLinks?.x,
+        ...(data.socialLinks || {})
+      },
+      github: data.github || data.socialLinks?.github,
+      linkedin: data.linkedin || data.socialLinks?.linkedin,
+      instagram: data.instagram || data.socialLinks?.instagram,
+      twitter: data.twitter || data.socialLinks?.twitter || data.socialLinks?.x,
+      appearance: {
+        theme: data.cardTheme || 'minimal-modern',
+        accentColor: data.themeColor || '#2563EB',
+        font: 'sans',
+        layout: data.cardLayout || 'vertical',
+        ...(data.appearance || {})
+      },
       projects: data.projects || [],
       testimonials: data.testimonials || [],
       calendarUrl: data.calendarUrl || '',
@@ -343,17 +446,44 @@ export const mockStore = {
       totalShares: 0,
       uniqueViews: 1,
       leadsCount: 0,
-      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://smartcard.id/c/${newId}`,
-      createdAt: new Date().toISOString()
+      qrCodeUrl: `https://smartcard.app/${username}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
     mockCards.unshift(newCard);
     return newCard;
   },
 
   updateCard: (id: string, updates: Partial<SmartCardData>) => {
-    const index = mockCards.findIndex(c => c._id === id || c.id === id);
-    if (index === -1) return null;
-    mockCards[index] = { ...mockCards[index], ...updates };
+    const index = mockCards.findIndex(c => 
+      c._id === id || 
+      c.id === id || 
+      c.username?.toLowerCase() === id.toLowerCase()
+    );
+    if (index === -1) {
+      // If not found, create or update fallback
+      return null;
+    }
+
+    let updatedUsername = mockCards[index].username;
+    if (updates.username && updates.username.toLowerCase() !== updatedUsername) {
+      const base = updates.username.toLowerCase().trim().replace(/[^a-z0-9_-]/g, '');
+      let candidate = base;
+      let counter = 1;
+      while (mockCards.some((c, idx) => idx !== index && c.username === candidate)) {
+        counter += 1;
+        candidate = `${base}-${counter}`;
+      }
+      updatedUsername = candidate;
+    }
+
+    mockCards[index] = { 
+      ...mockCards[index], 
+      ...updates,
+      username: updatedUsername,
+      qrCodeUrl: `https://smartcard.app/${updatedUsername}`,
+      updatedAt: new Date().toISOString()
+    };
     return mockCards[index];
   },
 
@@ -437,10 +567,10 @@ export const mockStore = {
     };
   },
 
-  trackActivity: (cardId: string, type: 'view' | 'share') => {
-    const card = mockCards.find(c => c._id === cardId || c.id === cardId);
+  trackActivity: (cardId: string, type: 'view' | 'share' | 'qr_scan' | 'click' | 'vcf_download', meta?: any) => {
+    const card = mockCards.find(c => c._id === cardId || c.id === cardId || c.username === cardId);
     if (card) {
-      if (type === 'view') {
+      if (type === 'view' || type === 'qr_scan') {
         card.totalViews += 1;
         card.uniqueViews += 1;
       } else if (type === 'share') {
@@ -458,3 +588,5 @@ export const mockStore = {
     return mockNotifications;
   }
 };
+
+export default mockStore;

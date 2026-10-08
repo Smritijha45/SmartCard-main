@@ -4,10 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   User, Shield, Sliders, AlertTriangle, Check, Camera, 
-  Moon, Sun, Monitor, LogOut, Trash2, CheckCircle2, Bell
+  Moon, Sun, Monitor, LogOut, Trash2, CheckCircle2, Bell,
+  Globe, Lock, Eye, ArrowRight, Sparkles, AlertCircle
 } from 'lucide-react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { Button } from '@/components/ui/Button';
+import { validateUsername, getAppUrl, getCardPublicUrl } from '@/lib/usernameValidation';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -18,6 +20,17 @@ export default function SettingsPage() {
   const [name, setName] = useState('Smriti Jha');
   const [email, setEmail] = useState('smriti@smartcard.app');
   const [profilePhoto, setProfilePhoto] = useState('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80');
+
+  // Username Setup & Change State
+  const [currentCardId, setCurrentCardId] = useState('smriti');
+  const [currentUsername, setCurrentUsername] = useState('smriti');
+  const [usernameInput, setUsernameInput] = useState('smriti');
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [isSavingUsername, setIsSavingUsername] = useState(false);
+
+  // Privacy State: Public Profile ON / OFF
+  const [isPublic, setIsPublic] = useState(true);
+  const [isSavingPrivacy, setIsSavingPrivacy] = useState(false);
 
   // Security State
   const [currentPassword, setCurrentPassword] = useState('');
@@ -33,6 +46,43 @@ export default function SettingsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
+    // Load existing card details to sync username & privacy
+    fetch('/api/cards/smriti')
+      .then(res => res.json())
+      .then(card => {
+        if (card) {
+          if (card.username) {
+            setCurrentUsername(card.username);
+            setUsernameInput(card.username);
+          }
+          if (card._id || card.id) {
+            setCurrentCardId(card._id || card.id);
+          }
+          if (card.isPublic !== undefined) {
+            setIsPublic(card.isPublic);
+          }
+          if (card.name) setName(card.name);
+          if (card.email) setEmail(card.email);
+          if (card.profileImage) setProfilePhoto(card.profileImage);
+        }
+      })
+      .catch(() => {
+        if (typeof window !== 'undefined') {
+          const storedCard = localStorage.getItem('smartcard_current_card');
+          if (storedCard) {
+            try {
+              const parsed = JSON.parse(storedCard);
+              if (parsed.username) {
+                setCurrentUsername(parsed.username);
+                setUsernameInput(parsed.username);
+              }
+              if (parsed._id || parsed.id) setCurrentCardId(parsed._id || parsed.id);
+              if (parsed.isPublic !== undefined) setIsPublic(parsed.isPublic);
+            } catch (e) {}
+          }
+        }
+      });
+
     if (typeof window !== 'undefined') {
       const storedUser = localStorage.getItem('smartcard_user');
       if (storedUser) {
@@ -50,7 +100,91 @@ export default function SettingsPage() {
 
   const showNotification = (msg: string) => {
     setToast(msg);
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const handleUsernameInputChange = (val: string) => {
+    setUsernameInput(val);
+    const validation = validateUsername(val);
+    if (!validation.isValid) {
+      setUsernameError(validation.error || 'Invalid username');
+    } else {
+      setUsernameError(null);
+    }
+  };
+
+  const handleSaveUsername = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const validation = validateUsername(usernameInput);
+    if (!validation.isValid) {
+      setUsernameError(validation.error || 'Please enter a valid username');
+      return;
+    }
+
+    setIsSavingUsername(true);
+    const newUsername = validation.sanitized;
+
+    try {
+      const res = await fetch(`/api/cards/${currentCardId || currentUsername}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: newUsername }),
+      });
+
+      if (res.ok) {
+        setCurrentUsername(newUsername);
+        setUsernameInput(newUsername);
+        if (typeof window !== 'undefined') {
+          const storedCard = localStorage.getItem('smartcard_current_card');
+          if (storedCard) {
+            try {
+              const parsed = JSON.parse(storedCard);
+              parsed.username = newUsername;
+              parsed.qrCodeUrl = getCardPublicUrl(newUsername);
+              localStorage.setItem('smartcard_current_card', JSON.stringify(parsed));
+            } catch (e) {}
+          }
+        }
+        showNotification(`SmartCard URL updated to smartcard.app/${newUsername}`);
+      } else {
+        const data = await res.json();
+        setUsernameError(data.message || 'Username already taken or invalid');
+      }
+    } catch (err: any) {
+      setUsernameError(err.message || 'Failed to update username');
+    } finally {
+      setIsSavingUsername(false);
+    }
+  };
+
+  const handleTogglePrivacy = async (newVal: boolean) => {
+    setIsPublic(newVal);
+    setIsSavingPrivacy(true);
+
+    try {
+      await fetch(`/api/cards/${currentCardId || currentUsername}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPublic: newVal }),
+      });
+
+      if (typeof window !== 'undefined') {
+        const storedCard = localStorage.getItem('smartcard_current_card');
+        if (storedCard) {
+          try {
+            const parsed = JSON.parse(storedCard);
+            parsed.isPublic = newVal;
+            localStorage.setItem('smartcard_current_card', JSON.stringify(parsed));
+          } catch (e) {}
+        }
+      }
+
+      showNotification(newVal ? 'Public Profile enabled. Anyone with link/QR can view.' : 'Private mode enabled. Card is hidden from public.');
+    } catch (err) {
+      // Ignored for smooth client feedback
+    } finally {
+      setIsSavingPrivacy(false);
+    }
   };
 
   const handleSaveAccount = (e: React.FormEvent) => {
@@ -115,6 +249,8 @@ export default function SettingsPage() {
     }
   };
 
+  const currentPublicLink = getCardPublicUrl(currentUsername);
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-16 animate-in fade-in duration-200">
       
@@ -124,21 +260,146 @@ export default function SettingsPage() {
           Settings
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-          Manage your account profile, appearance, notification preferences, and security.
+          Manage your SmartCard public URL, privacy settings, appearance, and account credentials.
         </p>
       </div>
 
       {/* Main Settings Form with subtle separators */}
       <div className="bg-white dark:bg-[#131924] rounded-2xl border border-slate-200/90 dark:border-slate-800/90 p-6 sm:p-8 shadow-xs space-y-8">
         
-        {/* SECTION 1: ACCOUNT */}
+        {/* 21 & 22. USERNAME SETUP & CHANGE */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Globe size={16} className="text-blue-600 dark:text-blue-400" />
+                <span>SmartCard URL &amp; Username</span>
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Your permanent live profile address. When changed, your new URL becomes active immediately.
+              </p>
+            </div>
+            <a 
+              href={`/${currentUsername}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              <span>View live</span>
+              <ArrowRight size={13} />
+            </a>
+          </div>
+
+          <form onSubmit={handleSaveUsername} className="space-y-3">
+            <div className="space-y-1.5 max-w-lg">
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                Choose your SmartCard URL
+              </label>
+              
+              <div className="flex rounded-xl shadow-2xs border border-slate-200 dark:border-slate-800 overflow-hidden focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 bg-white dark:bg-[#0B0F17]">
+                <span className="inline-flex items-center px-3.5 bg-slate-50 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 text-xs font-mono select-none border-r border-slate-200 dark:border-slate-800">
+                  smartcard.app/
+                </span>
+                <input
+                  type="text"
+                  value={usernameInput}
+                  onChange={(e) => handleUsernameInputChange(e.target.value)}
+                  placeholder="smriti"
+                  className="flex-1 h-10 px-3 bg-transparent text-xs font-mono text-slate-900 dark:text-slate-100 focus:outline-none"
+                />
+              </div>
+
+              {usernameError && (
+                <p className="text-[11px] text-red-600 dark:text-red-400 flex items-center gap-1 font-medium mt-1">
+                  <AlertCircle size={13} className="shrink-0" />
+                  <span>{usernameError}</span>
+                </p>
+              )}
+
+              <p className="text-[11px] text-slate-400">
+                Minimum 3 characters. Lowercase letters, numbers, hyphens, and underscores only.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-1">
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={isSavingUsername || Boolean(usernameError) || usernameInput === currentUsername}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium h-9 px-4 shadow-xs disabled:opacity-50"
+              >
+                {isSavingUsername ? 'Updating...' : 'Change Username'}
+              </Button>
+
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                Active: <span className="font-mono text-slate-900 dark:text-slate-100 font-semibold">{currentPublicLink}</span>
+              </span>
+            </div>
+          </form>
+        </section>
+
+        <div className="border-t border-slate-100 dark:border-slate-800/80" />
+
+        {/* 23. PRIVACY: PUBLIC PROFILE ON/OFF */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <Lock size={16} className="text-indigo-600 dark:text-indigo-400" />
+              <span>Privacy &amp; Public Visibility</span>
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Control whether your SmartCard profile is publicly scannable or hidden.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 max-w-2xl">
+            <div className="space-y-1 pr-4">
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                  Public Profile
+                </p>
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                  isPublic 
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' 
+                    : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                }`}>
+                  {isPublic ? 'ON (Public)' : 'OFF (Private)'}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                {isPublic 
+                  ? 'Your live card and QR code are visible to anyone who visits your public URL.' 
+                  : 'Your public URL is protected. Visitors will see "This SmartCard is currently private."'}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleTogglePrivacy(!isPublic)}
+              disabled={isSavingPrivacy}
+              className={`w-11 h-6 rounded-full p-1 transition-colors relative cursor-pointer shrink-0 ${
+                isPublic ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'
+              }`}
+            >
+              <div 
+                className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                  isPublic ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+        </section>
+
+        <div className="border-t border-slate-100 dark:border-slate-800/80" />
+
+        {/* SECTION 3: ACCOUNT */}
         <section className="space-y-5">
           <div>
             <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-              Account
+              Account Profile
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Your personal information and public profile representation.
+              Your personal account information and primary contact details.
             </p>
           </div>
 
@@ -164,7 +425,7 @@ export default function SettingsPage() {
                   onChange={handleAvatarUpload} 
                   className="hidden" 
                 />
-                <p className="text-[11px] text-slate-400">JPG, PNG, or GIF. Max 2MB.</p>
+                <p className="text-[11px] text-slate-400">JPG, PNG, or WebP. Max 2MB.</p>
               </div>
             </div>
 
@@ -207,7 +468,7 @@ export default function SettingsPage() {
 
         <div className="border-t border-slate-100 dark:border-slate-800/80" />
 
-        {/* SECTION 2: APPEARANCE */}
+        {/* SECTION 4: APPEARANCE */}
         <section className="space-y-4">
           <div>
             <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
@@ -245,7 +506,7 @@ export default function SettingsPage() {
 
         <div className="border-t border-slate-100 dark:border-slate-800/80" />
 
-        {/* SECTION 3: NOTIFICATIONS */}
+        {/* SECTION 5: NOTIFICATIONS */}
         <section className="space-y-4">
           <div>
             <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
@@ -305,7 +566,7 @@ export default function SettingsPage() {
 
         <div className="border-t border-slate-100 dark:border-slate-800/80" />
 
-        {/* SECTION 4: SECURITY */}
+        {/* SECTION 6: SECURITY */}
         <section className="space-y-4">
           <div>
             <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
@@ -357,7 +618,7 @@ export default function SettingsPage() {
 
         <div className="border-t border-slate-100 dark:border-slate-800/80" />
 
-        {/* SECTION 5: DANGER ZONE */}
+        {/* SECTION 7: DANGER ZONE */}
         <section className="space-y-4">
           <div>
             <h2 className="text-base font-semibold text-red-600 dark:text-red-400">

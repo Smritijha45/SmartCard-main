@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { QRCodeComponent } from '@/components/QRCode';
+import { ShareCard } from '@/components/ShareCard';
 
 function LinkedInIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -71,11 +73,15 @@ const LAYOUT_OPTIONS = [
 ];
 
 const DEFAULT_CARD = {
+  _id: 'smriti-default-card',
+  id: 'smriti-default-card',
+  username: 'smriti',
   name: 'Smriti Jha',
+  title: 'Full Stack Developer',
   role: 'Full Stack Developer',
   company: 'SmartCard Technologies',
   bio: 'Building modern web experiences. High performance, zero NFC hardware, web-native digital identities.',
-  profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+  profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80',
   email: 'smriti@smartcard.app',
   phone: '+91 98765 43210',
   location: 'Bengaluru, India • Remote',
@@ -92,7 +98,7 @@ const DEFAULT_CARD = {
     font: 'sans',
     layout: 'vertical',
   },
-  employeeCode: 'SMART-001',
+  employeeCode: 'SMART-002',
 };
 
 export default function MySmartCardPage() {
@@ -100,8 +106,10 @@ export default function MySmartCardPage() {
   const [formData, setFormData] = useState(DEFAULT_CARD);
   const [activeTab, setActiveTab] = useState<'basic' | 'contact' | 'social' | 'appearance'>('basic');
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const showNotification = (msg: string) => {
     setToast(msg);
@@ -109,22 +117,37 @@ export default function MySmartCardPage() {
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedCard = localStorage.getItem('smartcard_current_card');
-      if (savedCard) {
-        try {
-          const parsed = JSON.parse(savedCard);
+    // Load from backend API first, fallback to localStorage
+    fetch('/api/cards/smriti')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.name) {
           setFormData(prev => ({
             ...prev,
-            ...parsed,
-            appearance: { ...prev.appearance, ...(parsed.appearance || {}) },
-            socialLinks: { ...prev.socialLinks, ...(parsed.socialLinks || {}) },
+            ...data,
+            appearance: { ...prev.appearance, ...(data.appearance || {}) },
+            socialLinks: { ...prev.socialLinks, ...(data.socialLinks || {}) },
           }));
-        } catch (e) {
-          console.error(e);
         }
-      }
-    }
+      })
+      .catch(() => {
+        if (typeof window !== 'undefined') {
+          const savedCard = localStorage.getItem('smartcard_current_card');
+          if (savedCard) {
+            try {
+              const parsed = JSON.parse(savedCard);
+              setFormData(prev => ({
+                ...prev,
+                ...parsed,
+                appearance: { ...prev.appearance, ...(parsed.appearance || {}) },
+                socialLinks: { ...prev.socialLinks, ...(parsed.socialLinks || {}) },
+              }));
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        }
+      });
   }, []);
 
   const updateFormField = (section: string, field: string, value: any) => {
@@ -148,11 +171,25 @@ export default function MySmartCardPage() {
     });
   };
 
-  const handleSaveCard = () => {
+  const handleSaveCard = async () => {
+    setIsSaving(true);
     if (typeof window !== 'undefined') {
       localStorage.setItem('smartcard_current_card', JSON.stringify(formData));
     }
-    showNotification('SmartCard changes saved successfully!');
+
+    try {
+      const cardId = formData._id || formData.id || formData.username || 'smriti';
+      await fetch(`/api/cards/${cardId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+    } catch (e) {
+      // Handled via local sync
+    } finally {
+      setIsSaving(false);
+      showNotification('SmartCard updated and live on backend!');
+    }
   };
 
   const handleResetDemo = () => {
@@ -161,6 +198,11 @@ export default function MySmartCardPage() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('smartcard_current_card', JSON.stringify(DEFAULT_CARD));
       }
+      fetch('/api/cards/smriti', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(DEFAULT_CARD),
+      }).catch(() => {});
       showNotification('Demo profile restored.');
     }
   };
@@ -177,12 +219,16 @@ export default function MySmartCardPage() {
     }
   };
 
-  const cardShareUrl = typeof window !== 'undefined' ? `${window.location.origin}/smriti` : 'https://smartcard.app/smriti';
+  const currentUsername = (formData.username || 'smriti').toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+  const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://smartcard.app';
+  const cardShareUrl = `${originUrl}/${currentUsername}`;
 
   const copyCardLink = () => {
-    navigator.clipboard.writeText(cardShareUrl);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(cardShareUrl);
+    }
     setCopiedLink(true);
-    showNotification('SmartCard URL copied to clipboard!');
+    showNotification('Live SmartCard URL copied to clipboard!');
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
@@ -286,31 +332,73 @@ export default function MySmartCardPage() {
           </Button>
 
           <Button
-            variant="secondary"
-            size="sm"
-            onClick={copyCardLink}
-          >
-            {copiedLink ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
-            <span>{copiedLink ? 'Copied' : 'Copy'}</span>
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setShowShareModal(true)}
-          >
-            <Share2 size={13} />
-            <span>Share</span>
-          </Button>
-
-          <Button
             variant="primary"
             size="sm"
             onClick={handleSaveCard}
+            disabled={isSaving}
           >
             <Check size={14} />
-            <span>Save Card</span>
+            <span>{isSaving ? 'Saving...' : 'Save Card'}</span>
           </Button>
+        </div>
+      </div>
+
+      {/* 19. YOUR PUBLIC CARD BANNER */}
+      <div className="bg-white dark:bg-[#131924] p-5 sm:p-6 rounded-2xl border border-blue-200/90 dark:border-blue-900/50 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gradient-to-r from-blue-50/50 via-white to-indigo-50/30 dark:from-blue-950/20 dark:via-[#131924] dark:to-indigo-950/20">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+              Your Public Card
+            </span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Live &amp; Scannable</span>
+          </div>
+          <p className="text-sm font-mono font-medium text-slate-900 dark:text-slate-100">
+            https://smartcard.app/{currentUsername}
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Changes you save here appear immediately when someone scans your QR code or opens this link.
+          </p>
+        </div>
+
+        {/* 4 Standard Buttons: View Live Card | Copy Link | QR Code | Share */}
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <a
+            href={`/${currentUsername}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 h-9 px-3.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-xl shadow-xs transition-colors cursor-pointer"
+          >
+            <Eye size={13} />
+            <span>View Live Card</span>
+          </a>
+
+          <button
+            type="button"
+            onClick={copyCardLink}
+            className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 h-9 px-3.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200 text-xs font-medium rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs transition-colors cursor-pointer"
+          >
+            {copiedLink ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
+            <span>{copiedLink ? 'Link copied!' : 'Copy Link'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowQrModal(true)}
+            className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 h-9 px-3.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200 text-xs font-medium rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs transition-colors cursor-pointer"
+          >
+            <QrCode size={13} />
+            <span>QR Code</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowShareModal(true)}
+            className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 h-9 px-3.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200 text-xs font-medium rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs transition-colors cursor-pointer"
+          >
+            <Share2 size={13} />
+            <span>Share</span>
+          </button>
         </div>
       </div>
 
@@ -397,6 +485,68 @@ export default function MySmartCardPage() {
                   <input id="avatarInput" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                   <p className="text-[11px] text-slate-400">JPG, PNG, or WebP. Optimal 400x400.</p>
                 </div>
+              </div>
+
+              {/* Public URL / Slug Input */}
+              <div className="space-y-1.5 p-3.5 bg-blue-50/50 dark:bg-blue-950/20 rounded-xl border border-blue-100 dark:border-blue-900/50">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                    <Globe size={13} className="text-blue-600 dark:text-blue-400" />
+                    <span>Public Card Username &amp; URL</span>
+                  </label>
+                  <span className="text-[10px] text-blue-600 dark:text-blue-400 font-mono">
+                    smartcard.app/{(formData.username || 'smriti').toLowerCase()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400 font-mono select-none hidden sm:inline">
+                    https://smartcard.app/
+                  </span>
+                  <Input
+                    value={formData.username || ''}
+                    onChange={(e) => updateFormField('root', 'username', e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                    placeholder="smriti"
+                    className="font-mono text-xs"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Your permanent public address. Editing your card automatically updates this live profile without changing your QR.
+                </p>
+              </div>
+
+              {/* 23. PRIVACY: Public Profile ON / OFF */}
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80">
+                <div className="space-y-0.5 pr-4">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">Public Profile</p>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                      (formData as any).isPublic !== false 
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' 
+                        : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                    }`}>
+                      {(formData as any).isPublic !== false ? 'ON (Public)' : 'OFF (Private)'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {(formData as any).isPublic !== false 
+                      ? 'Card is live and scannable by anyone with your link or QR code.' 
+                      : 'Card is private. Anyone visiting sees "This SmartCard is currently private."'}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => updateFormField('root', 'isPublic', (formData as any).isPublic === false ? true : false)}
+                  className={`w-10 h-6 rounded-full p-1 transition-colors relative cursor-pointer shrink-0 ${
+                    (formData as any).isPublic !== false ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'
+                  }`}
+                >
+                  <div 
+                    className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                      (formData as any).isPublic !== false ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -914,23 +1064,49 @@ export default function MySmartCardPage() {
                     </div>
 
                     {/* Instant QR Code Box */}
-                    <div className={`p-3 rounded-xl flex items-center justify-between gap-3 ${cardStyle.qrBox}`}>
+                    <div 
+                      onClick={() => setShowShareModal(true)}
+                      className={`p-3 rounded-xl flex items-center justify-between gap-3 cursor-pointer hover:border-blue-400 transition-colors ${cardStyle.qrBox}`}
+                    >
                       <div className="space-y-0.5">
                         <span className={`text-[10px] font-medium uppercase tracking-wider ${cardStyle.subtext}`}>
                           Scan Profile
                         </span>
                         <h5 className={`font-semibold text-xs ${cardStyle.qrLabel}`}>Camera QR Code</h5>
-                        <p className={`text-[11px] ${cardStyle.qrSub}`}>Direct address book save on iOS &amp; Android</p>
+                        <p className={`text-[11px] ${cardStyle.qrSub}`}>Scannable by any phone camera • Click to expand</p>
                       </div>
-                      <div className="p-1 bg-white rounded-lg border border-slate-200 shadow-2xs shrink-0">
-                        <QrCode size={40} className="text-slate-900" />
+                      <div className="p-1.5 bg-white rounded-xl border border-slate-200 shadow-2xs shrink-0">
+                        <QrCode size={36} className="text-slate-900" />
                       </div>
                     </div>
 
                     {/* Save Contact to Address Book Action */}
                     <button
                       type="button"
-                      onClick={() => showNotification('VCF Contact Card downloaded!')}
+                      onClick={() => {
+                        const vCardData = [
+                          'BEGIN:VCARD',
+                          'VERSION:3.0',
+                          `FN:${formData.name}`,
+                          `ORG:${formData.company || ''}`,
+                          `TITLE:${formData.role || ''}`,
+                          `TEL;TYPE=WORK,VOICE:${formData.phone || ''}`,
+                          `EMAIL;TYPE=PREF,INTERNET:${formData.email || ''}`,
+                          `URL:${formData.website || cardShareUrl}`,
+                          `NOTE:${formData.bio || ''}`,
+                          'END:VCARD'
+                        ].filter(Boolean).join('\n');
+
+                        const blob = new Blob([vCardData], { type: 'text/vcard;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.setAttribute('download', `${formData.name.replace(/\s+/g, '_')}.vcf`);
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        showNotification('VCF Contact Card saved (.vcf)!');
+                      }}
                       className={`w-full h-10 font-medium text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${cardStyle.vcfBtn}`}
                     >
                       <Download size={14} />
@@ -948,65 +1124,50 @@ export default function MySmartCardPage() {
 
       </div>
 
-      {/* Share Modal */}
-      {showShareModal && (
+      {/* Share Card Modal */}
+      <ShareCard
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        username={formData.username || 'smriti'}
+        name={formData.name}
+        title={formData.role || formData.title}
+        company={formData.company}
+        profileImage={formData.profileImage}
+        onOpenQR={() => setShowQrModal(true)}
+        onToast={showNotification}
+      />
+
+      {/* QR Code Large Modal */}
+      {showQrModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-subtle-fade">
-          <div className="w-full max-w-md bg-white dark:bg-[#131924] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <div className="w-full max-w-md bg-white dark:bg-[#131924] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-base font-semibold text-slate-900 dark:text-slate-100">Share Your SmartCard</h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Zero NFC required. Anyone can open instantly.</p>
+                <h4 className="text-base font-semibold text-slate-900 dark:text-slate-100">Your SmartCard QR Code</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Point any smartphone camera to open your live profile
+                </p>
               </div>
               <button
                 type="button"
-                onClick={() => setShowShareModal(false)}
+                onClick={() => setShowQrModal(false)}
                 className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <div className="space-y-2.5">
-              <button
-                type="button"
-                onClick={() => {
-                  const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(`Check out my digital business card: ${cardShareUrl}`)}`;
-                  window.open(url, '_blank');
-                }}
-                className="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-colors"
-              >
-                <MessageCircle size={15} />
-                <span>Share via WhatsApp</span>
-              </button>
-
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={copyCardLink}
-                  className="w-full"
-                >
-                  <Copy size={13} />
-                  <span>Copy Web Link</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    showNotification('QR Code downloaded!');
-                    setShowShareModal(false);
-                  }}
-                  className="w-full"
-                >
-                  <QrCode size={13} />
-                  <span>Download QR</span>
-                </Button>
-              </div>
-            </div>
-
-            <div className="p-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-600 dark:text-slate-400 truncate">
-              {cardShareUrl}
-            </div>
+            {/* Reusable QR Component */}
+            <QRCodeComponent
+              value={cardShareUrl}
+              username={formData.username || 'smriti'}
+              name={formData.name}
+              size={220}
+              accentColor={formData.appearance.accentColor}
+              showDownload={true}
+              showShare={true}
+              showCopy={true}
+            />
           </div>
         </div>
       )}

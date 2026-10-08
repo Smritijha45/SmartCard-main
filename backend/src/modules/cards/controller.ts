@@ -39,6 +39,20 @@ export class CardController {
     }
   };
 
+  getPublicCard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { username } = req.params;
+      const card = await this.cardService.getPublicCardByUsername(username);
+
+      res.status(200).json({
+        success: true,
+        data: card
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getMyCards = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.user!.id;

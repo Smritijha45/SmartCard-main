@@ -4,10 +4,10 @@ import { mockStore } from '@/lib/mockStore';
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const p = await params;
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL;
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
     if (backendUrl) {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 1500);
+      const timeoutId = setTimeout(() => controller.abort(), 1200);
       try {
         const res = await fetch(`${backendUrl}/api/cards/${p.id}`, {
           headers: req.headers as any,
@@ -16,7 +16,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         clearTimeout(timeoutId);
         if (res.ok) {
           const data = await res.json();
-          return NextResponse.json(data);
+          // unwrap if data is { success: true, data: ... }
+          return NextResponse.json(data.data || data);
         }
       } catch {
         clearTimeout(timeoutId);
@@ -24,7 +25,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
     const card = mockStore.getCardById(p.id);
     if (!card) {
-      // If requested id is not found, return the primary demo card so visitors always see a card
       const fallback = mockStore.getCards()[0];
       return NextResponse.json(fallback || { message: 'Card not found' }, { status: fallback ? 200 : 404 });
     }
@@ -39,7 +39,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const body = await req.json();
     const p = await params;
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL;
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
     if (backendUrl) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 1500);
@@ -53,7 +53,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         clearTimeout(timeoutId);
         if (res.ok) {
           const data = await res.json();
-          return NextResponse.json(data);
+          return NextResponse.json(data.data || data);
         }
       } catch {
         clearTimeout(timeoutId);
@@ -69,7 +69,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const p = await params;
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL;
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
     if (backendUrl) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 1500);

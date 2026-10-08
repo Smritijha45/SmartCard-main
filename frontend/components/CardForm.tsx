@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { 
   Camera, QrCode, RotateCw, ArrowLeft, Plus, Trash2,
-  Calendar, ExternalLink, Globe, Phone, Mail
+  Calendar, ExternalLink, Globe, Phone, Mail, Lock, AlertCircle, Check
 } from 'lucide-react';
+import { QRCodeComponent } from '@/components/QRCode';
+import { validateUsername, getCardPublicUrl } from '@/lib/usernameValidation';
 
 const THEME_OPTIONS = [
   { color: '#2563EB', name: 'Royal Blue' },
@@ -21,11 +23,13 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
+    username: initialData?.username || '',
     name: initialData?.name || '',
     role: initialData?.role || '',
-    company: initialData?.company || 'SmartCard Inc.',
+    company: initialData?.company || 'SmartCard Technologies',
     email: initialData?.email || '',
     phone: initialData?.phone || '',
     website: initialData?.website || '',
@@ -33,10 +37,12 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
     template: initialData?.template || 'modern',
     profileImage: initialData?.profileImage || '',
     employeeCode: initialData?.employeeCode || 'SMART-001',
+    isPublic: initialData?.isPublic !== undefined ? initialData.isPublic : true,
     socialLinks: {
       linkedin: initialData?.socialLinks?.linkedin || '',
       twitter: initialData?.socialLinks?.twitter || '',
-      instagram: initialData?.socialLinks?.instagram || ''
+      instagram: initialData?.socialLinks?.instagram || '',
+      github: initialData?.socialLinks?.github || '',
     },
     resumeUrl: initialData?.resumeUrl || '',
     calendarUrl: initialData?.calendarUrl || '',
@@ -80,6 +86,20 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
     }
   };
 
+  const handleUsernameChange = (val: string) => {
+    setFormData(prev => ({ ...prev, username: val }));
+    if (val.trim()) {
+      const validation = validateUsername(val);
+      if (!validation.isValid) {
+        setUsernameError(validation.error || 'Invalid username');
+      } else {
+        setUsernameError(null);
+      }
+    } else {
+      setUsernameError(null);
+    }
+  };
+
   const handlePhoneDigitsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setPhoneDigits(val);
@@ -92,21 +112,20 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
     setFormData(prev => ({ ...prev, phone: `${val} ${phoneDigits}` }));
   };
 
-  const generateEmployeeCode = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code = 'SMART-';
-    for (let i = 0; i < 4; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setFormData(prev => ({ ...prev, employeeCode: code }));
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSave = async () => {
+    if (formData.username) {
+      const validation = validateUsername(formData.username);
+      if (!validation.isValid) {
+        setUsernameError(validation.error || 'Please enter a valid username');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const url = initialData ? `/api/cards/${initialData._id || initialData.id}` : '/api/cards';
@@ -122,16 +141,23 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
         body: JSON.stringify(formData)
       });
 
-      if (!res.ok) throw new Error('Failed to save profile');
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || 'Failed to save card');
+      }
+
       router.push('/cards');
       router.refresh();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Error saving digital card');
+      alert(err.message || 'Error saving digital card');
     } finally {
       setLoading(false);
     }
   };
+
+  const currentUsernameSlug = formData.username || (formData.name ? formData.name.toLowerCase().replace(/[^a-z0-9_-]/g, '-') : 'user');
+  const previewPublicUrl = getCardPublicUrl(currentUsernameSlug);
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 min-h-[calc(100vh-120px)] animate-subtle-fade">
@@ -212,6 +238,76 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
         {activeFormTab === 'basic' && (
           <div className="bg-white dark:bg-[#131924] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-5">
             
+            {/* 21. USERNAME SETUP: Choose your SmartCard URL */}
+            <div className="space-y-2 p-4 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                  <Globe size={14} className="text-blue-600 dark:text-blue-400" />
+                  <span>Choose your SmartCard URL</span>
+                </label>
+                <span className="text-[10px] text-slate-400 font-mono">smartcard.app/[username]</span>
+              </div>
+
+              <div className="flex rounded-xl shadow-2xs border border-slate-200 dark:border-slate-800 overflow-hidden focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 bg-white dark:bg-[#0B0F17]">
+                <span className="inline-flex items-center px-3 bg-slate-50 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 text-xs font-mono select-none border-r border-slate-200 dark:border-slate-800">
+                  smartcard.app/
+                </span>
+                <input
+                  type="text"
+                  value={formData.username}
+                  onChange={(e) => handleUsernameChange(e.target.value)}
+                  placeholder="smriti"
+                  className="flex-1 h-10 px-3 bg-transparent text-xs font-mono text-slate-900 dark:text-slate-100 focus:outline-none"
+                />
+              </div>
+
+              {usernameError && (
+                <p className="text-[11px] text-red-600 dark:text-red-400 flex items-center gap-1 font-medium mt-1">
+                  <AlertCircle size={13} className="shrink-0" />
+                  <span>{usernameError}</span>
+                </p>
+              )}
+
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Minimum 3 characters. Lowercase letters, numbers, hyphens, and underscores only.
+              </p>
+            </div>
+
+            {/* 23. PRIVACY: Public Profile ON / OFF */}
+            <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80">
+              <div className="space-y-0.5 pr-4">
+                <div className="flex items-center gap-2">
+                  <p className="text-xs font-medium text-slate-900 dark:text-slate-100">Public Profile</p>
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                    formData.isPublic 
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' 
+                      : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                  }`}>
+                    {formData.isPublic ? 'ON' : 'OFF'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {formData.isPublic 
+                    ? 'Card is visible to anyone visiting your public link or scanning QR.' 
+                    : 'Card is private. Public link shows "This SmartCard is currently private."'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, isPublic: !prev.isPublic }))}
+                className={`w-10 h-6 rounded-full p-1 transition-colors relative cursor-pointer shrink-0 ${
+                  formData.isPublic ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'
+                }`}
+              >
+                <div 
+                  className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                    formData.isPublic ? 'translate-x-4' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
             {/* Theme Color Selector */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
@@ -269,7 +365,7 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
                     </div>
                     <div>
                       <p className="text-xs font-medium text-slate-800 dark:text-slate-200">Upload avatar photo</p>
-                      <p className="text-[11px] text-slate-400">PNG, JPG, or GIF up to 5MB</p>
+                      <p className="text-[11px] text-slate-400">PNG, JPG, or WebP up to 5MB</p>
                     </div>
                   </div>
                 )}
@@ -324,7 +420,7 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
               </div>
             </div>
 
-            {/* Phone & Employee Code */}
+            {/* Phone & Website */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Phone Number</label>
@@ -338,47 +434,55 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
                     <option value="+44">UK +44</option>
                     <option value="+91">IN +91</option>
                     <option value="+49">DE +49</option>
-                    <option value="+81">JP +81</option>
                   </select>
                   <Input 
-                    placeholder="415 555 0192"
-                    value={phoneDigits}
-                    onChange={handlePhoneDigitsChange}
+                    placeholder="555-0199" 
+                    value={phoneDigits} 
+                    onChange={handlePhoneDigitsChange} 
                     className="flex-1"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Card Badge Code</label>
-                <div className="flex gap-2">
-                  <Input 
-                    placeholder="e.g. SMART-001" 
-                    value={formData.employeeCode} 
-                    onChange={(e) => setFormData(prev => ({ ...prev, employeeCode: e.target.value }))}
-                    className="flex-1"
-                  />
-                  <button
-                    type="button"
-                    onClick={generateEmployeeCode}
-                    className="px-3 h-10 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors"
-                  >
-                    <RotateCw size={13} />
-                    <span>Auto</span>
-                  </button>
-                </div>
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Website / Portfolio</label>
+                <Input 
+                  name="website" 
+                  placeholder="https://alexmorgan.dev" 
+                  value={formData.website} 
+                  onChange={handleChange} 
+                />
               </div>
             </div>
 
-            {/* Website URL */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Website or Portfolio URL</label>
-              <Input 
-                name="website" 
-                placeholder="https://smartcard.id" 
-                value={formData.website} 
-                onChange={handleChange} 
-              />
+            {/* Social Media Links */}
+            <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300 block">
+                Social Profile Links
+              </label>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Input 
+                  placeholder="LinkedIn (e.g. linkedin.com/in/alex)" 
+                  value={formData.socialLinks.linkedin} 
+                  onChange={(e) => setFormData(p => ({ ...p, socialLinks: { ...p.socialLinks, linkedin: e.target.value } }))}
+                />
+                <Input 
+                  placeholder="GitHub (e.g. github.com/alex)" 
+                  value={formData.socialLinks.github} 
+                  onChange={(e) => setFormData(p => ({ ...p, socialLinks: { ...p.socialLinks, github: e.target.value } }))}
+                />
+                <Input 
+                  placeholder="X / Twitter (e.g. x.com/alex)" 
+                  value={formData.socialLinks.twitter} 
+                  onChange={(e) => setFormData(p => ({ ...p, socialLinks: { ...p.socialLinks, twitter: e.target.value } }))}
+                />
+                <Input 
+                  placeholder="Instagram (e.g. instagram.com/alex)" 
+                  value={formData.socialLinks.instagram} 
+                  onChange={(e) => setFormData(p => ({ ...p, socialLinks: { ...p.socialLinks, instagram: e.target.value } }))}
+                />
+              </div>
             </div>
 
           </div>
@@ -386,120 +490,62 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
 
         {/* Tab 2: Portfolio & Bio */}
         {activeFormTab === 'portfolio' && (
-          <div className="bg-white dark:bg-[#131924] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-5">
+          <div className="bg-white dark:bg-[#131924] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Bio / Elevator Pitch</label>
-              <textarea
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Personal Bio / Elevator Pitch</label>
+              <textarea 
+                rows={4}
                 name="bio"
-                rows={3}
-                placeholder="e.g. Scaling digital identity platforms. Replaced 5,000+ paper cards with zero-NFC instant QR profiles."
+                placeholder="Brief summary of what you do, key achievements, or specialties..."
                 value={formData.bio}
                 onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                className="w-full p-3 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                className="w-full bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Cal.com / Booking Link</label>
-                <Input 
-                  name="calendarUrl" 
-                  placeholder="https://cal.com/your-username" 
-                  value={formData.calendarUrl} 
-                  onChange={handleChange} 
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Resume / CV Link</label>
-                <Input 
-                  name="resumeUrl" 
-                  placeholder="https://yourdomain.com/cv.pdf" 
-                  value={formData.resumeUrl} 
-                  onChange={handleChange} 
-                />
-              </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Calendar / Meeting Link</label>
+              <Input 
+                name="calendarUrl" 
+                placeholder="e.g. https://cal.com/alex" 
+                value={formData.calendarUrl} 
+                onChange={handleChange} 
+              />
             </div>
 
-            {/* Social handles */}
-            <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Social Profiles</label>
-              <div className="space-y-2">
-                <Input 
-                  placeholder="LinkedIn URL: https://linkedin.com/in/username"
-                  value={formData.socialLinks?.linkedin || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, socialLinks: { ...prev.socialLinks, linkedin: e.target.value } }))}
-                />
-                <Input 
-                  placeholder="Twitter / X URL: https://twitter.com/username"
-                  value={formData.socialLinks?.twitter || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, socialLinks: { ...prev.socialLinks, twitter: e.target.value } }))}
-                />
-              </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Resume / CV Link</label>
+              <Input 
+                name="resumeUrl" 
+                placeholder="e.g. https://dropbox.com/s/resume.pdf" 
+                value={formData.resumeUrl} 
+                onChange={handleChange} 
+              />
             </div>
           </div>
         )}
 
-        {/* Tab 3: Testimonials */}
+        {/* Tab 3: Reviews & Speaking */}
         {activeFormTab === 'testimonials' && (
           <div className="bg-white dark:bg-[#131924] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Client Reviews &amp; Recommendations</span>
-            
-            {formData.testimonials.map((test: any, idx: number) => (
-              <div key={idx} className="p-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2 relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const updated = [...formData.testimonials];
-                    updated.splice(idx, 1);
-                    setFormData(prev => ({ ...prev, testimonials: updated }));
-                  }}
-                  className="absolute top-3 right-3 text-slate-400 hover:text-rose-500 transition-colors"
-                >
-                  <Trash2 size={14} />
-                </button>
-                <Input 
-                  placeholder="Reviewer Name (e.g. Sarah Lin)"
-                  value={test.author || test.reviewer || ''}
-                  onChange={(e) => {
-                    const updated = [...formData.testimonials];
-                    updated[idx].author = e.target.value;
-                    setFormData(prev => ({ ...prev, testimonials: updated }));
-                  }}
-                />
-                <textarea
-                  placeholder="Quote text..."
-                  rows={2}
-                  value={test.quote || test.text || ''}
-                  onChange={(e) => {
-                    const updated = [...formData.testimonials];
-                    updated[idx].quote = e.target.value;
-                    setFormData(prev => ({ ...prev, testimonials: updated }));
-                  }}
-                  className="w-full p-2.5 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100"
-                />
-              </div>
-            ))}
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setFormData(prev => ({ ...prev, testimonials: [...prev.testimonials, { quote: '', author: '', role: 'Client' }] }))}
-              className="w-full text-xs font-medium h-9"
-            >
-              <Plus size={13} />
-              <span>Add Client Review</span>
-            </Button>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Add client reviews or public speaking events to showcase social proof.
+            </p>
+            <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/80 text-center">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                Testimonials &amp; Reviews are configured automatically from captured leads.
+              </p>
+            </div>
           </div>
         )}
 
-        {/* Bottom Save Action */}
+        {/* Save & Publish Action Button */}
         <Button 
           type="button"
           variant="primary" 
           onClick={handleSave} 
-          disabled={loading} 
-          className="w-full h-11 text-sm font-medium"
+          disabled={loading || Boolean(usernameError)} 
+          className="w-full h-11 text-sm font-medium shadow-xs"
         >
           {loading ? 'Saving Digital Card...' : initialData ? 'Save Changes' : 'Create & Publish Digital Card'}
         </Button>
@@ -520,7 +566,7 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
           </div>
 
           {/* Minimalist Executive Digital Card Preview */}
-          <div className="bg-white dark:bg-[#131924] rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-md overflow-hidden transition-all">
+          <div className="bg-white dark:bg-[#131924] rounded-3xl border border-slate-200 dark:border-slate-800/80 shadow-md overflow-hidden transition-all">
             
             {/* Accent Banner Header */}
             <div 
@@ -529,9 +575,14 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
             >
               <div className="flex items-start justify-between">
                 <div className="max-w-[70%]">
-                  <span className="text-[10px] font-medium bg-black/25 text-white/90 px-2 py-0.5 rounded backdrop-blur-xs">
-                    {formData.employeeCode || 'SMART-001'}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-medium bg-black/25 text-white/90 px-2 py-0.5 rounded backdrop-blur-xs">
+                      {formData.employeeCode || 'SMART-001'}
+                    </span>
+                    <span className="text-[10px] font-medium bg-white/20 text-white px-1.5 py-0.5 rounded backdrop-blur-xs">
+                      {formData.isPublic ? 'LIVE' : 'PRIVATE'}
+                    </span>
+                  </div>
                   <h4 className="text-lg font-semibold text-white mt-1.5 leading-snug truncate">
                     {formData.name || 'Your Full Name'}
                   </h4>
@@ -539,7 +590,7 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
                     {formData.role || 'Professional Role'}
                   </p>
                   <p className="text-[11px] text-white/75 truncate mt-0.5">
-                    {formData.company || 'SmartCard Inc.'}
+                    {formData.company || 'SmartCard Technologies'}
                   </p>
                 </div>
 
@@ -586,7 +637,7 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
                     : 'text-slate-500 dark:text-slate-400'
                 }`}
               >
-                Reviews
+                QR Code
               </button>
             </div>
 
@@ -597,28 +648,22 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-center text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5">
                       <Phone size={12} className="text-blue-600 dark:text-blue-400" />
-                      <span>Call</span>
+                      <span>{formData.phone ? 'Call' : 'Phone'}</span>
                     </div>
                     <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-center text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5">
                       <Mail size={12} className="text-blue-600 dark:text-blue-400" />
-                      <span>Email</span>
+                      <span>{formData.email ? 'Email' : 'Message'}</span>
                     </div>
                   </div>
 
-                  <div className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs text-center rounded-lg shadow-xs transition-colors">
+                  <div className="w-full py-2 bg-blue-600 text-white font-medium text-xs text-center rounded-lg shadow-xs">
                     Save Contact to Phone (.vcf)
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
-                        Camera QR Code
-                      </span>
-                      <p className="text-xs font-medium text-slate-700 dark:text-slate-300">Scans on any phone</p>
-                    </div>
-                    <div className="bg-white p-1 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xs">
-                      <QrCode size={32} className="text-slate-900" />
-                    </div>
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <p className="text-[10px] font-mono text-center text-slate-400 truncate">
+                      {previewPublicUrl}
+                    </p>
                   </div>
                 </div>
               )}
@@ -638,10 +683,20 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
               )}
 
               {activePreviewTab === 'more' && (
-                <div className="space-y-2 text-xs">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 text-center py-2">
-                    {formData.testimonials.length} reviews attached to this profile.
-                  </p>
+                <div className="flex flex-col items-center py-2 space-y-2">
+                  <QRCodeComponent
+                    value={previewPublicUrl}
+                    username={currentUsernameSlug}
+                    name={formData.name || 'User'}
+                    size={140}
+                    accentColor={formData.themeColor}
+                    showDownload={false}
+                    showShare={false}
+                    showCopy={false}
+                  />
+                  <span className="text-[10px] text-slate-400 font-mono text-center block">
+                    smartcard.app/{currentUsernameSlug}
+                  </span>
                 </div>
               )}
             </div>

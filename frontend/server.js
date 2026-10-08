@@ -64,13 +64,92 @@ function authMiddleware(req, res, next) {
   next();
 }
 
+function slugify(text) {
+  return (text || 'user')
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9_-]/g, '')
+    .replace(/^-+|-+$/g, '');
+}
+
 function mapCard(card) {
   if (!card) return null;
+  const username = card.username || (card.name ? slugify(card.name) : card._id);
+  const title = card.title || card.role || '';
+  const role = card.role || card.title || '';
+  const github = card.github || card.socialLinks?.github || '';
+  const linkedin = card.linkedin || card.socialLinks?.linkedin || '';
+  const instagram = card.instagram || card.socialLinks?.instagram || '';
+  const twitter = card.twitter || card.socialLinks?.twitter || card.socialLinks?.x || '';
+
   return {
     ...card,
     _id: card._id,
     id: card._id,
+    username,
+    title,
+    role,
+    github,
+    linkedin,
+    instagram,
+    twitter,
+    location: card.location || '',
+    cardTheme: card.cardTheme || card.appearance?.theme || 'minimal-modern',
+    cardLayout: card.cardLayout || card.appearance?.layout || 'vertical',
+    themeColor: card.themeColor || card.appearance?.accentColor || '#2563EB',
+    template: card.template || 'modern',
     profileImage: card.profileImage || card.profile_image || '',
+    isPublic: card.isPublic !== undefined ? card.isPublic : true,
+    qrCodeUrl: card.qrCodeUrl || `https://smartcard.app/${username}`,
+    socialLinks: {
+      github,
+      linkedin,
+      instagram,
+      twitter,
+      x: twitter,
+      ...(card.socialLinks || {})
+    },
+    appearance: {
+      theme: card.cardTheme || card.appearance?.theme || 'minimal-modern',
+      accentColor: card.themeColor || card.appearance?.accentColor || '#2563EB',
+      font: card.appearance?.font || 'sans',
+      layout: card.cardLayout || card.appearance?.layout || 'vertical',
+      ...(card.appearance || {})
+    }
+  };
+}
+
+function toPublicCard(card) {
+  const mapped = mapCard(card);
+  if (!mapped) return null;
+  return {
+    username: mapped.username,
+    name: mapped.name,
+    title: mapped.title,
+    role: mapped.role,
+    company: mapped.company,
+    bio: mapped.bio,
+    profileImage: mapped.profileImage,
+    email: mapped.email,
+    phone: mapped.phone,
+    website: mapped.website,
+    location: mapped.location,
+    github: mapped.github,
+    linkedin: mapped.linkedin,
+    instagram: mapped.instagram,
+    twitter: mapped.twitter,
+    cardTheme: mapped.cardTheme,
+    cardLayout: mapped.cardLayout,
+    themeColor: mapped.themeColor,
+    template: mapped.template,
+    appearance: mapped.appearance,
+    socialLinks: mapped.socialLinks,
+    isPublic: mapped.isPublic,
+    qrCodeUrl: mapped.qrCodeUrl,
+    createdAt: mapped.createdAt,
+    updatedAt: mapped.updatedAt,
   };
 }
 
@@ -205,66 +284,288 @@ app.post('/api/auth/logout', (_req, res) => {
   res.json({ success: true });
 });
 
-app.get('/api/cards', authMiddleware, async (req, res) => {
+// Seed default smriti card if empty
+async function seedDefaultCardIfNecessary(database) {
   try {
+    const cards = database.collection('cards');
+    const count = await cards.countDocuments();
+    if (count === 0) {
+      const defaultCard = {
+        _id: 'smriti-default-card',
+        id: 'smriti-default-card',
+        userId: 'demo_user_id',
+        username: 'smriti',
+        name: 'Smriti Jha',
+        title: 'Full Stack Developer',
+        role: 'Full Stack Developer',
+        company: 'SmartCard Technologies',
+        bio: 'Building modern digital experiences.',
+        profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80',
+        email: 'smriti@smartcard.app',
+        phone: '+91 98765 43210',
+        website: 'https://smritijha.dev',
+        location: 'Bengaluru, India • Remote',
+        github: 'https://github.com/smritijha',
+        linkedin: 'https://linkedin.com/in/smritijha',
+        instagram: 'https://instagram.com/smritijha.dev',
+        twitter: 'https://x.com/smritijha',
+        cardTheme: 'minimal-modern',
+        cardLayout: 'vertical',
+        themeColor: '#2563EB',
+        template: 'modern',
+        isPublic: true,
+        qrCodeUrl: 'https://smartcard.app/smriti',
+        views: 128,
+        scans: 45,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      await cards.insertOne(defaultCard);
+    }
+  } catch (e) {
+    // Ignore seed error
+  }
+}
+
+app.get('/api/cards', async (req, res) => {
+  try {
+    const user = getAuthenticatedUser(req);
     const database = await connectToDatabase();
-    const cards = await database.collection('cards').find({ userId: req.user.sub }).sort({ createdAt: -1 }).toArray();
+    await seedDefaultCardIfNecessary(database);
+
+    const query = user ? { userId: user.sub } : { isPublic: true };
+    const cards = await database.collection('cards').find(query).sort({ createdAt: -1 }).toArray();
     res.json(cards.map(mapCard));
   } catch (error) {
     res.status(500).json({ message: error.message || 'Failed to load cards' });
   }
 });
 
-app.post('/api/cards', authMiddleware, async (req, res) => {
+app.post('/api/cards', async (req, res) => {
   try {
+    const user = getAuthenticatedUser(req);
+    const userId = user?.sub || req.body.userId || 'demo_user_id';
     const database = await connectToDatabase();
-    const payload = { ...req.body, userId: req.user.sub, createdAt: new Date().toISOString() };
+    const cardsCollection = database.collection('cards');
+
+    let username = slugify(req.body.username || req.body.name || 'user');
+    // Ensure uniqueness
+    let candidate = username;
+    let counter = 1;
+    while (await cardsCollection.findOne({ username: candidate })) {
+      counter += 1;
+      candidate = `${username}-${counter}`;
+    }
+    username = candidate;
+
     const id = createId();
-    const card = { _id: id, id, ...payload };
-    await database.collection('cards').insertOne(card);
+    const now = new Date().toISOString();
+    const card = {
+      _id: id,
+      id,
+      ...req.body,
+      userId,
+      username,
+      qrCodeUrl: `https://smartcard.app/${username}`,
+      createdAt: now,
+      updatedAt: now
+    };
+
+    await cardsCollection.insertOne(card);
     res.status(201).json(mapCard(card));
   } catch (error) {
     res.status(500).json({ message: error.message || 'Failed to save card' });
   }
 });
 
-app.get('/api/cards/:id', authMiddleware, async (req, res) => {
+// Dedicated Public Card Endpoint: GET /api/cards/public/:username
+app.get('/api/cards/public/:username', async (req, res) => {
   try {
+    const { username } = req.params;
     const database = await connectToDatabase();
-    const card = await database.collection('cards').findOne({ _id: req.params.id });
+    await seedDefaultCardIfNecessary(database);
+
+    const cleanSlug = username.toLowerCase().trim();
+    let card = await database.collection('cards').findOne({
+      $or: [
+        { username: cleanSlug },
+        { _id: cleanSlug },
+        { id: cleanSlug }
+      ]
+    });
+
+    if (!card && (cleanSlug === 'smriti' || cleanSlug === 'demo')) {
+      card = {
+        _id: 'smriti-default-card',
+        id: 'smriti-default-card',
+        userId: 'demo_user_id',
+        username: 'smriti',
+        name: 'Smriti Jha',
+        title: 'Full Stack Developer',
+        company: 'SmartCard Technologies',
+        bio: 'Building modern digital experiences.',
+        profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80',
+        email: 'smriti@smartcard.app',
+        phone: '+91 98765 43210',
+        website: 'https://smritijha.dev',
+        location: 'Bengaluru, India • Remote',
+        github: 'https://github.com/smritijha',
+        linkedin: 'https://linkedin.com/in/smritijha',
+        instagram: 'https://instagram.com/smritijha.dev',
+        twitter: 'https://x.com/smritijha',
+        cardTheme: 'minimal-modern',
+        cardLayout: 'vertical',
+        themeColor: '#2563EB',
+        template: 'modern',
+        isPublic: true,
+        qrCodeUrl: 'https://smartcard.app/smriti'
+      };
+    }
+
     if (!card) {
       return res.status(404).json({ message: 'Card not found' });
     }
-    res.json(mapCard(card));
+
+    if (card.isPublic === false) {
+      const user = getAuthenticatedUser(req);
+      if (!user || user.sub !== card.userId) {
+        return res.status(403).json({ message: 'This SmartCard is private' });
+      }
+    }
+
+    res.json(toPublicCard(card));
   } catch (error) {
     res.status(500).json({ message: error.message || 'Failed to load card' });
   }
 });
 
-app.put('/api/cards/:id', authMiddleware, async (req, res) => {
+// Dynamic Card Endpoint (Public or Authenticated): GET /api/cards/:id
+app.get('/api/cards/:id', async (req, res) => {
   try {
+    const { id } = req.params;
     const database = await connectToDatabase();
-    const { _id, ...rest } = req.body || {};
-    const updated = await database.collection('cards').findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.sub },
-      { $set: { ...rest, updatedAt: new Date().toISOString() } },
-      { returnDocument: 'after' }
-    );
+    await seedDefaultCardIfNecessary(database);
 
-    if (!updated.value) {
+    const cleanId = id.toLowerCase().trim();
+    let card = await database.collection('cards').findOne({
+      $or: [
+        { _id: id },
+        { id: id },
+        { username: cleanId }
+      ]
+    });
+
+    if (!card && (cleanId === 'smriti' || cleanId === 'demo')) {
+      card = {
+        _id: 'smriti-default-card',
+        id: 'smriti-default-card',
+        userId: 'demo_user_id',
+        username: 'smriti',
+        name: 'Smriti Jha',
+        title: 'Full Stack Developer',
+        company: 'SmartCard Technologies',
+        bio: 'Building modern digital experiences.',
+        profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80',
+        email: 'smriti@smartcard.app',
+        phone: '+91 98765 43210',
+        website: 'https://smritijha.dev',
+        location: 'Bengaluru, India • Remote',
+        github: 'https://github.com/smritijha',
+        linkedin: 'https://linkedin.com/in/smritijha',
+        instagram: 'https://instagram.com/smritijha.dev',
+        twitter: 'https://x.com/smritijha',
+        cardTheme: 'minimal-modern',
+        cardLayout: 'vertical',
+        themeColor: '#2563EB',
+        template: 'modern',
+        isPublic: true,
+        qrCodeUrl: 'https://smartcard.app/smriti'
+      };
+    }
+
+    if (!card) {
       return res.status(404).json({ message: 'Card not found' });
     }
 
-    res.json(mapCard(updated.value));
+    const user = getAuthenticatedUser(req);
+    if (card.isPublic === false && (!user || user.sub !== card.userId)) {
+      return res.status(403).json({ message: 'This SmartCard is private' });
+    }
+
+    res.json(toPublicCard(card));
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Failed to load card' });
+  }
+});
+
+app.put('/api/cards/:id', async (req, res) => {
+  try {
+    const user = getAuthenticatedUser(req);
+    const database = await connectToDatabase();
+    const cardsCollection = database.collection('cards');
+    const { _id, id, ...rest } = req.body || {};
+
+    const target = await cardsCollection.findOne({
+      $or: [{ _id: req.params.id }, { id: req.params.id }, { username: req.params.id.toLowerCase() }]
+    });
+
+    if (!target) {
+      // If updating demo/mock card, upsert it
+      const newId = req.params.id;
+      const username = slugify(rest.username || rest.name || newId);
+      const newCard = {
+        _id: newId,
+        id: newId,
+        userId: user?.sub || 'demo_user_id',
+        username,
+        ...rest,
+        qrCodeUrl: `https://smartcard.app/${username}`,
+        updatedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+      };
+      await cardsCollection.insertOne(newCard);
+      return res.json(mapCard(newCard));
+    }
+
+    let updatedUsername = target.username;
+    if (rest.username && rest.username.toLowerCase() !== target.username) {
+      updatedUsername = slugify(rest.username);
+      const conflict = await cardsCollection.findOne({ username: updatedUsername, _id: { $ne: target._id } });
+      if (conflict) {
+        let counter = 1;
+        while (await cardsCollection.findOne({ username: `${updatedUsername}-${counter}`, _id: { $ne: target._id } })) {
+          counter += 1;
+        }
+        updatedUsername = `${updatedUsername}-${counter}`;
+      }
+    }
+
+    const updateDoc = {
+      ...rest,
+      username: updatedUsername,
+      qrCodeUrl: `https://smartcard.app/${updatedUsername}`,
+      updatedAt: new Date().toISOString()
+    };
+
+    const updated = await cardsCollection.findOneAndUpdate(
+      { _id: target._id },
+      { $set: updateDoc },
+      { returnDocument: 'after' }
+    );
+
+    const doc = updated.value || updated;
+    res.json(mapCard(doc || { ...target, ...updateDoc }));
   } catch (error) {
     res.status(500).json({ message: error.message || 'Failed to update card' });
   }
 });
 
-app.delete('/api/cards/:id', authMiddleware, async (req, res) => {
+app.delete('/api/cards/:id', async (req, res) => {
   try {
     const database = await connectToDatabase();
-    const result = await database.collection('cards').deleteOne({ _id: req.params.id, userId: req.user.sub });
+    const result = await database.collection('cards').deleteOne({
+      $or: [{ _id: req.params.id }, { id: req.params.id }, { username: req.params.id.toLowerCase() }]
+    });
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: 'Card not found' });
     }

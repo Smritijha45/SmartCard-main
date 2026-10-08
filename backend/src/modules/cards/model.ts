@@ -3,7 +3,9 @@ import { Schema, model, Document } from 'mongoose';
 export interface ICardSocialLinks {
   linkedin?: string;
   twitter?: string;
+  x?: string;
   instagram?: string;
+  github?: string;
 }
 
 export interface ICardProject {
@@ -26,21 +28,30 @@ export interface ICardTestimonial {
 
 export interface ICard {
   userId: Schema.Types.ObjectId;
-  companyId?: Schema.Types.ObjectId;
+  username: string;
   name: string;
+  title?: string;
   role?: string;
   company?: string;
+  bio?: string;
+  profileImage?: string;
   email?: string;
   phone?: string;
   website?: string;
+  location?: string;
+  github?: string;
+  linkedin?: string;
+  instagram?: string;
+  twitter?: string;
+  cardTheme?: string;
+  cardLayout?: string;
+  companyId?: Schema.Types.ObjectId;
   themeColor: string;
   template: string;
-  profileImage?: string;
   employeeCode?: string;
   socialLinks: ICardSocialLinks;
   resumeUrl?: string;
   calendarUrl?: string;
-  bio?: string;
   projects?: ICardProject[];
   speakingEvents?: ICardSpeakingEvent[];
   testimonials?: ICardTestimonial[];
@@ -75,25 +86,36 @@ const CardTestimonialSchema = new Schema<ICardTestimonial>({
 
 const CardSchema = new Schema<ICardDocument>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-  companyId: { type: Schema.Types.ObjectId, ref: 'Company', index: true },
+  username: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
   name: { type: String, required: true, trim: true },
+  title: { type: String, trim: true },
   role: { type: String, trim: true },
   company: { type: String, trim: true },
+  bio: { type: String, trim: true },
+  profileImage: { type: String },
   email: { type: String, lowercase: true, trim: true },
   phone: { type: String, trim: true },
   website: { type: String, trim: true },
+  location: { type: String, trim: true },
+  github: { type: String, trim: true },
+  linkedin: { type: String, trim: true },
+  instagram: { type: String, trim: true },
+  twitter: { type: String, trim: true },
+  cardTheme: { type: String, default: 'minimal-modern' },
+  cardLayout: { type: String, default: 'vertical' },
+  companyId: { type: Schema.Types.ObjectId, ref: 'Company', index: true },
   themeColor: { type: String, default: '#3B82F6' },
   template: { type: String, default: 'modern' },
-  profileImage: { type: String },
   employeeCode: { type: String, trim: true },
   socialLinks: {
     linkedin: { type: String, trim: true },
     twitter: { type: String, trim: true },
-    instagram: { type: String, trim: true }
+    x: { type: String, trim: true },
+    instagram: { type: String, trim: true },
+    github: { type: String, trim: true },
   },
   resumeUrl: { type: String, trim: true },
   calendarUrl: { type: String, trim: true },
-  bio: { type: String, trim: true },
   projects: [CardProjectSchema],
   speakingEvents: [CardSpeakingEventSchema],
   testimonials: [CardTestimonialSchema],

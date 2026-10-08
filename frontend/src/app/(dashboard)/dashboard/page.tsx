@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/components/providers/ThemeProvider';
+import { QRCodeComponent } from '@/components/QRCode';
+import { ShareCard } from '@/components/ShareCard';
 
 const LinkedInIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -59,6 +61,7 @@ export default function DashboardPage() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [chartTimeframe, setChartTimeframe] = useState<'7D' | '30D'>('7D');
   const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -135,15 +138,15 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2.5">
             <Button
               variant="secondary"
-              onClick={handleCopyLink}
+              onClick={() => setShareModalOpen(true)}
               size="md"
             >
               <Share2 size={14} />
-              <span>Share Link</span>
+              <span>Share SmartCard</span>
             </Button>
             <Link href="/smriti" target="_blank">
               <Button variant="primary" size="md">
-                <span>View Public</span>
+                <span>View Live Card</span>
                 <ExternalLink size={14} />
               </Button>
             </Link>
@@ -730,53 +733,45 @@ export default function DashboardPage() {
 
       </div>
 
+      {/* Share Card Modal */}
+      <ShareCard
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        username="smriti"
+        name={userName}
+        title={userRole}
+        company={userCompany}
+        profileImage={userAvatar}
+        onOpenQR={() => setQrModalOpen(true)}
+        onToast={showToast}
+      />
+
       {/* QR Code Modal */}
       {qrModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-subtle-fade">
-          <div className="bg-white dark:bg-[#131924] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-6 max-w-sm w-full space-y-4 text-center relative">
+          <div className="bg-white dark:bg-[#131924] border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl p-6 max-w-sm w-full space-y-4 text-center relative">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <span className="text-xs font-medium text-slate-900 dark:text-slate-100">
-                Camera Scannable QR Code
+              <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                Live SmartCard QR Code
               </span>
               <button 
                 onClick={() => setQrModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <div className="bg-white p-4 rounded-xl border border-slate-200 dark:border-slate-800 inline-block shadow-2xs">
-              <QrCode size={180} className="text-slate-900" />
-            </div>
-
-            <div className="space-y-0.5">
-              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{userName}</h3>
-              <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">smartcard.app/smriti</p>
-              <p className="text-[11px] text-slate-400">Point any camera to open profile instantly</p>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleCopyLink}
-                className="flex-1"
-              >
-                Copy Link
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => {
-                  showToast('QR Code saved to camera roll!');
-                  setQrModalOpen(false);
-                }}
-                className="flex-1"
-              >
-                Save Image
-              </Button>
-            </div>
+            <QRCodeComponent
+              value={typeof window !== 'undefined' ? `${window.location.origin}/smriti` : 'https://smartcard.app/smriti'}
+              username="smriti"
+              name={userName}
+              size={200}
+              accentColor={cardThemeColor}
+              showDownload={true}
+              showShare={true}
+              showCopy={true}
+            />
           </div>
         </div>
       )}
