@@ -19,8 +19,18 @@ const app = express();
 
 // Security and utility Middlewares
 app.use(helmet());
+
+const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+const allowedOrigins = [clientUrl, 'http://localhost:3000', 'http://127.0.0.1:3000'].filter(Boolean);
+
 app.use(cors({
-  origin: '*', // Customize for production client domains
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.some(o => origin.startsWith(o))) {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
   credentials: true
 }));
 
@@ -79,6 +89,7 @@ app.use('/api/company', companyRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/leads', leadsRoutes);
+app.use('/api/contacts', leadsRoutes);
 app.use('/api/ai', aiRoutes);
 
 // Fallback for unhandled routes
