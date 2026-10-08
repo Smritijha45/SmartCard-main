@@ -50,6 +50,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { isDark } = useTheme();
   const [userName, setUserName] = useState('Smriti Jha');
+  const [userUsername, setUserUsername] = useState('smriti');
   const [userRole, setUserRole] = useState('Full Stack Developer');
   const [userCompany, setUserCompany] = useState('SmartCard Technologies');
   const [userBio, setUserBio] = useState('Building modern web experiences. 100% digital, zero NFC hardware needed.');
@@ -74,6 +75,7 @@ export default function DashboardPage() {
           if (parsed.company) setUserCompany(parsed.company);
           if (parsed.email) setUserEmail(parsed.email);
           if (parsed.avatar) setUserAvatar(parsed.avatar);
+          if (parsed.username) setUserUsername(parsed.username);
         } catch (e) {
           console.error(e);
         }
@@ -84,18 +86,40 @@ export default function DashboardPage() {
         try {
           const card = JSON.parse(storedCard);
           if (card.name) setUserName(card.name);
-          if (card.role) setUserRole(card.role);
+          if (card.role || card.title) setUserRole(card.role || card.title);
           if (card.company) setUserCompany(card.company);
           if (card.bio) setUserBio(card.bio);
           if (card.profileImage) setUserAvatar(card.profileImage);
           if (card.email) setUserEmail(card.email);
           if (card.phone) setUserPhone(card.phone);
           if (card.website) setUserWebsite(card.website);
-          if (card.appearance?.accentColor) setCardThemeColor(card.appearance.accentColor);
+          if (card.username) setUserUsername(card.username);
+          if (card.appearance?.accentColor || card.cardTheme) setCardThemeColor(card.appearance?.accentColor || card.cardTheme);
         } catch (e) {
           console.error(e);
         }
       }
+
+      // Fetch live data from backend API
+      fetch('/api/cards')
+        .then((res) => res.json())
+        .then((data) => {
+          const list = Array.isArray(data) ? data : data.data || [];
+          if (list.length > 0) {
+            const card = list[0];
+            if (card.name) setUserName(card.name);
+            if (card.role || card.title) setUserRole(card.role || card.title);
+            if (card.company) setUserCompany(card.company);
+            if (card.bio) setUserBio(card.bio);
+            if (card.profileImage) setUserAvatar(card.profileImage);
+            if (card.email) setUserEmail(card.email);
+            if (card.phone) setUserPhone(card.phone);
+            if (card.website) setUserWebsite(card.website);
+            if (card.username) setUserUsername(card.username);
+            if (card.cardTheme || card.appearance?.accentColor) setCardThemeColor(card.cardTheme || card.appearance?.accentColor);
+          }
+        })
+        .catch(() => {});
     }
   }, []);
 
@@ -105,7 +129,7 @@ export default function DashboardPage() {
   };
 
   const handleCopyLink = () => {
-    const url = typeof window !== 'undefined' ? `${window.location.origin}/smriti` : 'https://smartcard.app/smriti';
+    const url = typeof window !== 'undefined' ? `${window.location.origin}/${userUsername}` : `https://smartcard.app/${userUsername}`;
     if (typeof navigator !== 'undefined') {
       navigator.clipboard?.writeText(url);
     }
@@ -144,7 +168,7 @@ export default function DashboardPage() {
               <Share2 size={14} />
               <span>Share SmartCard</span>
             </Button>
-            <Link href="/smriti" target="_blank">
+            <Link href={`/${userUsername}`} target="_blank">
               <Button variant="primary" size="md">
                 <span>View Live Card</span>
                 <ExternalLink size={14} />
@@ -407,7 +431,7 @@ export default function DashboardPage() {
               <span>Share</span>
             </Button>
 
-            <Link href="/smriti" target="_blank">
+            <Link href={`/${userUsername}`} target="_blank">
               <Button 
                 variant="outline" 
                 size="sm"
@@ -737,7 +761,7 @@ export default function DashboardPage() {
       <ShareCard
         isOpen={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
-        username="smriti"
+        username={userUsername}
         name={userName}
         title={userRole}
         company={userCompany}
@@ -763,8 +787,8 @@ export default function DashboardPage() {
             </div>
 
             <QRCodeComponent
-              value={typeof window !== 'undefined' ? `${window.location.origin}/smriti` : 'https://smartcard.app/smriti'}
-              username="smriti"
+              value={typeof window !== 'undefined' ? `${window.location.origin}/${userUsername}` : `https://smartcard.app/${userUsername}`}
+              username={userUsername}
               name={userName}
               size={200}
               accentColor={cardThemeColor}

@@ -149,6 +149,28 @@ export default function LeadsPage() {
           console.error(e);
         }
       }
+
+      fetch('/api/leads')
+        .then((res) => res.json())
+        .then((data) => {
+          const list = Array.isArray(data) ? data : data.data || [];
+          if (list.length > 0) {
+            const mapped = list.map((item: any, idx: number) => ({
+              id: item._id || item.id || `lead-${idx}`,
+              name: item.name || item.contactName || 'New Connection',
+              company: item.company || 'Enterprise',
+              email: item.email || '',
+              phone: item.phone || '',
+              role: item.role || item.title || 'Professional',
+              dateConnected: item.dateConnected || (item.createdAt ? item.createdAt.split('T')[0] : '2026-10-06'),
+              status: item.status || 'New Lead',
+              notes: item.notes || item.message || '',
+              avatarColor: item.avatarColor || '#2563EB',
+            }));
+            setContacts(mapped);
+          }
+        })
+        .catch(() => {});
     }
   }, []);
 
@@ -218,6 +240,12 @@ export default function LeadsPage() {
       notes: newContact.notes || 'Added to SmartCard contacts',
       avatarColor: randomColor,
     };
+
+    fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(created),
+    }).catch(() => {});
 
     const updated = [created, ...contacts];
     saveContactsState(updated);
