@@ -5,18 +5,16 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { 
-  Check, Mail, Phone, Globe, Briefcase, MessageCircle, Camera, QrCode, 
-  RotateCw, ArrowLeft, Plus, Bookmark, Calendar, Sparkles, Download, ExternalLink,
-  ShieldCheck
+  Camera, QrCode, RotateCw, ArrowLeft, Plus, Trash2,
+  Calendar, ExternalLink, Globe, Phone, Mail
 } from 'lucide-react';
-import { IPhoneMockup } from '@/components/ui/IPhoneMockup';
 
 const THEME_OPTIONS = [
-  { color: '#2563EB', name: 'Electric Blue' },
-  { color: '#06B6D4', name: 'Bright Cyan' },
-  { color: '#F59E0B', name: 'Sunset Amber' },
-  { color: '#10B981', name: 'Emerald Green' },
-  { color: '#8B5CF6', name: 'Neo Violet' },
+  { color: '#2563EB', name: 'Royal Blue' },
+  { color: '#06B6D4', name: 'Cyan' },
+  { color: '#F59E0B', name: 'Amber' },
+  { color: '#10B981', name: 'Emerald' },
+  { color: '#8B5CF6', name: 'Violet' },
 ];
 
 export function CardForm({ initialData = null }: { initialData?: any }) {
@@ -51,7 +49,6 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
   const [activeFormTab, setActiveFormTab] = useState<'basic' | 'portfolio' | 'testimonials'>('basic');
   const [activePreviewTab, setActivePreviewTab] = useState<'info' | 'portfolio' | 'more'>('info');
 
-  // Extract initial country code and phone number parts
   const initialPhone = initialData?.phone || '';
   let initialCode = '+1';
   let initialDigits = '';
@@ -137,45 +134,52 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 min-h-[calc(100vh-120px)] animate-in fade-in duration-200">
+    <div className="flex flex-col lg:flex-row gap-8 min-h-[calc(100vh-120px)] animate-subtle-fade">
       
       {/* Left Form Editor Column */}
-      <div className="w-full lg:w-7/12 overflow-y-auto pb-16 space-y-6">
+      <div className="w-full lg:w-7/12 pb-16 space-y-5">
         
         {/* Navigation Breadcrumb */}
-        <div className="flex items-center space-x-2 text-xs font-mono font-bold uppercase tracking-wider text-gray-400">
+        <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400">
            <button 
              onClick={() => router.back()} 
-             className="hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
+             className="hover:text-slate-900 dark:hover:text-slate-100 flex items-center gap-1 cursor-pointer transition-colors"
            >
-              &larr; Return to Cards
+              <ArrowLeft size={13} />
+              <span>Cards</span>
            </button>
            <span>/</span>
-           <span className="text-cyan-400">{initialData ? 'Edit Digital Card' : 'Create Digital Card'}</span>
+           <span className="text-slate-800 dark:text-slate-200 font-medium">
+             {initialData ? 'Edit Digital Card' : 'Create Digital Card'}
+           </span>
         </div>
 
         {/* Form Header */}
-        <div className="bg-[#0e1628] p-6 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000]">
-          <span className="font-mono text-[10px] font-bold uppercase bg-blue-600 text-white px-2 py-0.5 rounded border border-black shadow-[1px_1px_0px_#000] inline-block mb-1">
-            Zero NFC • Instant Web &amp; QR
-          </span>
-          <h2 className="text-2xl font-black text-white leading-tight">
+        <div className="bg-white dark:bg-[#131924] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[11px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-md">
+              Digital Identity
+            </span>
+            <span className="text-xs text-slate-400">•</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">Zero NFC Hardware</span>
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
             {initialData ? 'Edit Digital Card' : 'Create New Digital Business Card'}
           </h2>
-          <p className="text-xs text-gray-300 font-medium mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Customize personal branding, direct links, and scannable contact details.
           </p>
         </div>
 
-        {/* Tab Headers */}
-        <div className="flex border-2 border-black bg-black p-1.5 rounded-lg gap-2 text-xs font-mono font-bold uppercase tracking-wider shadow-[3px_3px_0px_#000]">
+        {/* Segmented Tab Headers */}
+        <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 dark:bg-slate-800/70 rounded-xl">
           <button
             type="button"
             onClick={() => setActiveFormTab('basic')}
-            className={`flex-1 py-2 rounded-md transition-all cursor-pointer ${
+            className={`py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
               activeFormTab === 'basic' 
-                ? 'bg-white text-black border-2 border-black shadow-[2px_2px_0px_#000]' 
-                : 'text-gray-400 hover:text-white border-2 border-transparent'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold' 
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             Basic Info &amp; Theme
@@ -183,10 +187,10 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
           <button
             type="button"
             onClick={() => setActiveFormTab('portfolio')}
-            className={`flex-1 py-2 rounded-md transition-all cursor-pointer ${
+            className={`py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
               activeFormTab === 'portfolio' 
-                ? 'bg-white text-black border-2 border-black shadow-[2px_2px_0px_#000]' 
-                : 'text-gray-400 hover:text-white border-2 border-transparent'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold' 
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             Portfolio &amp; Bio
@@ -194,10 +198,10 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
           <button
             type="button"
             onClick={() => setActiveFormTab('testimonials')}
-            className={`flex-1 py-2 rounded-md transition-all cursor-pointer ${
+            className={`py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
               activeFormTab === 'testimonials' 
-                ? 'bg-white text-black border-2 border-black shadow-[2px_2px_0px_#000]' 
-                : 'text-gray-400 hover:text-white border-2 border-transparent'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold' 
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             Reviews &amp; Speaking
@@ -206,25 +210,26 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
 
         {/* Tab 1: Basic Info & Theme */}
         {activeFormTab === 'basic' && (
-          <div className="bg-[#0e1628] p-6 rounded-xl border-2 border-black shadow-[5px_5px_0px_#000] space-y-5">
+          <div className="bg-white dark:bg-[#131924] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-5">
             
             {/* Theme Color Selector */}
             <div className="space-y-2">
-              <label className="text-xs font-mono font-bold uppercase text-gray-300">
-                Card Theme Accent Color
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                Card Accent Color
               </label>
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2.5">
                 {THEME_OPTIONS.map((opt) => (
                   <button
                     key={opt.color}
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, themeColor: opt.color }))}
-                    className={`h-10 px-3.5 rounded-lg border-2 border-black font-mono text-xs font-bold text-white flex items-center gap-2 cursor-pointer transition-all shadow-[2px_2px_0px_#000] ${
-                      formData.themeColor === opt.color ? 'ring-2 ring-white scale-105' : 'opacity-80 hover:opacity-100'
+                    className={`h-8 px-3 rounded-lg text-xs font-medium text-white flex items-center gap-1.5 cursor-pointer transition-all ${
+                      formData.themeColor === opt.color 
+                        ? 'ring-2 ring-offset-2 ring-slate-900 dark:ring-white dark:ring-offset-slate-900 scale-102' 
+                        : 'opacity-85 hover:opacity-100'
                     }`}
                     style={{ backgroundColor: opt.color }}
                   >
-                    <span className="w-2.5 h-2.5 rounded-full bg-white border border-black"></span>
                     <span>{opt.name}</span>
                   </button>
                 ))}
@@ -233,12 +238,12 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
 
             {/* Profile Photo Uploader */}
             <div className="space-y-2">
-              <label className="text-xs font-mono font-bold uppercase text-gray-300">
-                Profile Avatar / Photo
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                Profile Photo / Avatar
               </label>
               <div 
                 onClick={() => document.getElementById('profileImageInput')?.click()}
-                className="bg-[#090D16] border-2 border-black border-dashed rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer hover:bg-[#121c33] transition-all shadow-[2px_2px_0px_#000]"
+                className="border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
               >
                 <input 
                   id="profileImageInput"
@@ -248,23 +253,23 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
                   onChange={handleImageUpload}
                 />
                 {formData.profileImage ? (
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-black shadow-[2px_2px_0px_#000]">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-14 h-14 rounded-full overflow-hidden ring-1 ring-slate-200 dark:ring-slate-700">
                       <img src={formData.profileImage} alt="Profile" className="w-full h-full object-cover" />
                     </div>
                     <div className="text-left">
-                      <p className="text-xs font-bold text-white">Custom photo loaded</p>
-                      <p className="text-[10px] text-cyan-400 font-mono">Click to change avatar image</p>
+                      <p className="text-xs font-medium text-slate-900 dark:text-slate-100">Custom photo uploaded</p>
+                      <p className="text-[11px] text-blue-600 dark:text-blue-400">Click to change avatar image</p>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-600 border-2 border-black flex items-center justify-center text-white shadow-[2px_2px_0px_#000]">
-                      <Camera size={18} />
+                    <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                      <Camera size={16} />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-white">Upload avatar photo</p>
-                      <p className="text-[10px] text-gray-400 font-mono">PNG, JPG, or GIF up to 5MB</p>
+                      <p className="text-xs font-medium text-slate-800 dark:text-slate-200">Upload avatar photo</p>
+                      <p className="text-[11px] text-slate-400">PNG, JPG, or GIF up to 5MB</p>
                     </div>
                   </div>
                 )}
@@ -274,7 +279,7 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
             {/* Full Name & Company */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Full Name *</label>
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Full Name *</label>
                 <Input 
                   name="name" 
                   placeholder="e.g. Alex Morgan" 
@@ -285,7 +290,7 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Company Name</label>
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Company Name</label>
                 <Input 
                   name="company" 
                   placeholder="e.g. SmartCard Technologies" 
@@ -298,21 +303,21 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
             {/* Role & Email */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Job Title / Role</label>
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Job Title / Role</label>
                 <Input 
                   name="role" 
-                  placeholder="e.g. Founder & CEO" 
+                  placeholder="e.g. Product Lead" 
                   value={formData.role} 
                   onChange={handleChange} 
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Contact Email</label>
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Email Address</label>
                 <Input 
                   name="email" 
-                  type="email" 
-                  placeholder="e.g. alex@company.com" 
+                  type="email"
+                  placeholder="alex@company.com" 
                   value={formData.email} 
                   onChange={handleChange} 
                 />
@@ -322,12 +327,12 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
             {/* Phone & Employee Code */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Phone Number</label>
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Phone Number</label>
                 <div className="flex gap-2">
                   <select
                     value={countryCode}
                     onChange={handleCountryCodeChange}
-                    className="w-24 h-11 bg-[#090D16] border-2 border-black rounded-lg px-2 text-xs font-mono font-bold text-white shadow-[2px_2px_0px_#000]"
+                    className="w-22 h-10 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg px-2 text-xs font-medium text-slate-800 dark:text-slate-200"
                   >
                     <option value="+1">US +1</option>
                     <option value="+44">UK +44</option>
@@ -345,7 +350,7 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Card Badge Code</label>
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Card Badge Code</label>
                 <div className="flex gap-2">
                   <Input 
                     placeholder="e.g. SMART-001" 
@@ -356,10 +361,10 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
                   <button
                     type="button"
                     onClick={generateEmployeeCode}
-                    className="px-3 h-11 bg-slate-900 border-2 border-black rounded-lg text-xs font-bold text-gray-200 flex items-center gap-1 shadow-[2px_2px_0px_#000] cursor-pointer"
+                    className="px-3 h-10 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors"
                   >
                     <RotateCw size={13} />
-                    <span>Roll</span>
+                    <span>Auto</span>
                   </button>
                 </div>
               </div>
@@ -367,7 +372,7 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
 
             {/* Website URL */}
             <div className="space-y-1.5">
-              <label className="text-xs font-mono font-bold uppercase text-gray-300">Website or Portfolio URL</label>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Website or Portfolio URL</label>
               <Input 
                 name="website" 
                 placeholder="https://smartcard.id" 
@@ -381,22 +386,22 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
 
         {/* Tab 2: Portfolio & Bio */}
         {activeFormTab === 'portfolio' && (
-          <div className="bg-[#0e1628] p-6 rounded-xl border-2 border-black shadow-[5px_5px_0px_#000] space-y-5">
+          <div className="bg-white dark:bg-[#131924] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-5">
             <div className="space-y-1.5">
-              <label className="text-xs font-mono font-bold uppercase text-gray-300">Bio / Elevator Pitch</label>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Bio / Elevator Pitch</label>
               <textarea
                 name="bio"
                 rows={3}
                 placeholder="e.g. Scaling digital identity platforms. Replaced 5,000+ paper cards with zero-NFC instant QR profiles."
                 value={formData.bio}
                 onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                className="w-full p-3 bg-[#090D16] border-2 border-black rounded-lg text-xs font-medium text-white shadow-[2px_2px_0px_#000] focus:outline-none focus:border-blue-500"
+                className="w-full p-3 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Cal.com / Meeting Booking Link</label>
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Cal.com / Booking Link</label>
                 <Input 
                   name="calendarUrl" 
                   placeholder="https://cal.com/your-username" 
@@ -406,7 +411,7 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Resume / CV Link</label>
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Resume / CV Link</label>
                 <Input 
                   name="resumeUrl" 
                   placeholder="https://yourdomain.com/cv.pdf" 
@@ -417,11 +422,11 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
             </div>
 
             {/* Social handles */}
-            <div className="space-y-3 pt-2 border-t-2 border-slate-800">
-              <label className="text-xs font-mono font-bold uppercase text-cyan-400">Social Profile URLs</label>
+            <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Social Profiles</label>
               <div className="space-y-2">
                 <Input 
-                  placeholder="LinkedIn URL: https://linkedin.com/in/alexmorgan"
+                  placeholder="LinkedIn URL: https://linkedin.com/in/username"
                   value={formData.socialLinks?.linkedin || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, socialLinks: { ...prev.socialLinks, linkedin: e.target.value } }))}
                 />
@@ -437,11 +442,11 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
 
         {/* Tab 3: Testimonials */}
         {activeFormTab === 'testimonials' && (
-          <div className="bg-[#0e1628] p-6 rounded-xl border-2 border-black shadow-[5px_5px_0px_#000] space-y-4">
-            <span className="text-xs font-mono font-bold uppercase text-yellow-400">Reviews &amp; Client Quotes</span>
+          <div className="bg-white dark:bg-[#131924] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Client Reviews &amp; Recommendations</span>
             
             {formData.testimonials.map((test: any, idx: number) => (
-              <div key={idx} className="p-4 bg-[#121c33] border-2 border-black rounded-lg space-y-2 relative shadow-[2px_2px_0px_#000]">
+              <div key={idx} className="p-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2 relative">
                 <button
                   type="button"
                   onClick={() => {
@@ -449,9 +454,9 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
                     updated.splice(idx, 1);
                     setFormData(prev => ({ ...prev, testimonials: updated }));
                   }}
-                  className="absolute top-3 right-3 text-red-400 text-xs font-bold hover:underline"
+                  className="absolute top-3 right-3 text-slate-400 hover:text-rose-500 transition-colors"
                 >
-                  Delete
+                  <Trash2 size={14} />
                 </button>
                 <Input 
                   placeholder="Reviewer Name (e.g. Sarah Lin)"
@@ -471,7 +476,7 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
                     updated[idx].quote = e.target.value;
                     setFormData(prev => ({ ...prev, testimonials: updated }));
                   }}
-                  className="w-full p-2.5 bg-[#090D16] border-2 border-black rounded-lg text-xs font-medium text-white shadow-[1px_1px_0px_#000]"
+                  className="w-full p-2.5 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100"
                 />
               </div>
             ))}
@@ -480,9 +485,10 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
               type="button"
               variant="outline"
               onClick={() => setFormData(prev => ({ ...prev, testimonials: [...prev.testimonials, { quote: '', author: '', role: 'Client' }] }))}
-              className="w-full text-xs font-mono font-bold h-10 border-2 border-black bg-slate-900"
+              className="w-full text-xs font-medium h-9"
             >
-              + Add Client Review
+              <Plus size={13} />
+              <span>Add Client Review</span>
             </Button>
           </div>
         )}
@@ -493,51 +499,51 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
           variant="primary" 
           onClick={handleSave} 
           disabled={loading} 
-          className="w-full h-13 text-sm font-black uppercase tracking-wider shadow-[4px_4px_0px_#000]"
+          className="w-full h-11 text-sm font-medium"
         >
-          {loading ? 'Saving Digital Card...' : initialData ? 'Save Changes' : 'Create & Publish Digital Card →'}
+          {loading ? 'Saving Digital Card...' : initialData ? 'Save Changes' : 'Create & Publish Digital Card'}
         </Button>
 
       </div>
 
       {/* Right Column: Live Interactive Card Preview */}
       <div className="w-full lg:w-5/12 flex flex-col items-center">
-        <div className="sticky top-24 w-full max-w-[340px] space-y-3">
+        <div className="sticky top-20 w-full max-w-[340px] space-y-3">
           
           <div className="flex items-center justify-between px-1">
-            <span className="font-mono text-[10px] font-bold uppercase text-gray-400">
-              Live Phone Preview
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Live Preview
             </span>
-            <span className="font-mono text-[10px] font-bold uppercase text-cyan-400">
-              Real-Time Reflection
+            <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400">
+              Real-time update
             </span>
           </div>
 
-          {/* Card Container Preview */}
-          <div className="bg-[#0e1628] rounded-xl border-3 border-black shadow-[8px_8px_0px_#000] overflow-hidden">
+          {/* Minimalist Executive Digital Card Preview */}
+          <div className="bg-white dark:bg-[#131924] rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-md overflow-hidden transition-all">
             
-            {/* Banner */}
+            {/* Accent Banner Header */}
             <div 
-              className="p-5 border-b-2 border-black text-white relative transition-colors duration-200"
+              className="p-5 text-white relative transition-colors duration-200"
               style={{ backgroundColor: formData.themeColor }}
             >
               <div className="flex items-start justify-between">
                 <div className="max-w-[70%]">
-                  <span className="font-mono text-[9px] font-black uppercase tracking-wider bg-black text-white px-2 py-0.5 rounded border border-black shadow-[1px_1px_0px_#000]">
+                  <span className="text-[10px] font-medium bg-black/25 text-white/90 px-2 py-0.5 rounded backdrop-blur-xs">
                     {formData.employeeCode || 'SMART-001'}
                   </span>
-                  <h4 className="text-xl font-black text-white mt-1 leading-tight truncate">
+                  <h4 className="text-lg font-semibold text-white mt-1.5 leading-snug truncate">
                     {formData.name || 'Your Full Name'}
                   </h4>
-                  <p className="text-xs font-bold text-white/95 truncate">
+                  <p className="text-xs text-white/90 truncate font-medium">
                     {formData.role || 'Professional Role'}
                   </p>
-                  <p className="text-[11px] font-mono text-white/80 truncate">
+                  <p className="text-[11px] text-white/75 truncate mt-0.5">
                     {formData.company || 'SmartCard Inc.'}
                   </p>
                 </div>
 
-                <div className="w-16 h-16 rounded-xl border-2 border-black bg-white shadow-[2px_2px_0px_#000] overflow-hidden flex items-center justify-center text-black font-black text-xl uppercase shrink-0">
+                <div className="w-14 h-14 rounded-full ring-2 ring-white/30 bg-white/10 shadow-xs overflow-hidden flex items-center justify-center text-white font-semibold text-lg uppercase shrink-0">
                   {formData.profileImage ? (
                     <img src={formData.profileImage} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
@@ -548,56 +554,70 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
             </div>
 
             {/* Preview Navigation */}
-            <div className="flex border-b-2 border-black bg-[#121c33] text-[10px] font-mono font-bold uppercase tracking-wider justify-around py-1.5">
+            <div className="flex border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 text-[11px] font-medium justify-around py-1.5">
               <button 
                 type="button"
                 onClick={() => setActivePreviewTab('info')}
-                className={`transition-colors cursor-pointer ${activePreviewTab === 'info' ? 'text-cyan-400' : 'text-gray-400'}`}
+                className={`py-1 px-3 rounded-md transition-colors cursor-pointer ${
+                  activePreviewTab === 'info' 
+                    ? 'text-blue-600 dark:text-blue-400 font-semibold' 
+                    : 'text-slate-500 dark:text-slate-400'
+                }`}
               >
                 Contact
               </button>
               <button 
                 type="button"
                 onClick={() => setActivePreviewTab('portfolio')}
-                className={`transition-colors cursor-pointer ${activePreviewTab === 'portfolio' ? 'text-cyan-400' : 'text-gray-400'}`}
+                className={`py-1 px-3 rounded-md transition-colors cursor-pointer ${
+                  activePreviewTab === 'portfolio' 
+                    ? 'text-blue-600 dark:text-blue-400 font-semibold' 
+                    : 'text-slate-500 dark:text-slate-400'
+                }`}
               >
                 Bio
               </button>
               <button 
                 type="button"
                 onClick={() => setActivePreviewTab('more')}
-                className={`transition-colors cursor-pointer ${activePreviewTab === 'more' ? 'text-cyan-400' : 'text-gray-400'}`}
+                className={`py-1 px-3 rounded-md transition-colors cursor-pointer ${
+                  activePreviewTab === 'more' 
+                    ? 'text-blue-600 dark:text-blue-400 font-semibold' 
+                    : 'text-slate-500 dark:text-slate-400'
+                }`}
               >
                 Reviews
               </button>
             </div>
 
             {/* Preview Body */}
-            <div className="p-4 space-y-3 bg-[#0d1424]">
+            <div className="p-4 space-y-3 bg-white dark:bg-[#131924]">
               {activePreviewTab === 'info' && (
                 <div className="space-y-2.5">
-                  <div className="grid grid-cols-2 gap-2 text-[11px] font-bold">
-                    <div className="p-2 bg-[#17223b] rounded-lg border-2 border-black text-center text-gray-200">
-                      📱 Call Phone
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-center text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5">
+                      <Phone size={12} className="text-blue-600 dark:text-blue-400" />
+                      <span>Call</span>
                     </div>
-                    <div className="p-2 bg-[#17223b] rounded-lg border-2 border-black text-center text-gray-200">
-                      ✉️ Send Email
+                    <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-center text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5">
+                      <Mail size={12} className="text-blue-600 dark:text-blue-400" />
+                      <span>Email</span>
                     </div>
                   </div>
 
-                  <div className="w-full py-2 bg-white text-black font-extrabold text-[11px] uppercase text-center rounded-lg border-2 border-black shadow-[2px_2px_0px_#000]">
+                  <div className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs text-center rounded-lg shadow-xs transition-colors">
                     Save Contact to Phone (.vcf)
                   </div>
 
-                  <div className="pt-2 border-t-2 border-black flex items-center justify-between">
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <span className="text-[9px] font-mono font-bold text-cyan-400 uppercase">
-                        Instant Camera QR
+                      <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+                        Camera QR Code
                       </span>
-                      <p className="text-[10px] font-bold text-white">Scans on any phone</p>
+                      <p className="text-xs font-medium text-slate-700 dark:text-slate-300">Scans on any phone</p>
                     </div>
-                    <div className="bg-white p-1 rounded-md border-2 border-black">
-                      <QrCode size={36} className="text-black" />
+                    <div className="bg-white p-1 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xs">
+                      <QrCode size={32} className="text-slate-900" />
                     </div>
                   </div>
                 </div>
@@ -605,20 +625,21 @@ export function CardForm({ initialData = null }: { initialData?: any }) {
 
               {activePreviewTab === 'portfolio' && (
                 <div className="space-y-2 text-xs">
-                  <p className="p-2.5 bg-[#141e35] rounded-lg border-2 border-black text-[11px] text-gray-300 font-medium leading-relaxed">
+                  <p className="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800/80 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     &quot;{formData.bio || 'Your bio elevator pitch will render here...'}&quot;
                   </p>
                   {formData.calendarUrl && (
-                    <div className="p-2 bg-blue-950/40 border border-blue-500 rounded text-cyan-400 font-mono text-[10px] font-bold text-center">
-                      📅 Meeting Booking Enabled
+                    <div className="p-2 bg-blue-50/70 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 rounded-lg text-blue-700 dark:text-blue-300 text-xs font-medium text-center flex items-center justify-center gap-1.5">
+                      <Calendar size={13} />
+                      <span>Meeting Booking Enabled</span>
                     </div>
                   )}
                 </div>
               )}
 
               {activePreviewTab === 'more' && (
-                <div className="space-y-2 text-xs font-mono">
-                  <p className="text-[10px] text-gray-400 italic text-center py-2">
+                <div className="space-y-2 text-xs">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 text-center py-2">
                     {formData.testimonials.length} reviews attached to this profile.
                   </p>
                 </div>

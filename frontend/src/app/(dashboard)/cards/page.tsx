@@ -4,11 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   CreditCard, Sparkles, User, Mail, Phone, MapPin, Globe, 
-  Palette, Layout, Type, Check, Copy, Share2, Eye, RotateCcw, 
-  Camera, Upload, Download, QrCode, MessageCircle, ExternalLink, ShieldCheck
+  Palette, Layout, Check, Copy, Share2, Eye, RotateCcw, 
+  Camera, Upload, Download, QrCode, MessageCircle, ExternalLink, X
 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
-// Custom SVGs for Social Links
 function LinkedInIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
     <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -42,31 +43,31 @@ function XIcon({ className = "w-4 h-4" }: { className?: string }) {
 }
 
 const ACCENT_COLORS = [
-  { name: 'Electric Blue', hex: '#2563EB' },
-  { name: 'Bright Cyan', hex: '#06B6D4' },
+  { name: 'Royal Blue', hex: '#2563EB' },
+  { name: 'Cyan', hex: '#06B6D4' },
   { name: 'Sunset Amber', hex: '#F59E0B' },
-  { name: 'Emerald Green', hex: '#10B981' },
-  { name: 'Neo Violet', hex: '#8B5CF6' },
-  { name: 'Hot Pink', hex: '#EC4899' },
+  { name: 'Emerald', hex: '#10B981' },
+  { name: 'Violet', hex: '#8B5CF6' },
+  { name: 'Rose', hex: '#F43F5E' },
 ];
 
 const THEME_STYLES = [
-  { id: 'modern-neo', name: 'Modern Neo', desc: 'High-contrast black borders & offset shadows' },
-  { id: 'minimal-dark', name: 'Minimal Dark', desc: 'Subtle slate borders & sleek contrast' },
-  { id: 'electric-pop', name: 'Electric Pop', desc: 'Bold saturated accents & tactile punch' },
-  { id: 'cyber-grid', name: 'Cyber Grid', desc: 'Technical grid texture & mono accents' },
+  { id: 'minimal-modern', name: 'Minimal Modern', desc: 'Subtle borders and soft elevation' },
+  { id: 'executive-dark', name: 'Executive Dark', desc: 'Deep charcoal contrast with crisp text' },
+  { id: 'accent-glow', name: 'Accent Glow', desc: 'Refined brand highlight with subtle gradients' },
+  { id: 'clean-slate', name: 'Clean Slate', desc: 'Pure neutral palette with large whitespace' },
 ];
 
 const FONT_OPTIONS = [
-  { id: 'sans', name: 'Sans (Inter)', class: 'font-sans' },
-  { id: 'mono', name: 'Mono (JetBrains)', class: 'font-mono' },
-  { id: 'serif', name: 'Serif (Editorial)', class: 'font-serif' },
+  { id: 'sans', name: 'Sans (Geist)', class: 'font-sans' },
+  { id: 'mono', name: 'Mono', class: 'font-mono' },
+  { id: 'serif', name: 'Serif', class: 'font-serif' },
 ];
 
 const LAYOUT_OPTIONS = [
-  { id: 'vertical', name: 'Standard Vertical', desc: 'Full profile banner, hero avatar, contact grid' },
+  { id: 'vertical', name: 'Standard Vertical', desc: 'Executive banner, avatar, contact actions' },
   { id: 'horizontal', name: 'Compact Horizontal', desc: 'Split hero header with right-aligned avatar' },
-  { id: 'badge', name: 'Badge Minimal', desc: 'Centered conference badge style with QR prominence' },
+  { id: 'badge', name: 'Minimal Badge', desc: 'Centered profile card with prominent QR' },
 ];
 
 const DEFAULT_CARD = {
@@ -86,7 +87,7 @@ const DEFAULT_CARD = {
     x: 'https://x.com/smritijha',
   },
   appearance: {
-    theme: 'modern-neo',
+    theme: 'minimal-modern',
     accentColor: '#2563EB',
     font: 'sans',
     layout: 'vertical',
@@ -98,37 +99,48 @@ export default function MySmartCardPage() {
   const router = useRouter();
   const [formData, setFormData] = useState(DEFAULT_CARD);
   const [activeTab, setActiveTab] = useState<'basic' | 'contact' | 'social' | 'appearance'>('basic');
-  const [toast, setToast] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
-  // Load from localStorage on mount
+  const showNotification = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedCard = localStorage.getItem('smartcard_current_card');
       if (savedCard) {
         try {
           const parsed = JSON.parse(savedCard);
-          setFormData(prev => ({ ...prev, ...parsed }));
+          setFormData(prev => ({
+            ...prev,
+            ...parsed,
+            appearance: { ...prev.appearance, ...(parsed.appearance || {}) },
+            socialLinks: { ...prev.socialLinks, ...(parsed.socialLinks || {}) },
+          }));
         } catch (e) {
-          console.error('Error loading saved card:', e);
+          console.error(e);
         }
       }
     }
   }, []);
 
-  // Sync to localStorage on change immediately
   const updateFormField = (section: string, field: string, value: any) => {
     setFormData(prev => {
-      let updated: any = { ...prev };
+      let updated;
       if (section === 'root') {
-        updated[field] = value;
-      } else if (section === 'socialLinks') {
-        updated.socialLinks = { ...prev.socialLinks, [field]: value };
-      } else if (section === 'appearance') {
-        updated.appearance = { ...prev.appearance, [field]: value };
+        updated = { ...prev, [field]: value };
+      } else {
+        updated = {
+          ...prev,
+          [section]: {
+            ...(prev as any)[section],
+            [field]: value
+          }
+        };
       }
-      
       if (typeof window !== 'undefined') {
         localStorage.setItem('smartcard_current_card', JSON.stringify(updated));
       }
@@ -136,16 +148,11 @@ export default function MySmartCardPage() {
     });
   };
 
-  const showNotification = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
-
   const handleSaveCard = () => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('smartcard_current_card', JSON.stringify(formData));
     }
-    showNotification('Card saved to localStorage! Live preview updated.');
+    showNotification('SmartCard changes saved successfully!');
   };
 
   const handleResetDemo = () => {
@@ -170,7 +177,7 @@ export default function MySmartCardPage() {
     }
   };
 
-  const cardShareUrl = typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : 'https://smartcard.id';
+  const cardShareUrl = typeof window !== 'undefined' ? `${window.location.origin}/smriti` : 'https://smartcard.app/smriti';
 
   const copyCardLink = () => {
     navigator.clipboard.writeText(cardShareUrl);
@@ -179,7 +186,6 @@ export default function MySmartCardPage() {
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  // Determine current card font class
   const getCardFontClass = () => {
     switch (formData.appearance.font) {
       case 'mono': return 'font-mono';
@@ -188,322 +194,314 @@ export default function MySmartCardPage() {
     }
   };
 
+  const getCardThemeClasses = () => {
+    switch (formData.appearance.theme) {
+      case 'executive-dark':
+        return {
+          container: 'bg-[#0F172A] text-slate-100 border border-slate-700/80 shadow-xl',
+          bioBox: 'bg-[#1E293B] border border-slate-700/60 text-slate-300',
+          channelPill: 'bg-[#1E293B] hover:bg-[#273549] text-slate-200 border border-slate-700/60',
+          qrBox: 'bg-[#1E293B] border border-slate-700/60 text-slate-100',
+          qrLabel: 'text-slate-100',
+          qrSub: 'text-slate-400',
+          vcfBtn: 'bg-white hover:bg-slate-100 text-slate-900',
+          socialBtn: 'bg-[#1E293B] hover:bg-[#273549] text-slate-200 border border-slate-700/60',
+          subtext: 'text-slate-400',
+          divider: 'border-slate-800',
+        };
+      case 'clean-slate':
+        return {
+          container: 'bg-[#FAFAF9] text-stone-900 border border-stone-200 shadow-md',
+          bioBox: 'bg-[#F5F5F4] border border-stone-200 text-stone-700',
+          channelPill: 'bg-[#F5F5F4] hover:bg-[#E7E5E4] text-stone-800 border border-stone-200',
+          qrBox: 'bg-[#F5F5F4] border border-stone-200 text-stone-900',
+          qrLabel: 'text-stone-900',
+          qrSub: 'text-stone-500',
+          vcfBtn: 'bg-stone-900 hover:bg-stone-800 text-white',
+          socialBtn: 'bg-[#F5F5F4] hover:bg-[#E7E5E4] text-stone-800 border border-stone-200',
+          subtext: 'text-stone-400',
+          divider: 'border-stone-200',
+        };
+      case 'accent-glow':
+        return {
+          container: 'bg-white text-slate-900 border border-blue-200/90 shadow-lg ring-1 ring-blue-500/20',
+          bioBox: 'bg-blue-50/50 border border-blue-100 text-slate-700',
+          channelPill: 'bg-slate-50 hover:bg-blue-50/60 text-slate-800 border border-slate-200/80',
+          qrBox: 'bg-blue-50/50 border border-blue-100 text-slate-900',
+          qrLabel: 'text-slate-900',
+          qrSub: 'text-slate-500',
+          vcfBtn: 'bg-blue-600 hover:bg-blue-700 text-white',
+          socialBtn: 'bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80',
+          subtext: 'text-slate-400',
+          divider: 'border-slate-100',
+        };
+      case 'minimal-modern':
+      default:
+        return {
+          container: 'bg-white text-slate-900 border border-slate-200/90 shadow-md',
+          bioBox: 'bg-slate-50 border border-slate-100 text-slate-700',
+          channelPill: 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80',
+          qrBox: 'bg-slate-50 border border-slate-200/80 text-slate-900',
+          qrLabel: 'text-slate-900',
+          qrSub: 'text-slate-500',
+          vcfBtn: 'bg-slate-900 hover:bg-slate-800 text-white',
+          socialBtn: 'bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80',
+          subtext: 'text-slate-400',
+          divider: 'border-slate-100',
+        };
+    }
+  };
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <div className="space-y-6 animate-subtle-fade">
       
       {/* Top Banner & Control Bar */}
-      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 bg-[#0e1628] p-5 sm:p-6 rounded-xl border-3 border-black shadow-[6px_6px_0px_#000]">
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 bg-white dark:bg-[#131924] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-[10px] font-black uppercase bg-[#2563EB] text-white px-2 py-0.5 rounded border border-black shadow-[1px_1px_0px_#000]">
-              My SmartCard Editor
+            <span className="text-[11px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-md">
+              Card Editor
             </span>
-            <span className="text-xs font-mono text-cyan-400 font-bold flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-              Live Sync • LocalStorage Active
-            </span>
+            <span className="text-xs text-slate-400">•</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">Live Sync Active</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Design Your Digital Business Card
+          <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
+            Edit Your SmartCard
           </h1>
-          <p className="text-xs sm:text-sm text-gray-300 font-medium">
-            Edit profile details, direct links, and appearance. Changes update immediately in the live preview.
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+            Edit profile details, links, and appearance. Updates reflect instantly in real-time.
           </p>
         </div>
 
         {/* Action Controls */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            type="button"
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleResetDemo}
-            className="h-10 px-3 bg-[#121c33] hover:bg-slate-800 text-gray-300 font-mono text-xs font-bold uppercase rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer"
             title="Reset to Demo Card"
           >
-            <RotateCcw size={14} />
+            <RotateCcw size={13} />
             <span>Reset</span>
-          </button>
+          </Button>
 
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={copyCardLink}
-            className="h-10 px-3 bg-[#17223b] hover:bg-slate-700 text-white font-mono text-xs font-bold uppercase rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            {copiedLink ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-            <span>{copiedLink ? 'Copied' : 'Copy Link'}</span>
-          </button>
+            {copiedLink ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
+            <span>{copiedLink ? 'Copied' : 'Copy'}</span>
+          </Button>
 
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => setShowShareModal(true)}
-            className="h-10 px-3.5 bg-cyan-400 hover:bg-cyan-300 text-black font-mono text-xs font-extrabold uppercase rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Share2 size={14} />
+            <Share2 size={13} />
             <span>Share</span>
-          </button>
+          </Button>
 
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="sm"
             onClick={handleSaveCard}
-            className="h-10 px-4 bg-emerald-500 hover:bg-emerald-400 text-black font-mono text-xs font-black uppercase rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Check size={15} className="stroke-[3]" />
+            <Check size={14} />
             <span>Save Card</span>
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Editor & Live Preview Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
+      {/* Main Workspace Layout: 7 Cols Editor | 5 Cols Live Preview */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* LEFT COLUMN: Section Editor (7 cols on lg) */}
-        <div className="lg:col-span-7 space-y-5">
+        {/* LEFT COLUMN: EDIT CONTROLS */}
+        <div className="lg:col-span-7 space-y-4">
           
-          {/* Section Navigation Tabs */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-[#0c1322] p-1.5 rounded-xl border-2 border-black shadow-[3px_3px_0px_#000]">
+          {/* Segmented Tab Headers */}
+          <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 dark:bg-slate-800/70 rounded-xl">
             <button
               type="button"
               onClick={() => setActiveTab('basic')}
-              className={`py-2.5 px-3 rounded-lg font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
-                activeTab === 'basic'
-                  ? 'bg-white text-black border-black shadow-[2px_2px_0px_#000]'
-                  : 'text-gray-400 hover:text-white border-transparent'
+              className={`py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                activeTab === 'basic' 
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold' 
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
-              <User size={14} />
-              <span>Basic</span>
+              Basic Info
             </button>
-
             <button
               type="button"
               onClick={() => setActiveTab('contact')}
-              className={`py-2.5 px-3 rounded-lg font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
-                activeTab === 'contact'
-                  ? 'bg-white text-black border-black shadow-[2px_2px_0px_#000]'
-                  : 'text-gray-400 hover:text-white border-transparent'
+              className={`py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                activeTab === 'contact' 
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold' 
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
-              <Phone size={14} />
-              <span>Contact</span>
+              Contact
             </button>
-
             <button
               type="button"
               onClick={() => setActiveTab('social')}
-              className={`py-2.5 px-3 rounded-lg font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
-                activeTab === 'social'
-                  ? 'bg-white text-black border-black shadow-[2px_2px_0px_#000]'
-                  : 'text-gray-400 hover:text-white border-transparent'
+              className={`py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                activeTab === 'social' 
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold' 
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
-              <Globe size={14} />
-              <span>Social</span>
+              Social
             </button>
-
             <button
               type="button"
               onClick={() => setActiveTab('appearance')}
-              className={`py-2.5 px-3 rounded-lg font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 ${
-                activeTab === 'appearance'
-                  ? 'bg-white text-black border-black shadow-[2px_2px_0px_#000]'
-                  : 'text-gray-400 hover:text-white border-transparent'
+              className={`py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                activeTab === 'appearance' 
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold' 
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
-              <Palette size={14} />
-              <span>Style</span>
+              Design
             </button>
           </div>
 
-          {/* TAB 1: BASIC INFORMATION */}
+          {/* TAB 1: BASIC INFO */}
           {activeTab === 'basic' && (
-            <div className="bg-[#0e1628] rounded-xl border-3 border-black p-6 shadow-[5px_5px_0px_#000] space-y-5">
-              <div className="border-b-2 border-black pb-3">
-                <h3 className="text-lg font-black text-white flex items-center gap-2">
-                  <User size={18} className="text-[#2563EB]" />
-                  <span>Basic Information</span>
+            <div className="bg-white dark:bg-[#131924] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <User size={16} className="text-blue-600 dark:text-blue-400" />
+                  <span>Profile Information</span>
                 </h3>
-                <p className="text-xs text-gray-400 font-mono mt-0.5">
-                  Your primary professional persona and elevator pitch.
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Your core professional identity shown on the card header.
                 </p>
               </div>
 
-              {/* Profile Image Uploader & Quick Presets */}
-              <div className="space-y-2">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">
-                  Profile Photo
-                </label>
-                <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#090D16] p-4 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000]">
-                  <div className="w-16 h-16 rounded-xl border-2 border-black overflow-hidden bg-white shadow-[2px_2px_0px_#000] shrink-0">
-                    <img 
-                      src={formData.profileImage} 
-                      alt={formData.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 space-y-2 text-center sm:text-left">
-                    <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
-                      <label className="h-9 px-3 bg-[#2563EB] hover:bg-blue-600 text-white font-mono text-xs font-bold uppercase rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center gap-1.5 cursor-pointer transition-transform active:translate-x-0.5 active:translate-y-0.5">
-                        <Upload size={14} />
-                        <span>Upload Photo</span>
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
-                          onChange={handleImageUpload} 
-                        />
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => updateFormField('root', 'profileImage', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80')}
-                        className="h-9 px-2.5 bg-[#121c33] text-gray-300 hover:text-white font-mono text-[11px] font-bold rounded-lg border-2 border-black cursor-pointer"
-                      >
-                        Sample 1
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => updateFormField('root', 'profileImage', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80')}
-                        className="h-9 px-2.5 bg-[#121c33] text-gray-300 hover:text-white font-mono text-[11px] font-bold rounded-lg border-2 border-black cursor-pointer"
-                      >
-                        Sample 2
-                      </button>
-                    </div>
-                    <input 
-                      type="text"
-                      placeholder="Or paste image URL: https://..."
-                      value={formData.profileImage}
-                      onChange={(e) => updateFormField('root', 'profileImage', e.target.value)}
-                      className="w-full h-9 bg-[#10192e] border-2 border-black px-3 rounded-lg text-xs font-mono text-gray-200 focus:outline-none focus:border-cyan-400"
-                    />
-                  </div>
+              {/* Avatar Uploader */}
+              <div className="flex items-center gap-4 p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                <div className="w-14 h-14 rounded-full ring-2 ring-slate-200 dark:ring-slate-700 overflow-hidden shrink-0">
+                  <img src={formData.profileImage} alt={formData.name} className="w-full h-full object-cover" />
+                </div>
+                <div className="space-y-1">
+                  <label 
+                    htmlFor="avatarInput" 
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs cursor-pointer transition-colors"
+                  >
+                    <Upload size={13} />
+                    <span>Upload Avatar</span>
+                  </label>
+                  <input id="avatarInput" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  <p className="text-[11px] text-slate-400">JPG, PNG, or WebP. Optimal 400x400.</p>
                 </div>
               </div>
 
-              {/* Name & Title */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300">Full Name *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Alex Morgan"
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Full Name</label>
+                  <Input
                     value={formData.name}
                     onChange={(e) => updateFormField('root', 'name', e.target.value)}
-                    className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-xs font-bold text-white shadow-[2px_2px_0px_#000] focus:outline-none focus:border-blue-500"
+                    placeholder="Alex Morgan"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300">Job Title *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Principal Product Designer"
-                    value={formData.role}
-                    onChange={(e) => updateFormField('root', 'role', e.target.value)}
-                    className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-xs font-bold text-white shadow-[2px_2px_0px_#000] focus:outline-none focus:border-blue-500"
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Badge Code</label>
+                  <Input
+                    value={formData.employeeCode}
+                    onChange={(e) => updateFormField('root', 'employeeCode', e.target.value)}
+                    placeholder="SMART-001"
                   />
                 </div>
               </div>
 
-              {/* Company */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Company / Organization</label>
-                <input
-                  type="text"
-                  placeholder="e.g. HyperScale Systems"
-                  value={formData.company}
-                  onChange={(e) => updateFormField('root', 'company', e.target.value)}
-                  className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-xs font-bold text-white shadow-[2px_2px_0px_#000] focus:outline-none focus:border-blue-500"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Job Title / Role</label>
+                  <Input
+                    value={formData.role}
+                    onChange={(e) => updateFormField('root', 'role', e.target.value)}
+                    placeholder="Head of Product"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Company</label>
+                  <Input
+                    value={formData.company}
+                    onChange={(e) => updateFormField('root', 'company', e.target.value)}
+                    placeholder="SmartCard Technologies"
+                  />
+                </div>
               </div>
 
-              {/* Bio */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300">Short Bio / Elevator Pitch</label>
-                  <span className="text-[10px] font-mono text-gray-500">{formData.bio.length} / 280 chars</span>
-                </div>
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Bio / Elevator Pitch</label>
                 <textarea
                   rows={3}
-                  maxLength={280}
-                  placeholder="e.g. Leading product design and digital identity systems. Passionate about tactile interfaces and zero-friction connections."
                   value={formData.bio}
                   onChange={(e) => updateFormField('root', 'bio', e.target.value)}
-                  className="w-full p-3.5 bg-[#090D16] border-2 border-black rounded-lg text-xs font-medium text-white shadow-[2px_2px_0px_#000] focus:outline-none focus:border-blue-500 leading-relaxed"
+                  placeholder="Short introduction..."
+                  className="w-full p-3 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
-
             </div>
           )}
 
           {/* TAB 2: CONTACT DETAILS */}
           {activeTab === 'contact' && (
-            <div className="bg-[#0e1628] rounded-xl border-3 border-black p-6 shadow-[5px_5px_0px_#000] space-y-5">
-              <div className="border-b-2 border-black pb-3">
-                <h3 className="text-lg font-black text-white flex items-center gap-2">
-                  <Phone size={18} className="text-emerald-400" />
-                  <span>Contact Information</span>
+            <div className="bg-white dark:bg-[#131924] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <Mail size={16} className="text-blue-600 dark:text-blue-400" />
+                  <span>Contact Channels</span>
                 </h3>
-                <p className="text-xs text-gray-400 font-mono mt-0.5">
-                  Direct channels for inbound connections, phone calls, and email.
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Direct channels for visitors to call, email, or visit your portfolio.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-3.5">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300 flex items-center gap-1.5">
-                    <Mail size={13} className="text-cyan-400" />
-                    <span>Email Address</span>
-                  </label>
-                  <input
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Email Address</label>
+                  <Input
                     type="email"
-                    placeholder="alex@hyperscale.io"
                     value={formData.email}
                     onChange={(e) => updateFormField('root', 'email', e.target.value)}
-                    className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-xs font-bold text-white shadow-[2px_2px_0px_#000] focus:outline-none focus:border-blue-500"
+                    placeholder="you@company.com"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300 flex items-center gap-1.5">
-                    <Phone size={13} className="text-emerald-400" />
-                    <span>Phone Number</span>
-                  </label>
-                  <input
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Phone Number</label>
+                  <Input
                     type="tel"
-                    placeholder="+1 (415) 892-4412"
                     value={formData.phone}
                     onChange={(e) => updateFormField('root', 'phone', e.target.value)}
-                    className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-xs font-bold text-white shadow-[2px_2px_0px_#000] focus:outline-none focus:border-blue-500"
+                    placeholder="+1 555 0192"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300 flex items-center gap-1.5">
-                    <MapPin size={13} className="text-amber-400" />
-                    <span>Location</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="San Francisco, CA • Remote"
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Location / Headquarters</label>
+                  <Input
                     value={formData.location}
                     onChange={(e) => updateFormField('root', 'location', e.target.value)}
-                    className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-xs font-bold text-white shadow-[2px_2px_0px_#000] focus:outline-none focus:border-blue-500"
+                    placeholder="San Francisco, CA • Remote"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300 flex items-center gap-1.5">
-                    <Globe size={13} className="text-purple-400" />
-                    <span>Website / Portfolio</span>
-                  </label>
-                  <input
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Personal Website / Portfolio</label>
+                  <Input
                     type="url"
-                    placeholder="https://alexmorgan.design"
                     value={formData.website}
                     onChange={(e) => updateFormField('root', 'website', e.target.value)}
-                    className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-xs font-bold text-white shadow-[2px_2px_0px_#000] focus:outline-none focus:border-blue-500"
+                    placeholder="https://yourname.design"
                   />
                 </div>
               </div>
@@ -512,71 +510,67 @@ export default function MySmartCardPage() {
 
           {/* TAB 3: SOCIAL LINKS */}
           {activeTab === 'social' && (
-            <div className="bg-[#0e1628] rounded-xl border-3 border-black p-6 shadow-[5px_5px_0px_#000] space-y-5">
-              <div className="border-b-2 border-black pb-3">
-                <h3 className="text-lg font-black text-white flex items-center gap-2">
-                  <Globe size={18} className="text-cyan-400" />
+            <div className="bg-white dark:bg-[#131924] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <Globe size={16} className="text-blue-600 dark:text-blue-400" />
                   <span>Social Profiles</span>
                 </h3>
-                <p className="text-xs text-gray-400 font-mono mt-0.5">
-                  Connect your key social presence. Active buttons will show on your live card.
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Active profiles appear as tap targets on your card.
                 </p>
               </div>
 
               <div className="space-y-3.5">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300 flex items-center gap-2">
-                    <LinkedInIcon className="w-4 h-4 text-[#0A66C2]" />
-                    <span>LinkedIn Profile URL</span>
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                    <LinkedInIcon className="w-3.5 h-3.5 text-[#0A66C2]" />
+                    <span>LinkedIn URL</span>
                   </label>
-                  <input
+                  <Input
                     type="url"
-                    placeholder="https://linkedin.com/in/username"
                     value={formData.socialLinks.linkedin}
                     onChange={(e) => updateFormField('socialLinks', 'linkedin', e.target.value)}
-                    className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-xs font-bold text-white shadow-[2px_2px_0px_#000] focus:outline-none focus:border-blue-500"
+                    placeholder="https://linkedin.com/in/username"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300 flex items-center gap-2">
-                    <GitHubIcon className="w-4 h-4 text-white" />
-                    <span>GitHub Profile URL</span>
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                    <GitHubIcon className="w-3.5 h-3.5 text-slate-800 dark:text-slate-200" />
+                    <span>GitHub URL</span>
                   </label>
-                  <input
+                  <Input
                     type="url"
-                    placeholder="https://github.com/username"
                     value={formData.socialLinks.github}
                     onChange={(e) => updateFormField('socialLinks', 'github', e.target.value)}
-                    className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-xs font-bold text-white shadow-[2px_2px_0px_#000] focus:outline-none focus:border-blue-500"
+                    placeholder="https://github.com/username"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300 flex items-center gap-2">
-                    <InstagramIcon className="w-4 h-4 text-[#E4405F]" />
-                    <span>Instagram Profile URL</span>
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                    <InstagramIcon className="w-3.5 h-3.5 text-[#E4405F]" />
+                    <span>Instagram URL</span>
                   </label>
-                  <input
+                  <Input
                     type="url"
-                    placeholder="https://instagram.com/username"
                     value={formData.socialLinks.instagram}
                     onChange={(e) => updateFormField('socialLinks', 'instagram', e.target.value)}
-                    className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-xs font-bold text-white shadow-[2px_2px_0px_#000] focus:outline-none focus:border-blue-500"
+                    placeholder="https://instagram.com/username"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300 flex items-center gap-2">
-                    <XIcon className="w-4 h-4 text-gray-300" />
-                    <span>X (Twitter) Profile URL</span>
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                    <XIcon className="w-3.5 h-3.5 text-slate-800 dark:text-slate-200" />
+                    <span>X (Twitter) URL</span>
                   </label>
-                  <input
+                  <Input
                     type="url"
-                    placeholder="https://x.com/username"
                     value={formData.socialLinks.x}
                     onChange={(e) => updateFormField('socialLinks', 'x', e.target.value)}
-                    className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-xs font-bold text-white shadow-[2px_2px_0px_#000] focus:outline-none focus:border-blue-500"
+                    placeholder="https://x.com/username"
                   />
                 </div>
               </div>
@@ -585,23 +579,23 @@ export default function MySmartCardPage() {
 
           {/* TAB 4: APPEARANCE & CUSTOMIZATION */}
           {activeTab === 'appearance' && (
-            <div className="bg-[#0e1628] rounded-xl border-3 border-black p-6 shadow-[5px_5px_0px_#000] space-y-6">
-              <div className="border-b-2 border-black pb-3">
-                <h3 className="text-lg font-black text-white flex items-center gap-2">
-                  <Palette size={18} className="text-amber-400" />
+            <div className="bg-white dark:bg-[#131924] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs space-y-5">
+              <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <Palette size={16} className="text-amber-500" />
                   <span>Card Appearance &amp; Layout</span>
                 </h3>
-                <p className="text-xs text-gray-400 font-mono mt-0.5">
-                  Tune theme aesthetics, accent colors, typography, and card layout.
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Tune accent colors, typography, and card presentation style.
                 </p>
               </div>
 
               {/* Accent Color Palette */}
-              <div className="space-y-2.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
                   Accent Color
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <div className="flex flex-wrap items-center gap-2">
                   {ACCENT_COLORS.map(c => {
                     const isSelected = formData.appearance.accentColor === c.hex;
                     return (
@@ -609,13 +603,12 @@ export default function MySmartCardPage() {
                         key={c.hex}
                         type="button"
                         onClick={() => updateFormField('appearance', 'accentColor', c.hex)}
-                        className={`h-11 px-3 rounded-lg border-2 border-black flex items-center gap-2.5 transition-all cursor-pointer font-mono text-xs font-bold text-white shadow-[2px_2px_0px_#000] ${
-                          isSelected ? 'ring-2 ring-white scale-[1.02]' : 'opacity-85 hover:opacity-100'
+                        className={`h-8 px-3 rounded-lg text-xs font-medium text-white flex items-center gap-1.5 transition-all cursor-pointer ${
+                          isSelected ? 'ring-2 ring-offset-2 ring-slate-900 dark:ring-white dark:ring-offset-slate-900 scale-102' : 'opacity-85 hover:opacity-100'
                         }`}
                         style={{ backgroundColor: c.hex }}
                       >
-                        <span className="w-3 h-3 rounded-full bg-white border border-black shrink-0"></span>
-                        <span className="truncate">{c.name}</span>
+                        <span>{c.name}</span>
                       </button>
                     );
                   })}
@@ -623,28 +616,28 @@ export default function MySmartCardPage() {
               </div>
 
               {/* Card Theme */}
-              <div className="space-y-2.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">
-                  Card Theme Style
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Theme Preset
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {THEME_STYLES.map(theme => {
                     const isSelected = formData.appearance.theme === theme.id;
                     return (
                       <div
                         key={theme.id}
                         onClick={() => updateFormField('appearance', 'theme', theme.id)}
-                        className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
                           isSelected
-                            ? 'bg-[#14203a] border-cyan-400 shadow-[3px_3px_0px_#06B6D4]'
-                            : 'bg-[#090D16] border-black hover:border-gray-500 shadow-[2px_2px_0px_#000]'
+                            ? 'bg-blue-50/70 dark:bg-blue-900/20 border-blue-500/70 shadow-2xs'
+                            : 'bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 hover:border-slate-300'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-xs text-white">{theme.name}</span>
-                          {isSelected && <Check size={14} className="text-cyan-400" />}
+                          <span className="text-xs font-medium text-slate-900 dark:text-slate-100">{theme.name}</span>
+                          {isSelected && <Check size={13} className="text-blue-600 dark:text-blue-400" />}
                         </div>
-                        <p className="text-[11px] text-gray-400 font-mono mt-1">{theme.desc}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{theme.desc}</p>
                       </div>
                     );
                   })}
@@ -652,11 +645,11 @@ export default function MySmartCardPage() {
               </div>
 
               {/* Font Picker */}
-              <div className="space-y-2.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">
-                  Card Typography Font
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Typography
                 </label>
-                <div className="grid grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-3 gap-2">
                   {FONT_OPTIONS.map(f => {
                     const isSelected = formData.appearance.font === f.id;
                     return (
@@ -664,10 +657,10 @@ export default function MySmartCardPage() {
                         key={f.id}
                         type="button"
                         onClick={() => updateFormField('appearance', 'font', f.id)}
-                        className={`py-3 px-2 rounded-lg border-2 text-center transition-all cursor-pointer font-bold text-xs ${
+                        className={`py-2 px-2 rounded-lg border text-center transition-all cursor-pointer text-xs font-medium ${
                           isSelected
-                            ? 'bg-[#2563EB] text-white border-black shadow-[2px_2px_0px_#000]'
-                            : 'bg-[#090D16] text-gray-300 border-black hover:bg-slate-900 shadow-[2px_2px_0px_#000]'
+                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700 font-semibold'
+                            : 'bg-white dark:bg-slate-900/40 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50'
                         } ${f.class}`}
                       >
                         {f.name}
@@ -678,9 +671,9 @@ export default function MySmartCardPage() {
               </div>
 
               {/* Layout Picker */}
-              <div className="space-y-2.5">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">
-                  Card Layout Architecture
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Card Layout
                 </label>
                 <div className="space-y-2">
                   {LAYOUT_OPTIONS.map(lo => {
@@ -689,17 +682,17 @@ export default function MySmartCardPage() {
                       <div
                         key={lo.id}
                         onClick={() => updateFormField('appearance', 'layout', lo.id)}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all flex items-center justify-between ${
+                        className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
                           isSelected
-                            ? 'bg-[#15233f] border-cyan-400 shadow-[2px_2px_0px_#06B6D4]'
-                            : 'bg-[#090D16] border-black hover:border-gray-500 shadow-[2px_2px_0px_#000]'
+                            ? 'bg-blue-50/70 dark:bg-blue-900/20 border-blue-500/70'
+                            : 'bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 hover:border-slate-300'
                         }`}
                       >
                         <div>
-                          <p className="text-xs font-bold text-white">{lo.name}</p>
-                          <p className="text-[10px] text-gray-400 font-mono">{lo.desc}</p>
+                          <p className="text-xs font-medium text-slate-900 dark:text-slate-100">{lo.name}</p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">{lo.desc}</p>
                         </div>
-                        {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>}
+                        {isSelected && <span className="w-2 h-2 rounded-full bg-blue-600"></span>}
                       </div>
                     );
                   })}
@@ -713,245 +706,242 @@ export default function MySmartCardPage() {
 
         {/* RIGHT COLUMN: LIVE CARD PREVIEW (5 cols on lg) */}
         <div className="lg:col-span-5">
-          <div className="sticky top-20 space-y-4">
+          <div className="sticky top-20 space-y-3">
             
             {/* Live Indicator Header */}
             <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-1.5 font-mono text-[11px] font-black uppercase text-gray-300">
-                <Eye size={14} className="text-cyan-400" />
+              <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
+                <Eye size={13} className="text-blue-600 dark:text-blue-400" />
                 <span>Live Card Preview</span>
               </div>
-              <span className="font-mono text-[10px] font-black uppercase text-emerald-400 bg-emerald-950/60 border border-emerald-500/50 px-2 py-0.5 rounded">
-                Real-Time Reflection
+              <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-md">
+                Real-Time
               </span>
             </div>
 
-            {/* SmartCard Digital Business Card Container */}
-            <div className={`bg-[#0d1424] rounded-2xl border-3 border-black shadow-[8px_8px_0px_#000] overflow-hidden transition-all duration-150 ${getCardFontClass()}`}>
-              
-              {/* TOP BANNER / HERO */}
-              {formData.appearance.layout === 'horizontal' ? (
-                // Compact Horizontal Layout
-                <div 
-                  className="p-5 border-b-3 border-black text-white relative transition-colors duration-200"
-                  style={{ backgroundColor: formData.appearance.accentColor }}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <span className="font-mono text-[9px] font-black uppercase tracking-wider bg-black text-white px-2 py-0.5 rounded border border-black shadow-[1px_1px_0px_#000]">
-                        {formData.employeeCode}
-                      </span>
-                      <h3 className="text-xl font-black text-white tracking-tight truncate mt-1">
+            {/* SmartCard Minimalist Digital Business Card Container */}
+            {(() => {
+              const cardStyle = getCardThemeClasses();
+              return (
+                <div className={`rounded-2xl overflow-hidden transition-all duration-150 ${cardStyle.container} ${getCardFontClass()}`}>
+                  
+                  {/* TOP BANNER / HERO */}
+                  {formData.appearance.layout === 'horizontal' ? (
+                    <div 
+                      className="p-5 text-white relative transition-colors duration-200"
+                      style={{ backgroundColor: formData.appearance.accentColor }}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[10px] font-medium bg-black/25 text-white/90 px-2 py-0.5 rounded backdrop-blur-xs">
+                            {formData.employeeCode}
+                          </span>
+                          <h3 className="text-lg font-semibold text-white tracking-tight truncate mt-1">
+                            {formData.name || 'Your Name'}
+                          </h3>
+                          <p className="text-xs font-medium text-white/90 truncate">
+                            {formData.role || 'Your Job Title'}
+                          </p>
+                          <p className="text-[11px] text-white/75 truncate">
+                            {formData.company || 'Company'}
+                          </p>
+                        </div>
+
+                        <div className="w-16 h-16 rounded-full ring-2 ring-white/30 bg-white/10 overflow-hidden shrink-0">
+                          <img 
+                            src={formData.profileImage} 
+                            alt={formData.name} 
+                            className="w-full h-full object-cover" 
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : formData.appearance.layout === 'badge' ? (
+                    <div 
+                      className="p-5 text-white text-center relative transition-colors duration-200"
+                      style={{ backgroundColor: formData.appearance.accentColor }}
+                    >
+                      <div className="w-16 h-16 rounded-full ring-2 ring-white/30 bg-white/10 mx-auto overflow-hidden shadow-xs">
+                        <img 
+                          src={formData.profileImage} 
+                          alt={formData.name} 
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
+                      <h3 className="text-lg font-semibold text-white tracking-tight mt-2">
                         {formData.name || 'Your Name'}
                       </h3>
-                      <p className="text-xs font-bold text-white/95 truncate">
+                      <p className="text-xs font-medium text-white/90">
                         {formData.role || 'Your Job Title'}
                       </p>
-                      <p className="text-[11px] font-mono text-white/80 truncate">
+                      <p className="text-[11px] text-white/75">
                         {formData.company || 'Company'}
                       </p>
                     </div>
+                  ) : (
+                    <div 
+                      className="p-5 text-white relative transition-colors duration-200"
+                      style={{ backgroundColor: formData.appearance.accentColor }}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1 space-y-0.5">
+                          <span className="text-[10px] font-medium bg-black/25 text-white/90 px-2 py-0.5 rounded backdrop-blur-xs">
+                            {formData.employeeCode}
+                          </span>
+                          <h3 className="text-lg font-semibold text-white tracking-tight truncate pt-1">
+                            {formData.name || 'Your Name'}
+                          </h3>
+                          <p className="text-xs font-medium text-white/90 truncate">
+                            {formData.role || 'Job Title'}
+                          </p>
+                          <p className="text-[11px] text-white/75 truncate">
+                            {formData.company || 'Company'}
+                          </p>
+                        </div>
 
-                    <div className="w-16 h-16 rounded-xl border-2 border-black bg-white overflow-hidden shadow-[3px_3px_0px_#000] shrink-0">
-                      <img 
-                        src={formData.profileImage} 
-                        alt={formData.name} 
-                        className="w-full h-full object-cover" 
-                      />
+                        <div className="w-16 h-16 rounded-full ring-2 ring-white/30 bg-white/10 overflow-hidden shrink-0">
+                          <img 
+                            src={formData.profileImage} 
+                            alt={formData.name} 
+                            className="w-full h-full object-cover" 
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ) : formData.appearance.layout === 'badge' ? (
-                // Badge Minimal Layout
-                <div 
-                  className="p-6 border-b-3 border-black text-white text-center relative transition-colors duration-200"
-                  style={{ backgroundColor: formData.appearance.accentColor }}
-                >
-                  <div className="w-20 h-20 rounded-full border-3 border-black bg-white overflow-hidden shadow-[4px_4px_0px_#000] mx-auto mb-2">
-                    <img 
-                      src={formData.profileImage} 
-                      alt={formData.name} 
-                      className="w-full h-full object-cover" 
-                    />
-                  </div>
-                  <h3 className="text-xl font-black text-white tracking-tight">
-                    {formData.name || 'Your Name'}
-                  </h3>
-                  <p className="text-xs font-bold text-white/95">
-                    {formData.role || 'Your Job Title'}
-                  </p>
-                  <p className="text-[11px] font-mono text-white/80 mt-0.5">
-                    {formData.company || 'Company'}
-                  </p>
-                </div>
-              ) : (
-                // Standard Vertical Layout (Default)
-                <div 
-                  className="p-5 border-b-3 border-black text-white relative transition-colors duration-200"
-                  style={{ backgroundColor: formData.appearance.accentColor }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="max-w-[70%]">
-                      <span className="font-mono text-[9px] font-black uppercase tracking-wider bg-black text-white px-2 py-0.5 rounded border border-black shadow-[1px_1px_0px_#000]">
-                        {formData.employeeCode}
-                      </span>
-                      <h3 className="text-xl font-black text-white tracking-tight mt-1 truncate">
-                        {formData.name || 'Your Full Name'}
-                      </h3>
-                      <p className="text-xs font-bold text-white/95 truncate">
-                        {formData.role || 'Professional Role'}
+                  )}
+
+                  {/* CARD DETAILS BODY */}
+                  <div className="p-4 space-y-3.5">
+                    
+                    {formData.bio && (
+                      <p className={`text-xs leading-relaxed p-3 rounded-xl border ${cardStyle.bioBox}`}>
+                        &ldquo;{formData.bio}&rdquo;
                       </p>
-                      <p className="text-[11px] font-mono text-white/80 truncate">
-                        {formData.company || 'Company Name'}
-                      </p>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium">
+                      {formData.email && (
+                        <a 
+                          href={`mailto:${formData.email}`} 
+                          className={`p-2 rounded-lg flex items-center gap-1.5 truncate transition-colors ${cardStyle.channelPill}`}
+                        >
+                          <Mail size={13} className="text-blue-600 shrink-0" />
+                          <span className="truncate">{formData.email}</span>
+                        </a>
+                      )}
+
+                      {formData.phone && (
+                        <a 
+                          href={`tel:${formData.phone}`} 
+                          className={`p-2 rounded-lg flex items-center gap-1.5 truncate transition-colors ${cardStyle.channelPill}`}
+                        >
+                          <Phone size={13} className="text-emerald-600 shrink-0" />
+                          <span className="truncate">{formData.phone}</span>
+                        </a>
+                      )}
+
+                      {formData.location && (
+                        <div className={`p-2 rounded-lg flex items-center gap-1.5 truncate ${cardStyle.channelPill}`}>
+                          <MapPin size={13} className="text-amber-500 shrink-0" />
+                          <span className="truncate">{formData.location}</span>
+                        </div>
+                      )}
+
+                      {formData.website && (
+                        <a
+                          href={formData.website}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={`p-2 rounded-lg flex items-center gap-1.5 truncate transition-colors ${cardStyle.channelPill}`}
+                        >
+                          <Globe size={13} className="text-blue-600 shrink-0" />
+                          <span className="truncate">Website</span>
+                        </a>
+                      )}
                     </div>
 
-                    <div className="w-16 h-16 rounded-xl border-2 border-black bg-white overflow-hidden shadow-[3px_3px_0px_#000] shrink-0">
-                      <img 
-                        src={formData.profileImage} 
-                        alt={formData.name} 
-                        className="w-full h-full object-cover" 
-                      />
+                    {/* Social Profiles Row */}
+                    <div className={`pt-2 border-t ${cardStyle.divider}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-[10px] font-medium uppercase tracking-wider ${cardStyle.subtext}`}>Social Links</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {formData.socialLinks.linkedin && (
+                          <a
+                            href={formData.socialLinks.linkedin}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex-1 h-8 bg-blue-500/10 text-blue-600 rounded-lg border border-blue-500/20 flex items-center justify-center hover:opacity-90 transition-opacity"
+                            title="LinkedIn"
+                          >
+                            <LinkedInIcon className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {formData.socialLinks.github && (
+                          <a
+                            href={formData.socialLinks.github}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={`flex-1 h-8 rounded-lg flex items-center justify-center transition-colors ${cardStyle.socialBtn}`}
+                            title="GitHub"
+                          >
+                            <GitHubIcon className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {formData.socialLinks.instagram && (
+                          <a
+                            href={formData.socialLinks.instagram}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex-1 h-8 bg-rose-500/10 text-rose-600 rounded-lg border border-rose-500/20 flex items-center justify-center hover:opacity-90 transition-opacity"
+                            title="Instagram"
+                          >
+                            <InstagramIcon className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {formData.socialLinks.x && (
+                          <a
+                            href={formData.socialLinks.x}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={`flex-1 h-8 rounded-lg flex items-center justify-center transition-colors ${cardStyle.socialBtn}`}
+                            title="X (Twitter)"
+                          >
+                            <XIcon className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              )}
 
-              {/* CARD BODY DETAILS */}
-              <div className="p-5 space-y-4">
-                
-                {/* Bio Snippet */}
-                {formData.bio && (
-                  <div className="p-3 bg-[#131d33] rounded-xl border-2 border-black shadow-[2px_2px_0px_#000]">
-                    <p className="text-xs text-gray-200 leading-relaxed font-medium">
-                      &quot;{formData.bio}&quot;
-                    </p>
-                  </div>
-                )}
-
-                {/* Contact Pills Grid */}
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono font-bold">
-                  {formData.email && (
-                    <a
-                      href={`mailto:${formData.email}`}
-                      className="p-2.5 bg-[#17223b] hover:bg-slate-700 text-gray-200 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center gap-1.5 truncate cursor-pointer transition-colors"
-                    >
-                      <Mail size={13} className="text-cyan-400 shrink-0" />
-                      <span className="truncate">{formData.email}</span>
-                    </a>
-                  )}
-
-                  {formData.phone && (
-                    <a
-                      href={`tel:${formData.phone}`}
-                      className="p-2.5 bg-[#17223b] hover:bg-slate-700 text-gray-200 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center gap-1.5 truncate cursor-pointer transition-colors"
-                    >
-                      <Phone size={13} className="text-emerald-400 shrink-0" />
-                      <span className="truncate">{formData.phone}</span>
-                    </a>
-                  )}
-
-                  {formData.location && (
-                    <div className="p-2.5 bg-[#17223b] text-gray-300 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center gap-1.5 truncate">
-                      <MapPin size={13} className="text-amber-400 shrink-0" />
-                      <span className="truncate">{formData.location}</span>
+                    {/* Instant QR Code Box */}
+                    <div className={`p-3 rounded-xl flex items-center justify-between gap-3 ${cardStyle.qrBox}`}>
+                      <div className="space-y-0.5">
+                        <span className={`text-[10px] font-medium uppercase tracking-wider ${cardStyle.subtext}`}>
+                          Scan Profile
+                        </span>
+                        <h5 className={`font-semibold text-xs ${cardStyle.qrLabel}`}>Camera QR Code</h5>
+                        <p className={`text-[11px] ${cardStyle.qrSub}`}>Direct address book save on iOS &amp; Android</p>
+                      </div>
+                      <div className="p-1 bg-white rounded-lg border border-slate-200 shadow-2xs shrink-0">
+                        <QrCode size={40} className="text-slate-900" />
+                      </div>
                     </div>
-                  )}
 
-                  {formData.website && (
-                    <a
-                      href={formData.website}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-2.5 bg-[#17223b] hover:bg-slate-700 text-cyan-300 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center gap-1.5 truncate cursor-pointer transition-colors"
+                    {/* Save Contact to Address Book Action */}
+                    <button
+                      type="button"
+                      onClick={() => showNotification('VCF Contact Card downloaded!')}
+                      className={`w-full h-10 font-medium text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${cardStyle.vcfBtn}`}
                     >
-                      <Globe size={13} className="text-purple-400 shrink-0" />
-                      <span className="truncate">Website ↗</span>
-                    </a>
-                  )}
+                      <Download size={14} />
+                      <span>Save Contact to Phone (.vcf)</span>
+                    </button>
+
+                  </div>
+
                 </div>
-
-                {/* Social Profiles Row */}
-                <div className="pt-2 border-t-2 border-black">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono font-bold uppercase text-gray-400">Social Connections</span>
-                    <span className="text-[10px] font-mono text-cyan-400 font-bold">1-Click Tap</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {formData.socialLinks.linkedin && (
-                      <a
-                        href={formData.socialLinks.linkedin}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex-1 h-9 bg-[#0A66C2] text-white rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center hover:opacity-90 transition-opacity"
-                        title="LinkedIn"
-                      >
-                        <LinkedInIcon className="w-4 h-4" />
-                      </a>
-                    )}
-                    {formData.socialLinks.github && (
-                      <a
-                        href={formData.socialLinks.github}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex-1 h-9 bg-black text-white rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center hover:bg-gray-900 transition-colors"
-                        title="GitHub"
-                      >
-                        <GitHubIcon className="w-4 h-4" />
-                      </a>
-                    )}
-                    {formData.socialLinks.instagram && (
-                      <a
-                        href={formData.socialLinks.instagram}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex-1 h-9 bg-gradient-to-tr from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center hover:opacity-90 transition-opacity"
-                        title="Instagram"
-                      >
-                        <InstagramIcon className="w-4 h-4" />
-                      </a>
-                    )}
-                    {formData.socialLinks.x && (
-                      <a
-                        href={formData.socialLinks.x}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex-1 h-9 bg-black text-white rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center hover:bg-gray-900 transition-colors"
-                        title="X (Twitter)"
-                      >
-                        <XIcon className="w-4 h-4" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-
-                {/* Instant QR Code Box */}
-                <div className="p-3.5 bg-white text-black rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] flex items-center justify-between gap-3">
-                  <div className="space-y-0.5">
-                    <span className="font-mono text-[9px] font-black uppercase tracking-wider bg-black text-white px-1.5 py-0.2 rounded">
-                      Scan Profile
-                    </span>
-                    <h5 className="font-black text-xs text-black leading-tight">Camera QR Code</h5>
-                    <p className="text-[10px] text-gray-700 font-medium">Scans on iOS &amp; Android. Zero NFC needed.</p>
-                  </div>
-                  <div className="p-1 bg-white border-2 border-black rounded-lg shadow-[1px_1px_0px_#000] shrink-0">
-                    <QrCode size={44} className="text-black" />
-                  </div>
-                </div>
-
-                {/* Save Contact to Address Book Action */}
-                <button
-                  type="button"
-                  onClick={() => showNotification('VCF Contact Card downloaded!')}
-                  className="w-full h-10 bg-white hover:bg-gray-100 text-black font-mono font-black text-xs uppercase rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Download size={14} />
-                  <span>Save Contact to Phone (.vcf)</span>
-                </button>
-
-              </div>
-
-            </div>
+              );
+            })()}
 
           </div>
         </div>
@@ -960,59 +950,61 @@ export default function MySmartCardPage() {
 
       {/* Share Modal */}
       {showShareModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-[#0e1628] border-3 border-black rounded-xl p-6 shadow-[8px_8px_0px_#000] space-y-5">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-subtle-fade">
+          <div className="w-full max-w-md bg-white dark:bg-[#131924] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-xl font-black text-white">Share Your SmartCard</h4>
-                <p className="text-xs text-gray-400 font-mono mt-0.5">Zero NFC required. Anyone can open instantly.</p>
+                <h4 className="text-base font-semibold text-slate-900 dark:text-slate-100">Share Your SmartCard</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Zero NFC required. Anyone can open instantly.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowShareModal(false)}
-                className="p-1.5 hover:bg-slate-800 rounded-lg text-gray-400 hover:text-white font-bold"
+                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
-                ✕
+                <X size={16} />
               </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <button
                 type="button"
                 onClick={() => {
                   const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(`Check out my digital business card: ${cardShareUrl}`)}`;
                   window.open(url, '_blank');
                 }}
-                className="w-full h-11 bg-emerald-500 hover:bg-emerald-400 text-black font-mono font-black text-xs uppercase rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-colors"
               >
-                <MessageCircle size={16} />
+                <MessageCircle size={15} />
                 <span>Share via WhatsApp</span>
               </button>
 
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={copyCardLink}
-                  className="h-10 bg-cyan-400 hover:bg-cyan-300 text-black font-mono font-bold text-xs uppercase rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full"
                 >
-                  <Copy size={14} />
+                  <Copy size={13} />
                   <span>Copy Web Link</span>
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => {
-                    showNotification('QR Code downloaded as high-res PNG!');
+                    showNotification('QR Code downloaded!');
                     setShowShareModal(false);
                   }}
-                  className="h-10 bg-white hover:bg-gray-100 text-black font-mono font-bold text-xs uppercase rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full"
                 >
-                  <QrCode size={14} />
+                  <QrCode size={13} />
                   <span>Download QR</span>
-                </button>
+                </Button>
               </div>
             </div>
 
-            <div className="p-3 bg-[#090D16] border-2 border-black rounded-lg text-xs font-mono text-gray-300 truncate">
+            <div className="p-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-600 dark:text-slate-400 truncate">
               {cardShareUrl}
             </div>
           </div>
@@ -1021,8 +1013,8 @@ export default function MySmartCardPage() {
 
       {/* Floating Success Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-cyan-400 text-black border-2 border-black px-5 py-2.5 rounded-lg text-xs font-mono font-black uppercase shadow-[4px_4px_0px_#000] flex items-center gap-2 animate-bounce">
-          <Check size={16} className="stroke-[3]" />
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-2.5 rounded-xl text-xs font-medium shadow-lg flex items-center gap-2 animate-subtle-fade">
+          <Check size={14} className="text-emerald-400 dark:text-emerald-600" />
           <span>{toast}</span>
         </div>
       )}

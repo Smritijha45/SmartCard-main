@@ -1,23 +1,32 @@
 import React from 'react';
 import Link from 'next/link';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, ArrowLeft } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#090D16] text-gray-100 font-sans flex flex-col justify-center items-center p-4 sm:p-6 bg-neo-dots relative selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#FBFBFA] dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 flex flex-col justify-center items-center p-4 sm:p-6 relative selection:bg-blue-600 selection:text-white transition-colors">
+      {/* Top right theme toggle */}
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle compact showLabel={false} />
+      </div>
+
+      {/* Subtle ambient lighting */}
+      <div className="hero-glow"></div>
+
       {/* Brand Header */}
-      <div className="mb-6 z-10 flex flex-col items-center gap-2">
+      <div className="mb-6 z-10 flex flex-col items-center gap-2.5 text-center">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-11 h-11 rounded-lg bg-[#2563EB] border-2 border-black flex items-center justify-center font-black text-white shadow-[3px_3px_0px_#000000] group-hover:-translate-y-0.5 transition-transform">
-            <CreditCard size={22} className="text-white" />
+          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs group-hover:bg-blue-700 transition-colors">
+            <CreditCard size={20} className="text-white" />
           </div>
-          <span className="font-black text-2xl text-white tracking-tight">
+          <span className="font-semibold text-xl text-slate-900 dark:text-slate-100 tracking-tight">
             SmartCard
           </span>
         </Link>
-        <span className="font-mono text-xs uppercase tracking-wider text-cyan-400 font-bold border-2 border-black bg-black px-2.5 py-0.5 rounded shadow-[2px_2px_0px_#2563EB] -rotate-1">
-          Zero NFC • 100% Digital Identity
-        </span>
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+          The digital version of your professional identity.
+        </p>
       </div>
 
       {/* Main Container */}
@@ -26,9 +35,10 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
       </div>
       
       {/* Footer link */}
-      <div className="mt-8 text-center text-xs font-mono text-gray-400">
-        <Link href="/" className="hover:text-white underline underline-offset-4 decoration-blue-500">
-          ← Return to SmartCard Home
+      <div className="mt-8 text-center text-xs text-slate-500 dark:text-slate-400">
+        <Link href="/" className="hover:text-slate-900 dark:hover:text-slate-200 inline-flex items-center gap-1.5 transition-colors">
+          <ArrowLeft size={13} />
+          <span>Return to SmartCard Home</span>
         </Link>
       </div>
     </div>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   CreditCard, LayoutDashboard, TrendingUp, Users, Settings, 
-  LogOut, Menu, X, Sparkles, ExternalLink 
+  LogOut, X, Sparkles, ChevronRight
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
@@ -68,22 +68,22 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
   ];
 
   const sidebarContent = (
-    <div className="h-full flex flex-col justify-between p-5 bg-[#0c1322] border-r-3 border-black shadow-[4px_0_0_0_#000000]">
+    <div className="h-full flex flex-col justify-between p-4 bg-white dark:bg-[#0E131F] border-r border-slate-200/80 dark:border-slate-800/80 transition-colors">
       {/* Top: Logo & Navigation */}
-      <div className="space-y-6">
+      <div className="space-y-5">
         
         {/* Brand Logo */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-2 pt-1">
           <Link href="/dashboard" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-lg bg-[#2563EB] border-2 border-black flex items-center justify-center font-black text-white shadow-[2px_2px_0px_#000] group-hover:-translate-y-0.5 transition-transform">
-              <CreditCard size={18} className="text-white" />
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-xs group-hover:bg-blue-700 transition-colors">
+              <CreditCard size={16} className="text-white" />
             </div>
-            <div className="flex flex-col">
-              <span className="font-black text-xl text-white tracking-tight leading-none">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-base text-slate-900 dark:text-slate-100 tracking-tight">
                 SmartCard
               </span>
-              <span className="text-[9px] font-mono font-bold tracking-wider text-cyan-400 uppercase mt-0.5">
-                Pro Workspace
+              <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                Workspace
               </span>
             </div>
           </Link>
@@ -91,7 +91,8 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
           {onMobileClose && (
             <button
               onClick={onMobileClose}
-              className="md:hidden p-1.5 bg-[#17223b] text-gray-300 rounded-lg border-2 border-black"
+              className="md:hidden p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Close navigation"
             >
               <X size={18} />
             </button>
@@ -99,13 +100,13 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
         </div>
 
         {/* Global Theme Switcher Widget */}
-        <div className="flex items-center justify-between p-2 rounded-xl bg-[#10182c] border-2 border-black shadow-[2px_2px_0px_#000]">
-          <span className="text-[10px] font-mono font-bold uppercase text-gray-400 pl-1.5">Theme Mode</span>
-          <ThemeToggle />
+        <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/60">
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Theme</span>
+          <ThemeToggle compact={false} />
         </div>
 
         {/* Navigation List */}
-        <nav className="space-y-1.5">
+        <nav className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname?.startsWith(item.href));
@@ -115,19 +116,21 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
                 key={item.name}
                 href={item.href}
                 onClick={onMobileClose}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border-2 transition-all font-mono font-bold text-xs uppercase cursor-pointer ${
+                className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all text-xs font-medium cursor-pointer ${
                   isActive
-                    ? 'bg-[#2563EB] text-white border-black shadow-[3px_3px_0px_#000000] -translate-y-0.5'
-                    : 'text-gray-300 hover:text-white hover:bg-slate-800/80 border-transparent hover:border-black'
+                    ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/70 dark:hover:bg-slate-800/60'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Icon size={16} className={isActive ? 'text-white' : 'text-gray-400'} />
+                  <Icon size={16} className={isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'} />
                   <span>{item.name}</span>
                 </div>
                 {item.badge && (
-                  <span className={`px-1.5 py-0.2 rounded text-[10px] font-mono font-black border border-black ${
-                    isActive ? 'bg-cyan-400 text-black' : 'bg-emerald-400 text-black'
+                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
+                    isActive 
+                      ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300' 
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                   }`}>
                     {item.badge}
                   </span>
@@ -139,15 +142,15 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
       </div>
 
       {/* Bottom: User Profile & Logout */}
-      <div className="pt-5 border-t-2 border-black space-y-3">
+      <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 space-y-2">
         
         {/* User Profile Card */}
         <Link 
           href="/profile"
           onClick={onMobileClose}
-          className="flex items-center gap-3 p-2.5 bg-[#10182c] hover:bg-[#14203a] rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] transition-colors"
+          className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition-colors group"
         >
-          <div className="w-10 h-10 rounded-lg border-2 border-black bg-white overflow-hidden shadow-[1px_1px_0px_#000] shrink-0">
+          <div className="w-9 h-9 rounded-full ring-1 ring-slate-200 dark:ring-slate-700 overflow-hidden shrink-0">
             <img 
               src={userAvatar} 
               alt={userName} 
@@ -155,27 +158,24 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
             />
           </div>
           <div className="truncate flex-1">
-            <div className="text-xs font-black text-white truncate leading-tight">
+            <div className="text-xs font-medium text-slate-900 dark:text-slate-100 truncate">
               {userName}
             </div>
-            <div className="text-[10px] font-mono text-cyan-400 font-bold truncate">
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
               {userRole}
             </div>
-            <div className="text-[9px] font-mono text-emerald-400 font-extrabold flex items-center gap-1 mt-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              Live • Zero NFC
-            </div>
           </div>
+          <ChevronRight size={14} className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300" />
         </Link>
 
         {/* Logout Button */}
         <button
           type="button"
           onClick={handleLogout}
-          className="w-full h-10 px-3.5 bg-red-950/60 hover:bg-red-900/80 text-red-200 hover:text-white font-mono font-bold text-xs uppercase rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full h-8.5 px-3 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
         >
           <LogOut size={14} />
-          <span>Logout</span>
+          <span>Log out</span>
         </button>
 
       </div>
@@ -185,14 +185,14 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
   return (
     <>
       {/* Desktop Sidebar (Permanent) */}
-      <aside className="hidden md:block w-64 shrink-0 min-h-screen sticky top-0 self-start z-30">
+      <aside className="hidden md:block w-60 shrink-0 min-h-screen sticky top-0 self-start z-30">
         {sidebarContent}
       </aside>
 
       {/* Mobile Drawer (Overlay) */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden bg-black/80 backdrop-blur-xs flex">
-          <div className="w-72 max-w-[80vw] h-full">
+        <div className="fixed inset-0 z-50 md:hidden bg-black/40 backdrop-blur-xs flex">
+          <div className="w-68 max-w-[80vw] h-full shadow-2xl">
             {sidebarContent}
           </div>
           <div className="flex-1" onClick={onMobileClose} />

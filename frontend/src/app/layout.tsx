@@ -16,13 +16,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://smartcard.app'),
   title: "SmartCard — Your Professional Identity, In One Link",
-  description: "Create a beautiful digital business card, share it anywhere, and make every connection count. 100% digital, zero NFC hardware needed.",
+  description: "Create, customize and share your professional digital business card with SmartCard.",
   keywords: ["digital business card", "smartcard", "virtual card", "vCard", "networking", "QR code business card", "contact sharing"],
   authors: [{ name: "SmartCard" }],
   creator: "SmartCard",
   openGraph: {
     title: "SmartCard — Your Professional Identity, In One Link",
-    description: "Create a beautiful digital business card, share it anywhere, and make every connection count. Zero NFC hardware needed.",
+    description: "Create, customize and share your professional digital business card with SmartCard.",
     url: "https://smartcard.app",
     siteName: "SmartCard",
     images: [
@@ -53,7 +53,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

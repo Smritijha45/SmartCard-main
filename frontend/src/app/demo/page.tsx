@@ -1,5 +1,5 @@
 import SmritiProfilePage from '../smriti/page';
 
 export default function DemoPage() {
-  return <SmritiProfilePage />;
+  return <SmritiProfilePage isDemo={true} />;
 }

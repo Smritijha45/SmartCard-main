@@ -46,105 +46,105 @@ export default function NotificationsPage() {
          setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
       }
     } catch (error) {
-      console.error('Failed to mark as read', error);
+      setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
     }
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center h-[50vh] space-y-4">
-        <div className="w-10 h-10 border-4 border-black border-t-[#2563EB] rounded-full animate-spin"></div>
-        <p className="text-gray-300 text-xs font-mono uppercase font-bold tracking-wider">Loading inbox alerts...</p>
+      <div className="flex flex-col justify-center items-center h-[50vh] space-y-3">
+        <div className="w-8 h-8 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin"></div>
+        <p className="text-slate-500 text-xs font-medium">Loading notifications...</p>
       </div>
     );
   }
 
   const getStyleForType = (type: string) => {
     switch(type) {
-      case 'lead': return { icon: UserPlus, color: 'text-black', bgColor: 'bg-yellow-400' };
-      case 'milestone': return { icon: Sparkles, color: 'text-white', bgColor: 'bg-blue-600' };
-      case 'share': return { icon: Share2, color: 'text-black', bgColor: 'bg-cyan-400' };
-      default: return { icon: Bell, color: 'text-white', bgColor: 'bg-slate-700' };
+      case 'lead': return { icon: UserPlus, color: 'text-amber-600 dark:text-amber-400', bgColor: 'bg-amber-50 dark:bg-amber-900/30' };
+      case 'milestone': return { icon: Sparkles, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-50 dark:bg-blue-900/30' };
+      case 'share': return { icon: Share2, color: 'text-cyan-600 dark:text-cyan-400', bgColor: 'bg-cyan-50 dark:bg-cyan-900/30' };
+      default: return { icon: Bell, color: 'text-slate-600 dark:text-slate-400', bgColor: 'bg-slate-100 dark:bg-slate-800' };
     }
   };
 
   return (
-    <div className="space-y-7 max-w-4xl mx-auto animate-in fade-in duration-200">
+    <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-200 pb-12">
       
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-[#0e1628] p-6 rounded-xl border-2 border-black shadow-[5px_5px_0px_#000]">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-white dark:bg-[#131924] p-6 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 shadow-xs">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-[10px] font-bold uppercase bg-cyan-400 text-black px-2 py-0.5 rounded border border-black shadow-[1px_1px_0px_#000]">
+            <span className="text-[10px] font-medium uppercase bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-2.5 py-0.5 rounded-full border border-blue-200/60 dark:border-blue-900">
               Activity Feed
             </span>
-            <span className="text-xs font-mono text-gray-400">Real-Time Inbound Events</span>
+            <span className="text-xs text-slate-400">Real-Time Inbound Events</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
             Notifications &amp; Activity
           </h1>
-          <p className="text-xs sm:text-sm text-gray-300 font-medium">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-normal">
             Stay updated with profile views, WhatsApp shares, and inbound relationship leads.
           </p>
         </div>
 
         <Button 
-          variant="secondary" 
+          variant="outline" 
           onClick={markAllAsRead} 
-          className="text-xs font-black uppercase tracking-wider h-10 shadow-[2px_2px_0px_#000] flex items-center gap-1.5"
+          className="text-xs font-medium h-9 border-slate-200 dark:border-slate-800 flex items-center gap-1.5 shadow-2xs"
         >
-          <Check size={14} />
+          <Check size={13} />
           <span>Mark All Read</span>
         </Button>
       </div>
 
       {/* Notifications List */}
-      <div className="bg-[#0e1628] rounded-xl border-3 border-black overflow-hidden shadow-[6px_6px_0px_#000]">
+      <div className="bg-white dark:bg-[#131924] rounded-2xl border border-slate-200/90 dark:border-slate-800/90 overflow-hidden shadow-xs">
         {notifications.length > 0 ? (
-          <div className="divide-y-2 divide-black">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
             {notifications.map((notification) => {
               const { icon: Icon, color, bgColor } = getStyleForType(notification.type);
               
               return (
                 <div 
                   key={notification._id || notification.id} 
-                  className={`p-5 flex items-start gap-4 transition-colors hover:bg-slate-800/60 ${
-                    notification.unread ? 'bg-[#121c33]' : 'bg-transparent'
+                  className={`p-4.5 sm:p-5 flex items-start gap-4 transition-colors hover:bg-slate-50/70 dark:hover:bg-slate-800/40 ${
+                    notification.unread ? 'bg-blue-50/30 dark:bg-blue-950/15' : 'bg-transparent'
                   }`}
                 >
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border-2 border-black ${bgColor} ${color} shadow-[2px_2px_0px_#000]`}>
-                    <Icon size={18} />
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${bgColor} ${color}`}>
+                    <Icon size={17} />
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className={`text-sm font-black ${notification.unread ? 'text-white' : 'text-gray-300'}`}>
+                      <p className={`text-xs sm:text-sm font-semibold ${notification.unread ? 'text-slate-900 dark:text-slate-100' : 'text-slate-700 dark:text-slate-300'}`}>
                         {notification.title}
                       </p>
-                      <span className="text-[11px] font-mono font-bold text-gray-400">
+                      <span className="text-[11px] text-slate-400">
                         {notification.time || 'Recent'}
                       </span>
                     </div>
 
-                    <p className="text-xs text-gray-300 font-medium mt-1 leading-relaxed">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-normal mt-0.5 leading-relaxed">
                       {notification.message || notification.description}
                     </p>
                   </div>
 
                   {notification.unread && (
-                    <div className="w-2.5 h-2.5 bg-cyan-400 border border-black rounded-full mt-2 shrink-0"></div>
+                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 shrink-0"></div>
                   )}
                 </div>
               );
             })}
           </div>
         ) : (
-          <div className="py-14 flex flex-col items-center justify-center text-gray-400 space-y-3">
-            <div className="w-14 h-14 bg-slate-900 border-2 border-black rounded-xl flex items-center justify-center shadow-[3px_3px_0px_#000]">
-              <Bell size={24} className="text-gray-400" />
+          <div className="py-16 flex flex-col items-center justify-center text-slate-400 space-y-3">
+            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center">
+              <Bell size={20} className="text-slate-400" />
             </div>
-            <p className="text-sm font-bold text-white">No notifications yet</p>
-            <p className="text-xs text-gray-500 font-mono">When visitors scan your card or exchange info, alerts will show here.</p>
+            <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">No notifications yet</p>
+            <p className="text-xs text-slate-500">When visitors scan your card or exchange info, alerts will show here.</p>
           </div>
         )}
       </div>

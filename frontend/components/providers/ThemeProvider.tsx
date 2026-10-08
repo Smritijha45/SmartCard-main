@@ -1,93 +1,75 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useTransition } from 'react';
 
 export type Theme = 'light' | 'dark';
-export type ThemeMode = 'light' | 'dark' | 'system';
 
 interface ThemeContextType {
   theme: Theme;
-  mode: ThemeMode;
-  toggleTheme: () => void;
+  isDark: boolean;
   setTheme: (theme: Theme) => void;
-  setMode: (mode: ThemeMode) => void;
+  toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>('system');
-  const [theme, setThemeState] = useState<Theme>('dark');
+  const [theme, setThemeState] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
+  const [, startTransition] = useTransition();
 
-  const getSystemTheme = (): Theme => {
-    if (typeof window !== 'undefined' && window.matchMedia) {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    return 'dark';
-  };
-
-  const applyThemeToDOM = (activeTheme: Theme, currentMode: ThemeMode) => {
+  const applyThemeToDOM = (activeTheme: Theme) => {
     if (typeof document !== 'undefined') {
       const root = document.documentElement;
-      root.classList.remove('light', 'dark');
-      root.classList.add(activeTheme);
+      if (activeTheme === 'dark') {
+        root.classList.add('dark');
+        root.classList.remove('light');
+      } else {
+        root.classList.remove('dark');
+        root.classList.add('light');
+      }
       root.setAttribute('data-theme', activeTheme);
-      root.setAttribute('data-theme-mode', currentMode);
       root.style.colorScheme = activeTheme;
     }
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem('smartcard_theme') as ThemeMode | null;
-    let initialMode: ThemeMode = 'system';
-    if (saved === 'light' || saved === 'dark' || saved === 'system') {
-      initialMode = saved;
-    }
+    try {
+      const saved = localStorage.getItem('smartcard_theme') as Theme | null;
+      let initialTheme: Theme = 'light';
 
-    setModeState(initialMode);
-    const resolved = initialMode === 'system' ? getSystemTheme() : initialMode;
-    setThemeState(resolved);
-    applyThemeToDOM(resolved, initialMode);
+      if (saved === 'light' || saved === 'dark') {
+        initialTheme = saved;
+      } else if (typeof window !== 'undefined' && window.matchMedia) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        initialTheme = prefersDark ? 'dark' : 'light';
+      }
+
+      setThemeState(initialTheme);
+      applyThemeToDOM(initialTheme);
+    } catch {
+      applyThemeToDOM('light');
+    }
     setMounted(true);
-
-    // Listen to OS theme changes if on system mode
-    if (typeof window !== 'undefined' && window.matchMedia) {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = (e: MediaQueryListEvent) => {
-        const currentSaved = localStorage.getItem('smartcard_theme');
-        if (!currentSaved || currentSaved === 'system') {
-          const sysTheme: Theme = e.matches ? 'dark' : 'light';
-          setThemeState(sysTheme);
-          applyThemeToDOM(sysTheme, 'system');
-        }
-      };
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    }
   }, []);
 
-  const setMode = (newMode: ThemeMode) => {
-    setModeState(newMode);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('smartcard_theme', newMode);
-    }
-    const resolved = newMode === 'system' ? getSystemTheme() : newMode;
-    setThemeState(resolved);
-    applyThemeToDOM(resolved, newMode);
-  };
-
   const setTheme = (newTheme: Theme) => {
-    setMode(newTheme);
+    setThemeState(newTheme);
+    try {
+      localStorage.setItem('smartcard_theme', newTheme);
+    } catch {}
+    startTransition(() => {
+      applyThemeToDOM(newTheme);
+    });
   };
 
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
-    setMode(next);
+    setTheme(next);
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, mode, toggleTheme, setTheme, setMode }}>
+    <ThemeContext.Provider value={{ theme, isDark: theme === 'dark', setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -3,9 +3,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Users, Search, Filter, ArrowUpDown, Plus, Download, 
-  Mail, Phone, ExternalLink, Calendar, Check, MoreVertical, 
+  Mail, Phone, Calendar, Check, MoreVertical, 
   Trash2, MessageCircle, Building2, UserPlus, Grid, Table as TableIcon, X
 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 export interface Contact {
   id: string;
@@ -98,54 +100,48 @@ const INITIAL_CONTACTS: Contact[] = [
     name: 'Priya Sharma',
     company: 'RazorPay Identity',
     email: 'priya.sharma@razoridentity.in',
-    phone: '+91 98200 55123',
-    role: 'Director of Partnerships',
+    phone: '+91 98765 43210',
+    role: 'Principal Architect',
     dateConnected: '2026-09-20',
-    status: 'Partner',
-    notes: 'Exploring APAC distribution and WhatsApp card sync.',
+    status: 'Active',
+    notes: 'Zero NFC rollout partner for APAC operations.',
     avatarColor: '#10B981',
-  },
-  {
-    id: 'c-8',
-    name: 'Lucas Vance',
-    company: 'Vance Refrigeration Systems',
-    email: 'lucas@vancerefrig.com',
-    phone: '+1 (570) 555-0199',
-    role: 'Operations VP',
-    dateConnected: '2026-09-14',
-    status: 'Archived',
-    notes: 'Initial evaluation completed. Follow up next fiscal quarter.',
-    avatarColor: '#64748B',
-  },
+  }
 ];
 
-export default function ContactsPage() {
+export default function LeadsPage() {
   const [contacts, setContacts] = useState<Contact[]>(INITIAL_CONTACTS);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('All');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [sortBy, setSortBy] = useState<'date-desc' | 'date-asc' | 'name-asc' | 'company-asc'>('date-desc');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [showAddModal, setShowAddModal] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  // New Contact Form State
-  const [newContact, setNewContact] = useState({
+  const [newContact, setNewContact] = useState<{
+    name: string;
+    company: string;
+    email: string;
+    phone: string;
+    role: string;
+    status: Contact['status'];
+    notes: string;
+  }>({
     name: '',
     company: '',
     email: '',
     phone: '',
     role: '',
-    status: 'New Lead' as const,
+    status: 'New Lead',
     notes: '',
   });
 
-  // Load from localStorage or API
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('smartcard_contacts_data');
-      if (stored) {
+      const saved = localStorage.getItem('smartcard_contacts');
+      if (saved) {
         try {
-          const parsed = JSON.parse(stored);
+          const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
             setContacts(parsed);
           }
@@ -159,7 +155,7 @@ export default function ContactsPage() {
   const saveContactsState = (updated: Contact[]) => {
     setContacts(updated);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('smartcard_contacts_data', JSON.stringify(updated));
+      localStorage.setItem('smartcard_contacts', JSON.stringify(updated));
     }
   };
 
@@ -168,11 +164,9 @@ export default function ContactsPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // Filter and Sort Pipeline
   const filteredAndSortedContacts = useMemo(() => {
     let result = [...contacts];
 
-    // Search filter
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(c => 
@@ -183,12 +177,10 @@ export default function ContactsPage() {
       );
     }
 
-    // Status filter
     if (statusFilter !== 'All') {
       result = result.filter(c => c.status === statusFilter);
     }
 
-    // Sorting
     result.sort((a, b) => {
       switch (sortBy) {
         case 'date-desc':
@@ -223,7 +215,7 @@ export default function ContactsPage() {
       role: newContact.role || 'Contact',
       dateConnected: new Date().toISOString().slice(0, 10),
       status: newContact.status,
-      notes: newContact.notes || 'Manually added to SmartCard CRM',
+      notes: newContact.notes || 'Added to SmartCard contacts',
       avatarColor: randomColor,
     };
 
@@ -284,80 +276,81 @@ export default function ContactsPage() {
   const getStatusBadge = (status: Contact['status']) => {
     switch (status) {
       case 'Active':
-        return 'bg-emerald-400 text-black border-black';
+        return 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/40';
       case 'Follow-Up':
-        return 'bg-amber-400 text-black border-black';
+        return 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/40';
       case 'New Lead':
-        return 'bg-cyan-400 text-black border-black';
+        return 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/40';
       case 'Partner':
-        return 'bg-purple-400 text-black border-black';
+        return 'bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800/40';
       case 'Archived':
-        return 'bg-gray-400 text-black border-black';
+        return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700';
     }
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <div className="space-y-6 animate-subtle-fade">
       
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 bg-[#0e1628] p-5 sm:p-6 rounded-xl border-3 border-black shadow-[6px_6px_0px_#000]">
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 bg-white dark:bg-[#131924] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-[10px] font-black uppercase bg-[#2563EB] text-white px-2 py-0.5 rounded border border-black shadow-[1px_1px_0px_#000]">
+            <span className="text-[11px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-md">
               CRM &amp; Inbound Leads
             </span>
-            <span className="text-xs font-mono text-cyan-400 font-bold">
+            <span className="text-xs text-slate-400">•</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {contacts.length} Total Connections
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Contacts Dashboard
+          <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
+            Contacts &amp; Leads
           </h1>
-          <p className="text-xs sm:text-sm text-gray-300 font-medium">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
             People who connected with you and exchanged details via your SmartCard profiles.
           </p>
         </div>
 
         {/* Action Controls */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            type="button"
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleExportCSV}
-            className="h-10 px-3.5 bg-[#121c33] hover:bg-slate-800 text-gray-200 font-mono text-xs font-bold uppercase rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Download size={14} />
+            <Download size={13} />
             <span>Export CSV</span>
-          </button>
+          </Button>
 
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="sm"
             onClick={() => setShowAddModal(true)}
-            className="h-10 px-4 bg-cyan-400 hover:bg-cyan-300 text-black font-mono text-xs font-black uppercase rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <UserPlus size={15} />
+            <UserPlus size={14} />
             <span>Add Contact</span>
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Control Bar: Search, Filter, Sort, View Toggle */}
-      <div className="bg-[#0e1628] p-4 sm:p-5 rounded-xl border-3 border-black shadow-[5px_5px_0px_#000] space-y-3.5">
+      <div className="bg-white dark:bg-[#131924] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           
           {/* Search Input */}
           <div className="relative flex-1 max-w-md">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by name, company, email, or role..."
+              placeholder="Search by name, company, email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 h-11 bg-[#090D16] border-2 border-black rounded-lg text-xs font-bold text-white placeholder:text-gray-500 focus:outline-none focus:border-cyan-400 shadow-[2px_2px_0px_#000]"
+              className="w-full pl-9 pr-4 h-9 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 ✕
               </button>
@@ -365,61 +358,61 @@ export default function ContactsPage() {
           </div>
 
           {/* Controls: Filter, Sort, View Toggle */}
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             
             {/* Filter by Status */}
-            <div className="flex items-center gap-1 bg-[#090D16] border-2 border-black rounded-lg px-2 h-11 shadow-[2px_2px_0px_#000]">
-              <Filter size={14} className="text-gray-400 shrink-0" />
+            <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg px-2 h-9">
+              <Filter size={13} className="text-slate-400 shrink-0" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-transparent text-xs font-mono font-bold text-white focus:outline-none cursor-pointer"
+                className="bg-transparent text-xs text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer"
               >
-                <option value="All" className="bg-[#0e1628]">All Statuses</option>
-                <option value="Active" className="bg-[#0e1628]">Active</option>
-                <option value="Follow-Up" className="bg-[#0e1628]">Follow-Up</option>
-                <option value="New Lead" className="bg-[#0e1628]">New Lead</option>
-                <option value="Partner" className="bg-[#0e1628]">Partner</option>
-                <option value="Archived" className="bg-[#0e1628]">Archived</option>
+                <option value="All" className="bg-white dark:bg-[#131924]">All Statuses</option>
+                <option value="Active" className="bg-white dark:bg-[#131924]">Active</option>
+                <option value="Follow-Up" className="bg-white dark:bg-[#131924]">Follow-Up</option>
+                <option value="New Lead" className="bg-white dark:bg-[#131924]">New Lead</option>
+                <option value="Partner" className="bg-white dark:bg-[#131924]">Partner</option>
+                <option value="Archived" className="bg-white dark:bg-[#131924]">Archived</option>
               </select>
             </div>
 
             {/* Sort Dropdown */}
-            <div className="flex items-center gap-1 bg-[#090D16] border-2 border-black rounded-lg px-2 h-11 shadow-[2px_2px_0px_#000]">
-              <ArrowUpDown size={14} className="text-gray-400 shrink-0" />
+            <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg px-2 h-9">
+              <ArrowUpDown size={13} className="text-slate-400 shrink-0" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-transparent text-xs font-mono font-bold text-white focus:outline-none cursor-pointer"
+                className="bg-transparent text-xs text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer"
               >
-                <option value="date-desc" className="bg-[#0e1628]">Date (Newest)</option>
-                <option value="date-asc" className="bg-[#0e1628]">Date (Oldest)</option>
-                <option value="name-asc" className="bg-[#0e1628]">Name (A → Z)</option>
-                <option value="company-asc" className="bg-[#0e1628]">Company (A → Z)</option>
+                <option value="date-desc" className="bg-white dark:bg-[#131924]">Date (Newest)</option>
+                <option value="date-asc" className="bg-white dark:bg-[#131924]">Date (Oldest)</option>
+                <option value="name-asc" className="bg-white dark:bg-[#131924]">Name (A → Z)</option>
+                <option value="company-asc" className="bg-white dark:bg-[#131924]">Company (A → Z)</option>
               </select>
             </div>
 
             {/* View Mode Switcher */}
-            <div className="flex border-2 border-black rounded-lg bg-[#090D16] p-0.5 shadow-[2px_2px_0px_#000]">
+            <div className="flex border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-900/60 p-0.5">
               <button
                 type="button"
                 onClick={() => setViewMode('table')}
-                className={`p-2 rounded-md transition-colors cursor-pointer ${
-                  viewMode === 'table' ? 'bg-[#2563EB] text-white shadow-[1px_1px_0px_#000]' : 'text-gray-400 hover:text-white'
+                className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                  viewMode === 'table' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-2xs' : 'text-slate-400 hover:text-slate-700'
                 }`}
                 title="Table View"
               >
-                <TableIcon size={16} />
+                <TableIcon size={14} />
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('cards')}
-                className={`p-2 rounded-md transition-colors cursor-pointer ${
-                  viewMode === 'cards' ? 'bg-[#2563EB] text-white shadow-[1px_1px_0px_#000]' : 'text-gray-400 hover:text-white'
+                className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                  viewMode === 'cards' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-2xs' : 'text-slate-400 hover:text-slate-700'
                 }`}
                 title="Cards View"
               >
-                <Grid size={16} />
+                <Grid size={14} />
               </button>
             </div>
 
@@ -427,24 +420,24 @@ export default function ContactsPage() {
 
         </div>
 
-        {/* Quick Filter Status Badges */}
-        <div className="flex flex-wrap items-center gap-2 pt-1">
-          <span className="text-[11px] font-mono font-bold uppercase text-gray-400">Quick Filter:</span>
+        {/* Quick Filter Badges */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
+          <span className="text-slate-400 text-xs">Filter:</span>
           {['All', 'Active', 'Follow-Up', 'New Lead', 'Partner', 'Archived'].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-2.5 py-1 rounded-md text-[10px] font-mono font-black uppercase transition-all border cursor-pointer ${
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all border cursor-pointer ${
                 statusFilter === st
-                  ? 'bg-white text-black border-black shadow-[2px_2px_0px_#000]'
-                  : 'bg-[#121c33] text-gray-300 border-black hover:text-white'
+                  ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700'
+                  : 'bg-white dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50'
               }`}
             >
               {st}
             </button>
           ))}
-          <span className="text-[11px] font-mono text-cyan-400 ml-auto font-bold">
-            Showing {filteredAndSortedContacts.length} of {contacts.length}
+          <span className="text-slate-400 ml-auto text-xs">
+            {filteredAndSortedContacts.length} of {contacts.length}
           </span>
         </div>
 
@@ -452,100 +445,101 @@ export default function ContactsPage() {
 
       {/* EMPTY STATE */}
       {filteredAndSortedContacts.length === 0 ? (
-        <div className="bg-[#0e1628] rounded-xl border-3 border-black p-12 text-center shadow-[6px_6px_0px_#000] space-y-4">
-          <div className="w-14 h-14 bg-blue-600 border-2 border-black text-white rounded-xl mx-auto flex items-center justify-center shadow-[3px_3px_0px_#000]">
-            <Users size={28} />
+        <div className="bg-white dark:bg-[#131924] rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center shadow-xs space-y-3">
+          <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl mx-auto flex items-center justify-center">
+            <Users size={24} />
           </div>
-          <h3 className="text-xl font-black text-white">No contacts found</h3>
-          <p className="text-xs text-gray-400 max-w-md mx-auto font-medium">
-            No contacts match &quot;{search || statusFilter}&quot;. Try adjusting your search query or reset your status filter.
+          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">No contacts found</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+            No contacts match &quot;{search || statusFilter}&quot;. Try adjusting your search query or reset your filter.
           </p>
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => { setSearch(''); setStatusFilter('All'); }}
-            className="h-10 px-4 bg-cyan-400 text-black font-mono text-xs font-bold uppercase rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] cursor-pointer"
           >
             Clear Filters
-          </button>
+          </Button>
         </div>
       ) : viewMode === 'table' ? (
         
-        /* TABLE VIEW (Section 19: Name, Company, Email, Date connected, Status) */
-        <div className="bg-[#0e1628] rounded-xl border-3 border-black shadow-[6px_6px_0px_#000] overflow-hidden">
+        /* TABLE VIEW */
+        <div className="bg-white dark:bg-[#131924] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-mono">
-              <thead className="bg-black text-[11px] uppercase text-gray-400 font-black border-b-2 border-black">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50/75 dark:bg-slate-900/50 text-[11px] uppercase text-slate-500 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-800">
                 <tr>
-                  <th className="px-5 py-3.5 text-white">Name &amp; Role</th>
-                  <th className="px-5 py-3.5 text-white">Company</th>
-                  <th className="px-5 py-3.5 text-white">Email &amp; Phone</th>
-                  <th className="px-5 py-3.5 text-white">Date Connected</th>
-                  <th className="px-5 py-3.5 text-white">Status</th>
-                  <th className="px-5 py-3.5 text-right text-white">Actions</th>
+                  <th className="px-5 py-3 text-slate-700 dark:text-slate-300">Name &amp; Role</th>
+                  <th className="px-5 py-3 text-slate-700 dark:text-slate-300">Company</th>
+                  <th className="px-5 py-3 text-slate-700 dark:text-slate-300">Email &amp; Phone</th>
+                  <th className="px-5 py-3 text-slate-700 dark:text-slate-300">Date Connected</th>
+                  <th className="px-5 py-3 text-slate-700 dark:text-slate-300">Status</th>
+                  <th className="px-5 py-3 text-right text-slate-700 dark:text-slate-300">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y-2 divide-black">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredAndSortedContacts.map((contact) => (
-                  <tr key={contact.id} className="hover:bg-slate-800/60 transition-colors">
+                  <tr key={contact.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                     
                     {/* Name */}
-                    <td className="px-5 py-4 whitespace-nowrap">
+                    <td className="px-5 py-3.5 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div 
-                          className="w-9 h-9 rounded-lg border-2 border-black flex items-center justify-center font-black text-sm text-white uppercase shadow-[2px_2px_0px_#000] shrink-0"
+                          className="w-8 h-8 rounded-full flex items-center justify-center font-medium text-xs text-white uppercase shrink-0"
                           style={{ backgroundColor: contact.avatarColor }}
                         >
                           {contact.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-sans font-black text-sm text-white">{contact.name}</p>
-                          <p className="text-[10px] text-cyan-400 font-bold">{contact.role}</p>
+                          <p className="font-medium text-xs text-slate-900 dark:text-slate-100">{contact.name}</p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">{contact.role}</p>
                         </div>
                       </div>
                     </td>
 
                     {/* Company */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <p className="font-bold text-white">{contact.company}</p>
-                      <p className="text-[10px] text-gray-400 truncate max-w-[200px]">{contact.notes}</p>
+                    <td className="px-5 py-3.5 whitespace-nowrap">
+                      <p className="font-medium text-slate-800 dark:text-slate-200">{contact.company}</p>
+                      <p className="text-[11px] text-slate-400 truncate max-w-[200px]">{contact.notes}</p>
                     </td>
 
                     {/* Email & Phone */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <a href={`mailto:${contact.email}`} className="text-gray-200 hover:text-cyan-400 font-bold block transition-colors">
+                    <td className="px-5 py-3.5 whitespace-nowrap">
+                      <a href={`mailto:${contact.email}`} className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 block transition-colors">
                         {contact.email}
                       </a>
-                      <span className="text-[11px] text-gray-400">{contact.phone}</span>
+                      <span className="text-[11px] text-slate-400">{contact.phone}</span>
                     </td>
 
                     {/* Date Connected */}
-                    <td className="px-5 py-4 whitespace-nowrap text-gray-300 text-[11px]">
+                    <td className="px-5 py-3.5 whitespace-nowrap text-slate-500 dark:text-slate-400 text-xs">
                       <div className="flex items-center gap-1.5">
-                        <Calendar size={13} className="text-gray-500" />
+                        <Calendar size={12} className="text-slate-400" />
                         <span>{new Date(contact.dateConnected).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                       </div>
                     </td>
 
                     {/* Status */}
-                    <td className="px-5 py-4 whitespace-nowrap">
+                    <td className="px-5 py-3.5 whitespace-nowrap">
                       <select
                         value={contact.status}
                         onChange={(e) => handleUpdateStatus(contact.id, e.target.value as any)}
-                        className={`px-2.5 py-1 rounded text-[10px] font-black uppercase border-2 shadow-[1px_1px_0px_#000] cursor-pointer focus:outline-none ${getStatusBadge(contact.status)}`}
+                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium border cursor-pointer focus:outline-none ${getStatusBadge(contact.status)}`}
                       >
-                        <option value="Active" className="bg-[#0e1628] text-white">Active</option>
-                        <option value="Follow-Up" className="bg-[#0e1628] text-white">Follow-Up</option>
-                        <option value="New Lead" className="bg-[#0e1628] text-white">New Lead</option>
-                        <option value="Partner" className="bg-[#0e1628] text-white">Partner</option>
-                        <option value="Archived" className="bg-[#0e1628] text-white">Archived</option>
+                        <option value="Active" className="bg-white dark:bg-[#131924] text-slate-900 dark:text-slate-100">Active</option>
+                        <option value="Follow-Up" className="bg-white dark:bg-[#131924] text-slate-900 dark:text-slate-100">Follow-Up</option>
+                        <option value="New Lead" className="bg-white dark:bg-[#131924] text-slate-900 dark:text-slate-100">New Lead</option>
+                        <option value="Partner" className="bg-white dark:bg-[#131924] text-slate-900 dark:text-slate-100">Partner</option>
+                        <option value="Archived" className="bg-white dark:bg-[#131924] text-slate-900 dark:text-slate-100">Archived</option>
                       </select>
                     </td>
 
                     {/* Actions */}
-                    <td className="px-5 py-4 whitespace-nowrap text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="px-5 py-3.5 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-1">
                         <a
                           href={`mailto:${contact.email}`}
-                          className="p-1.5 bg-[#121c33] hover:bg-blue-600 text-gray-300 hover:text-white rounded border border-black transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-blue-600 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                           title="Send Email"
                         >
                           <Mail size={13} />
@@ -554,14 +548,14 @@ export default function ContactsPage() {
                           href={`https://api.whatsapp.com/send?phone=${contact.phone.replace(/\D/g, '')}&text=${encodeURIComponent(`Hi ${contact.name}, great connecting with you via SmartCard!`)}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="p-1.5 bg-[#121c33] hover:bg-emerald-600 text-emerald-400 hover:text-white rounded border border-black transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-emerald-600 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                           title="WhatsApp Chat"
                         >
                           <MessageCircle size={13} />
                         </a>
                         <button
                           onClick={() => handleDeleteContact(contact.id, contact.name)}
-                          className="p-1.5 bg-[#121c33] hover:bg-red-900/60 text-red-400 hover:text-red-200 rounded border border-black transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                           title="Delete Contact"
                         >
                           <Trash2 size={13} />
@@ -578,70 +572,70 @@ export default function ContactsPage() {
 
       ) : (
 
-        /* CARDS VIEW (Section 19: Grid Layout) */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        /* CARDS VIEW */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredAndSortedContacts.map((contact) => (
             <div 
               key={contact.id}
-              className="bg-[#0e1628] rounded-xl border-3 border-black shadow-[6px_6px_0px_#000] hover:shadow-[8px_8px_0px_#000] hover:-translate-y-0.5 transition-all p-5 flex flex-col justify-between"
+              className="bg-white dark:bg-[#131924] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all p-5 flex flex-col justify-between"
             >
               <div>
                 {/* Header with Avatar & Status */}
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3">
                     <div 
-                      className="w-12 h-12 rounded-xl border-2 border-black flex items-center justify-center font-black text-base text-white uppercase shadow-[2px_2px_0px_#000] shrink-0"
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm text-white uppercase shrink-0"
                       style={{ backgroundColor: contact.avatarColor }}
                     >
                       {contact.name.charAt(0)}
                     </div>
                     <div>
-                      <h4 className="font-sans font-black text-base text-white leading-tight">
+                      <h4 className="font-semibold text-sm text-slate-900 dark:text-slate-100 leading-snug">
                         {contact.name}
                       </h4>
-                      <p className="text-xs font-bold text-cyan-400 font-mono mt-0.5">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         {contact.role}
                       </p>
                     </div>
                   </div>
 
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-black uppercase border-2 shadow-[1px_1px_0px_#000] ${getStatusBadge(contact.status)}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${getStatusBadge(contact.status)}`}>
                     {contact.status}
                   </span>
                 </div>
 
                 {/* Company & Details */}
-                <div className="space-y-1.5 mb-3 bg-[#090D16] p-3 rounded-lg border-2 border-black">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                    <Building2 size={13} className="text-amber-400 shrink-0" />
+                <div className="space-y-1.5 mb-3 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-800 dark:text-slate-200">
+                    <Building2 size={13} className="text-slate-400 shrink-0" />
                     <span>{contact.company}</span>
                   </div>
-                  <div className="text-[11px] font-mono text-gray-300 truncate">
-                    ✉️ {contact.email}
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                    {contact.email}
                   </div>
-                  <div className="text-[11px] font-mono text-gray-400">
-                    📱 {contact.phone}
+                  <div className="text-[11px] text-slate-400">
+                    {contact.phone}
                   </div>
                 </div>
 
                 {/* Notes */}
                 {contact.notes && (
-                  <p className="text-xs text-gray-300 bg-[#121c33] p-2.5 rounded-lg border border-black mb-3 font-medium line-clamp-2">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mb-3 leading-relaxed line-clamp-2">
                     &quot;{contact.notes}&quot;
                   </p>
                 )}
               </div>
 
               {/* Bottom Footer: Date & Actions */}
-              <div className="pt-3 border-t-2 border-black flex items-center justify-between text-xs font-mono">
-                <span className="text-[10px] text-gray-400 font-bold">
-                  Connected: {contact.dateConnected}
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                <span className="text-[11px] text-slate-400">
+                  {contact.dateConnected}
                 </span>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <a
                     href={`mailto:${contact.email}`}
-                    className="p-1.5 bg-[#121c33] hover:bg-blue-600 text-gray-300 hover:text-white rounded border border-black"
+                    className="p-1.5 text-slate-400 hover:text-blue-600 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
                     <Mail size={13} />
                   </a>
@@ -649,13 +643,13 @@ export default function ContactsPage() {
                     href={`https://api.whatsapp.com/send?phone=${contact.phone.replace(/\D/g, '')}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="p-1.5 bg-[#121c33] hover:bg-emerald-600 text-emerald-400 hover:text-white rounded border border-black"
+                    className="p-1.5 text-slate-400 hover:text-emerald-600 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
                     <MessageCircle size={13} />
                   </a>
                   <button
                     onClick={() => handleDeleteContact(contact.id, contact.name)}
-                    className="p-1.5 bg-[#121c33] hover:bg-red-900/60 text-red-400 rounded border border-black cursor-pointer"
+                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                   >
                     <Trash2 size={13} />
                   </button>
@@ -669,88 +663,80 @@ export default function ContactsPage() {
 
       {/* Add Contact Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-[#0e1628] border-3 border-black rounded-xl p-6 shadow-[8px_8px_0px_#000] space-y-4">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-subtle-fade">
+          <div className="w-full max-w-md bg-white dark:bg-[#131924] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-black text-white">Add New Contact</h3>
-                <p className="text-xs text-gray-400 font-mono mt-0.5">Record a connection in your SmartCard CRM.</p>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Add New Contact</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Record a connection in your workspace CRM.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="p-1 text-gray-400 hover:text-white font-bold"
+                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
             <form onSubmit={handleAddContact} className="space-y-3.5">
               <div className="space-y-1">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Full Name *</label>
-                <input
-                  type="text"
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Full Name *</label>
+                <Input
                   required
                   placeholder="e.g. Jordan Lee"
                   value={newContact.name}
                   onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
-                  className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3 text-xs font-bold text-white"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300">Company</label>
-                  <input
-                    type="text"
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Company</label>
+                  <Input
                     placeholder="e.g. Acme Corp"
                     value={newContact.company}
                     onChange={(e) => setNewContact({ ...newContact, company: e.target.value })}
-                    className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3 text-xs font-bold text-white"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300">Job Title</label>
-                  <input
-                    type="text"
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Job Title</label>
+                  <Input
                     placeholder="e.g. VP Sales"
                     value={newContact.role}
                     onChange={(e) => setNewContact({ ...newContact, role: e.target.value })}
-                    className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3 text-xs font-bold text-white"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300">Email *</label>
-                  <input
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Email *</label>
+                  <Input
                     type="email"
                     required
                     placeholder="jordan@acme.com"
                     value={newContact.email}
                     onChange={(e) => setNewContact({ ...newContact, email: e.target.value })}
-                    className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3 text-xs font-bold text-white"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-mono font-bold uppercase text-gray-300">Phone</label>
-                  <input
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Phone</label>
+                  <Input
                     type="tel"
                     placeholder="+1 555 123 4567"
                     value={newContact.phone}
                     onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })}
-                    className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3 text-xs font-bold text-white"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Status</label>
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Status</label>
                 <select
                   value={newContact.status}
                   onChange={(e) => setNewContact({ ...newContact, status: e.target.value as any })}
-                  className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3 text-xs font-mono font-bold text-white"
+                  className="w-full h-10 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg px-3 text-xs text-slate-900 dark:text-slate-100"
                 >
                   <option value="New Lead">New Lead</option>
                   <option value="Active">Active</option>
@@ -761,13 +747,13 @@ export default function ContactsPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-mono font-bold uppercase text-gray-300">Notes</label>
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Notes</label>
                 <textarea
                   rows={2}
                   placeholder="Where did you connect? Key takeaways..."
                   value={newContact.notes}
                   onChange={(e) => setNewContact({ ...newContact, notes: e.target.value })}
-                  className="w-full p-2.5 bg-[#090D16] border-2 border-black rounded-lg text-xs text-white"
+                  className="w-full p-2.5 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100"
                 />
               </div>
 
@@ -775,16 +761,17 @@ export default function ContactsPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 h-10 bg-[#121c33] text-gray-300 font-mono text-xs font-bold uppercase rounded-lg border-2 border-black cursor-pointer"
+                  className="flex-1 h-9.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 text-xs transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
-                <button
+                <Button
                   type="submit"
-                  className="flex-1 h-10 bg-cyan-400 hover:bg-cyan-300 text-black font-mono text-xs font-black uppercase rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] cursor-pointer"
+                  variant="primary"
+                  className="flex-1 h-9.5 text-xs font-medium"
                 >
                   Save Contact
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -793,8 +780,8 @@ export default function ContactsPage() {
 
       {/* Floating Success Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-cyan-400 text-black border-2 border-black px-5 py-2.5 rounded-lg text-xs font-mono font-black uppercase shadow-[4px_4px_0px_#000] flex items-center gap-2 animate-bounce">
-          <Check size={16} className="stroke-[3]" />
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-2.5 rounded-xl text-xs font-medium shadow-lg flex items-center gap-2 animate-subtle-fade">
+          <Check size={14} className="text-emerald-400 dark:text-emerald-600" />
           <span>{toast}</span>
         </div>
       )}

@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CreditCard, X, ShieldCheck, Sparkles, ArrowRight, Check } from 'lucide-react';
+import { CreditCard, X, Sparkles, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -10,7 +12,6 @@ interface AuthModalProps {
   initialTab?: 'login' | 'signup';
 }
 
-// Google and GitHub SVG Icons
 const GoogleIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24">
     <path
@@ -46,11 +47,9 @@ export function AuthModal({ isOpen, onClose, initialTab = 'signup' }: AuthModalP
   const router = useRouter();
   const [tab, setTab] = useState<'login' | 'signup'>(initialTab);
   
-  // Login fields
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
-  // Signup fields
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
@@ -66,7 +65,6 @@ export function AuthModal({ isOpen, onClose, initialTab = 'signup' }: AuthModalP
 
   if (!isOpen) return null;
 
-  // Complete Dummy Authentication
   const completeAuth = (userData: { name: string; email: string }) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('smartcard_authenticated', 'true');
@@ -99,7 +97,6 @@ export function AuthModal({ isOpen, onClose, initialTab = 'signup' }: AuthModalP
       return;
     }
 
-    // Dummy Auth accepts any non-empty input
     completeAuth({
       name: loginEmail.split('@')[0] || 'Alex Morgan',
       email: loginEmail,
@@ -142,86 +139,80 @@ export function AuthModal({ isOpen, onClose, initialTab = 'signup' }: AuthModalP
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-subtle-fade">
       <div 
-        className="bg-[#0e1526] w-full max-w-md rounded-2xl border-3 border-black p-6 sm:p-8 shadow-[10px_10px_0px_#000000] relative text-white my-8"
+        className="bg-white dark:bg-[#131924] w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-7 shadow-xl relative text-slate-900 dark:text-slate-100 my-8 transition-colors"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 bg-[#17223b] hover:bg-slate-700 text-gray-300 hover:text-white rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-transform cursor-pointer"
+          className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           aria-label="Close modal"
         >
-          <X size={18} />
+          <X size={16} />
         </button>
 
-        {/* Dummy Auth Pill */}
-        <div className="inline-flex items-center gap-1.5 bg-cyan-400 text-black border-2 border-black px-2.5 py-0.5 rounded font-mono font-black text-[10px] uppercase shadow-[2px_2px_0px_#000] -rotate-1 mb-4">
-          <ShieldCheck size={13} />
-          <span>Dummy Auth • Local Only</span>
-        </div>
-
         {/* Brand Header */}
-        <div className="flex items-center gap-2.5 mb-2">
-          <div className="w-8 h-8 rounded-lg bg-[#2563EB] border-2 border-black flex items-center justify-center font-black text-white shadow-[2px_2px_0px_#000]">
-            <CreditCard size={18} />
+        <div className="flex items-center gap-2.5 mb-1">
+          <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-xs">
+            <CreditCard size={15} />
           </div>
-          <span className="font-black text-2xl text-white tracking-tight">SmartCard</span>
+          <span className="font-semibold text-lg text-slate-900 dark:text-slate-100 tracking-tight">SmartCard</span>
         </div>
-        <p className="text-xs font-mono font-bold text-gray-400 mb-5">
-          Your identity. One smart card.
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">
+          Your digital identity. Simple, elegant, unified.
         </p>
 
         {/* 1-Click Sandbox Shortcut */}
-        <div className="mb-5 p-3 bg-[#131d33] border-2 border-black rounded-xl shadow-[3px_3px_0px_#2563EB] flex items-center justify-between gap-3">
+        <div className="mb-5 p-3 bg-blue-50/70 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 rounded-xl flex items-center justify-between gap-3">
           <div className="space-y-0.5">
-            <span className="text-xs font-bold text-cyan-300 flex items-center gap-1">
-              <Sparkles size={13} className="text-yellow-400" />
-              1-Click Instant Demo
+            <span className="text-xs font-medium text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
+              <Sparkles size={12} className="text-blue-600 dark:text-blue-400" />
+              1-Click Demo Access
             </span>
-            <p className="text-[10px] text-gray-400 font-mono">Sign in directly as Alex Morgan</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">Sign in directly as Alex Morgan</p>
           </div>
           <button
             type="button"
             onClick={handleQuickDemoAccess}
             disabled={loading}
-            className="px-3 py-1.5 bg-yellow-400 hover:bg-yellow-300 text-black font-mono font-black text-xs uppercase rounded border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-transform cursor-pointer flex items-center gap-1 shrink-0"
+            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs rounded-lg shadow-2xs transition-colors cursor-pointer flex items-center gap-1 shrink-0"
           >
             <span>Demo</span>
             <ArrowRight size={12} />
           </button>
         </div>
 
-        {/* Tabs: Login | Sign Up */}
-        <div className="grid grid-cols-2 gap-2 p-1.5 bg-black rounded-xl border-2 border-black mb-5 shadow-[2px_2px_0px_#000]">
+        {/* Segmented Control Tabs: Login | Sign Up */}
+        <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 dark:bg-slate-800/70 rounded-lg mb-5">
           <button
             type="button"
             onClick={() => { setTab('login'); setError(null); }}
-            className={`py-2 text-xs font-mono font-black uppercase rounded-lg border-2 transition-all cursor-pointer ${
+            className={`py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
               tab === 'login'
-                ? 'bg-white text-black border-black shadow-[2px_2px_0px_#000]'
-                : 'bg-transparent text-gray-400 border-transparent hover:text-white'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            Login
+            Log in
           </button>
           <button
             type="button"
             onClick={() => { setTab('signup'); setError(null); }}
-            className={`py-2 text-xs font-mono font-black uppercase rounded-lg border-2 transition-all cursor-pointer ${
+            className={`py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
               tab === 'signup'
-                ? 'bg-[#2563EB] text-white border-black shadow-[2px_2px_0px_#000]'
-                : 'bg-transparent text-gray-400 border-transparent hover:text-white'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            Sign Up
+            Sign up
           </button>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-4 p-2.5 bg-red-950/80 border-2 border-red-500 text-red-200 text-xs font-bold rounded-lg shadow-[2px_2px_0px_#000]">
+          <div className="mb-4 p-2.5 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-700 dark:text-rose-300 text-xs rounded-lg">
             {error}
           </div>
         )}
@@ -230,121 +221,117 @@ export function AuthModal({ isOpen, onClose, initialTab = 'signup' }: AuthModalP
         {tab === 'login' ? (
           <form onSubmit={handleLoginSubmit} className="space-y-3.5">
             <div className="space-y-1">
-              <label className="text-[11px] font-mono font-bold uppercase text-gray-300">
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
                 Email Address
               </label>
-              <input
+              <Input
                 type="email"
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
                 placeholder="alex@smartcard.id"
                 required
-                className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-[2px_2px_0px_#000]"
               />
             </div>
 
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <label className="text-[11px] font-mono font-bold uppercase text-gray-300">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
                   Password
                 </label>
-                <span className="text-[10px] text-gray-400 font-mono">(Any password)</span>
+                <span className="text-[11px] text-slate-400">(Any password)</span>
               </div>
-              <input
+              <Input
                 type="password"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full h-11 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-[2px_2px_0px_#000]"
               />
             </div>
 
-            <button
+            <Button
               type="submit"
+              variant="primary"
               disabled={loading}
-              className="w-full h-12 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-mono font-black text-sm uppercase tracking-wider rounded-lg border-2 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer mt-2"
+              className="w-full mt-2 h-10 text-xs font-medium"
             >
-              {loading ? 'Authenticating...' : 'Login to SmartCard →'}
-            </button>
+              {loading ? 'Authenticating...' : 'Sign in to SmartCard'}
+            </Button>
           </form>
         ) : (
           /* Tab 2: SIGN UP */
           <form onSubmit={handleSignupSubmit} className="space-y-3">
             <div className="space-y-1">
-              <label className="text-[11px] font-mono font-bold uppercase text-gray-300">
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
                 Full Name
               </label>
-              <input
+              <Input
                 type="text"
                 value={signupName}
                 onChange={(e) => setSignupName(e.target.value)}
                 placeholder="Alex Morgan"
                 required
-                className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-[2px_2px_0px_#000]"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-mono font-bold uppercase text-gray-300">
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
                 Email Address
               </label>
-              <input
+              <Input
                 type="email"
                 value={signupEmail}
                 onChange={(e) => setSignupEmail(e.target.value)}
                 placeholder="alex@smartcard.id"
                 required
-                className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3.5 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-[2px_2px_0px_#000]"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label className="text-[11px] font-mono font-bold uppercase text-gray-300">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
                   Password
                 </label>
-                <input
+                <Input
                   type="password"
                   value={signupPassword}
                   onChange={(e) => setSignupPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-[2px_2px_0px_#000]"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] font-mono font-bold uppercase text-gray-300">
-                  Confirm Password
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Confirm
                 </label>
-                <input
+                <Input
                   type="password"
                   value={signupConfirmPassword}
                   onChange={(e) => setSignupConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full h-10 bg-[#090D16] border-2 border-black rounded-lg px-3 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-[2px_2px_0px_#000]"
                 />
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
+              variant="primary"
               disabled={loading}
-              className="w-full h-12 bg-white hover:bg-gray-100 text-black font-mono font-black text-sm uppercase tracking-wider rounded-lg border-2 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer mt-2"
+              className="w-full mt-2 h-10 text-xs font-medium"
             >
-              {loading ? 'Creating Account...' : 'Create SmartCard →'}
-            </button>
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </Button>
           </form>
         )}
 
         {/* Divider */}
         <div className="relative flex py-4 items-center">
-          <div className="flex-grow border-t-2 border-black"></div>
-          <span className="flex-shrink mx-3 text-gray-500 font-mono text-[10px] uppercase font-bold">
-            Or Continue With
+          <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+          <span className="flex-shrink mx-3 text-slate-400 text-[11px]">
+            Or continue with
           </span>
-          <div className="flex-grow border-t-2 border-black"></div>
+          <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
         </div>
 
         {/* Social Buttons */}
@@ -352,18 +339,18 @@ export function AuthModal({ isOpen, onClose, initialTab = 'signup' }: AuthModalP
           <button
             type="button"
             onClick={() => handleSocialAuth('Google')}
-            className="flex items-center justify-center gap-2 p-2.5 bg-white hover:bg-gray-100 text-black rounded-lg border-2 border-black font-mono font-bold text-xs shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-transform cursor-pointer"
+            className="flex items-center justify-center gap-2 p-2 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium shadow-2xs transition-colors cursor-pointer"
           >
-            <GoogleIcon className="w-4 h-4" />
+            <GoogleIcon className="w-3.5 h-3.5" />
             <span>Google</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleSocialAuth('GitHub')}
-            className="flex items-center justify-center gap-2 p-2.5 bg-[#17223b] hover:bg-black text-white rounded-lg border-2 border-black font-mono font-bold text-xs shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-transform cursor-pointer"
+            className="flex items-center justify-center gap-2 p-2 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium shadow-2xs transition-colors cursor-pointer"
           >
-            <GitHubIcon className="w-4 h-4 fill-white" />
+            <GitHubIcon className="w-3.5 h-3.5 text-slate-900 dark:text-slate-100" />
             <span>GitHub</span>
           </button>
         </div>

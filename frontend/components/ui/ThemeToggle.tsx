@@ -8,14 +8,16 @@ interface ThemeToggleProps {
   compact?: boolean;
   showLabel?: boolean;
   className?: string;
+  variant?: 'button' | 'segmented';
 }
 
 export function ThemeToggle({
   compact = false,
-  showLabel = true,
+  showLabel = false,
   className = '',
+  variant = 'segmented',
 }: ThemeToggleProps) {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme, toggleTheme, isDark } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -24,39 +26,71 @@ export function ThemeToggle({
 
   if (!mounted) {
     return (
-      <button
-        type="button"
-        className={`h-9 px-3 rounded-lg border-2 border-black font-mono text-xs font-bold flex items-center gap-1.5 opacity-70 ${className}`}
-        aria-label="Toggle theme"
-      >
-        <span className="w-3.5 h-3.5 rounded-full bg-gray-400"></span>
-      </button>
+      <div
+        className={`h-8 w-15 rounded-full bg-slate-200/60 dark:bg-slate-800/60 animate-pulse ${className}`}
+        aria-hidden="true"
+      />
     );
   }
 
-  const isDark = theme === 'dark';
+  if (variant === 'segmented' && !compact) {
+    return (
+      <div
+        className={`inline-flex items-center p-0.5 rounded-full border border-slate-200/80 dark:border-slate-800/80 bg-slate-100 dark:bg-slate-900/90 shadow-2xs ${className}`}
+        role="group"
+        aria-label="Theme selection"
+      >
+        <button
+          type="button"
+          onClick={() => setTheme('light')}
+          className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
+            !isDark
+              ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+              : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'
+          }`}
+          aria-label="Light mode"
+          title="Light mode"
+        >
+          <Sun size={13} className={!isDark ? 'text-amber-500' : 'text-slate-400'} />
+          {showLabel && <span>Light</span>}
+        </button>
 
+        <button
+          type="button"
+          onClick={() => setTheme('dark')}
+          className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
+            isDark
+              ? 'bg-[#131924] text-white shadow-2xs font-semibold'
+              : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'
+          }`}
+          aria-label="Dark mode"
+          title="Dark mode"
+        >
+          <Moon size={13} className={isDark ? 'text-blue-400' : 'text-slate-400'} />
+          {showLabel && <span>Dark</span>}
+        </button>
+      </div>
+    );
+  }
+
+  // Compact Single Button Variant
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      className={`h-9.5 px-3 rounded-lg border-2 border-black font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all duration-150 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none select-none ${
-        isDark
-          ? 'bg-[#15233f] text-yellow-300 hover:bg-[#1a2d52] shadow-[2px_2px_0px_#000000]'
-          : 'bg-[#FFFDF5] text-amber-600 hover:bg-amber-100 shadow-[2px_2px_0px_#000000]'
-      } ${className}`}
+      className={`h-8.5 px-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#131924] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-all duration-150 shadow-2xs select-none ${className}`}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
       {isDark ? (
         <>
-          <Moon size={15} className="text-cyan-300 fill-cyan-300/30 shrink-0 transition-transform hover:-rotate-12" />
-          {showLabel && !compact && <span className="text-gray-200">Dark</span>}
+          <Moon size={14} className="text-blue-400 shrink-0" />
+          {showLabel && <span>Dark</span>}
         </>
       ) : (
         <>
-          <Sun size={15} className="text-amber-500 fill-amber-400/40 shrink-0 transition-transform hover:rotate-45" />
-          {showLabel && !compact && <span className="text-gray-900">Light</span>}
+          <Sun size={14} className="text-amber-500 shrink-0" />
+          {showLabel && <span>Light</span>}
         </>
       )}
     </button>

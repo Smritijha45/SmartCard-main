@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 
 interface Interactive3DCardProps {
   children: React.ReactNode;
@@ -8,7 +8,11 @@ interface Interactive3DCardProps {
   glowColor?: string;
 }
 
-export function Interactive3DCard({ children, className = '', glowColor = 'rgba(255, 255, 255, 0.15)' }: Interactive3DCardProps) {
+export function Interactive3DCard({ 
+  children, 
+  className = '', 
+  glowColor = 'rgba(255, 255, 255, 0.12)' 
+}: Interactive3DCardProps) {
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
   const [shineStyle, setShineStyle] = useState<React.CSSProperties>({ opacity: 0 });
@@ -18,19 +22,18 @@ export function Interactive3DCard({ children, className = '', glowColor = 'rgba(
     if (!cardRef.current) return;
     const card = cardRef.current;
     const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left; // x position within element
-    const y = e.clientY - rect.top;  // y position within element
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
     const width = rect.width;
     const height = rect.height;
 
-    // Calculate rotation (-15 to 15 degrees)
-    const rx = ((y / height) - 0.5) * -15; // rotate around X axis (looks like vertical tilt)
-    const ry = ((x / width) - 0.5) * 15;   // rotate around Y axis (looks like horizontal tilt)
+    // Subtle, elegant tilt (max ~6 degrees, restrained)
+    const rx = ((y / height) - 0.5) * -7;
+    const ry = ((x / width) - 0.5) * 7;
 
     setRotateX(rx);
     setRotateY(ry);
 
-    // Calculate shine effect position
     const shineX = (x / width) * 100;
     const shineY = (y / height) * 100;
     setShineStyle({
@@ -51,12 +54,12 @@ export function Interactive3DCard({ children, className = '', glowColor = 'rgba(
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
-        transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.015, 1.015, 1.015)`,
-        transition: 'transform 0.15s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.15s ease',
+        transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.008, 1.008, 1.008)`,
+        transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease',
       }}
       className={`relative overflow-hidden transition-all duration-300 ${className}`}
     >
-      {/* Glossy shine overlay */}
+      {/* Subtle refined shine overlay */}
       <div
         className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-300"
         style={shineStyle}
