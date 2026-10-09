@@ -97,6 +97,12 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
       active: pathname.startsWith('/team'),
     },
     {
+      label: 'Billing & Plans',
+      href: '/billing',
+      icon: CreditCard,
+      active: pathname === '/billing',
+    },
+    {
       label: 'Settings & Enterprise',
       href: '/settings',
       icon: Settings,

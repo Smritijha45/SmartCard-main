@@ -9,6 +9,7 @@ import { analyticsRoutes } from './modules/analytics/routes';
 import { notificationRoutes } from './modules/notifications/routes';
 import leadsRoutes from './modules/leads/routes';
 import aiRoutes from './modules/ai/routes';
+import { billingRoutes } from './modules/billing/routes';
 import { errorHandler } from './middlewares/errorHandler';
 import { NotFoundError } from './errors/AppError';
 import { getRedisClient } from './lib/redis';
@@ -34,7 +35,12 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
+// Body Parser with raw body capture for Webhooks verification
+app.use(express.json({
+  verify: (req: any, _res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 app.use(express.urlencoded({ extended: true }));
 
 // Custom lightweight cookie parser middleware
@@ -91,6 +97,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/contacts', leadsRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/billing', billingRoutes);
 
 // Fallback for unhandled routes
 app.use('*', (_req, _res, next) => {

@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Check, Sparkles, X, Shield, Users, CreditCard, ArrowRight, Zap, Building2 } from 'lucide-react';
+import { Check, Sparkles, X, Shield, Users, CreditCard, ArrowRight, Zap, Building2, Clock } from 'lucide-react';
 import { Button } from './ui/Button';
+import { RazorpayCheckoutModal, CheckoutProductType } from './billing/RazorpayCheckoutModal';
 
 export interface PlanSwitcherModalProps {
   isOpen: boolean;
@@ -21,32 +22,47 @@ export function PlanSwitcherModal({
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  // Razorpay Checkout Modal State
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+  const [checkoutProductType, setCheckoutProductType] = useState<CheckoutProductType>('professional');
+
   if (!isOpen) return null;
 
-  const handleUpgrade = async (planKey: string) => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/user/plan', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: planKey }),
-      });
-      if (res.ok) {
-        setSelectedPlan(planKey);
-        setSuccessMsg(`Workspace updated to ${planKey.toUpperCase()} plan!`);
-        if (onPlanChanged) onPlanChanged(planKey);
-        setTimeout(() => {
-          setSuccessMsg(null);
-          onClose();
-        }, 1200);
+  const handlePlanAction = async (planKey: string) => {
+    if (planKey === 'starter') {
+      // Starter is free
+      setLoading(true);
+      try {
+        const res = await fetch('/api/user/plan', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: 'starter' }),
+        });
+        if (res.ok) {
+          setSelectedPlan('starter');
+          setSuccessMsg('Switched to Starter Plan (Free Forever). All existing cards and leads preserved.');
+          if (onPlanChanged) onPlanChanged('starter');
+          setTimeout(() => {
+            setSuccessMsg(null);
+            onClose();
+          }, 1500);
+        }
+      } catch {
+        setSelectedPlan('starter');
+        if (onPlanChanged) onPlanChanged('starter');
+        onClose();
+      } finally {
+        setLoading(false);
       }
-    } catch {
-      // Offline fallback
-      setSelectedPlan(planKey);
-      if (onPlanChanged) onPlanChanged(planKey);
-      onClose();
-    } finally {
-      setLoading(false);
+    } else if (planKey === 'pass_24h') {
+      setCheckoutProductType('pass_24h');
+      setCheckoutModalOpen(true);
+    } else if (planKey === 'professional') {
+      setCheckoutProductType('professional');
+      setCheckoutModalOpen(true);
+    } else if (planKey === 'enterprise') {
+      setCheckoutProductType('enterprise');
+      setCheckoutModalOpen(true);
     }
   };
 
@@ -136,135 +152,181 @@ export function PlanSwitcherModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-5xl bg-white dark:bg-[#101622] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-8">
-        {/* Header */}
-        <div className="p-6 md:p-8 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400">
-                <Zap size={20} />
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+        <div className="relative w-full max-w-5xl bg-white dark:bg-[#101622] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-8">
+          
+          {/* Header */}
+          <div className="p-6 md:p-8 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400">
+                  <Zap size={20} />
+                </div>
+                <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  SmartCard Subscription Plans
+                </h2>
               </div>
-              <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">
-                SmartCard Subscription Plans
-              </h2>
+              <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Select the plan that aligns with your networking, lead generation, and team requirements.
+              </p>
             </div>
-            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Select the plan that aligns with your networking and team requirements.
-            </p>
+            <button
+              onClick={onClose}
+              className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X size={20} />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          >
-            <X size={20} />
-          </button>
-        </div>
 
-        {successMsg && (
-          <div className="mx-6 md:mx-8 mt-6 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-sm font-semibold flex items-center gap-2">
-            <Check size={18} className="text-emerald-600 dark:text-emerald-400" />
-            {successMsg}
+          {/* Special Introductory Pass Banner */}
+          <div className="mx-6 md:mx-8 mt-6 p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-amber-500 text-white shrink-0 shadow-xs">
+                <Sparkles size={18} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                    Try Professional for ₹20 — full access for 24 hours.
+                  </h4>
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-200">
+                    Introductory Pass
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  One-time payment. Zero recurring charges. Experience 10 cards, CRM leads capture, and analytics for 24h.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => handlePlanAction('pass_24h')}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shrink-0 shadow-xs"
+            >
+              <span>Get 24h Pass (₹20)</span>
+              <ArrowRight size={13} className="ml-1" />
+            </Button>
           </div>
-        )}
 
-        {/* Pricing Cards */}
-        <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan) => {
-            const isCurrent = selectedPlan === plan.id;
-            return (
-              <div
-                key={plan.id}
-                className={`relative flex flex-col justify-between rounded-2xl p-6 transition-all duration-200 border ${
-                  plan.isPopular
-                    ? 'border-blue-500 dark:border-blue-600 shadow-lg bg-blue-50/20 dark:bg-blue-950/20 ring-2 ring-blue-500/20'
-                    : isCurrent
-                    ? 'border-slate-400 dark:border-slate-600 bg-slate-50/50 dark:bg-slate-800/20'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131924]'
-                }`}
-              >
-                {plan.isPopular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-blue-600 text-white text-[11px] font-bold rounded-full shadow-xs uppercase tracking-wider">
-                    {plan.badge}
-                  </div>
-                )}
+          {successMsg && (
+            <div className="mx-6 md:mx-8 mt-4 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-sm font-semibold flex items-center gap-2">
+              <Check size={18} className="text-emerald-600 dark:text-emerald-400" />
+              {successMsg}
+            </div>
+          )}
 
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                      {plan.name}
-                    </h3>
-                    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${plan.badgeColor}`}>
-                      {isCurrent ? 'Active Plan' : plan.badge}
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 min-h-[36px]">
-                    {plan.desc}
-                  </p>
-
-                  <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">
-                      {plan.price}
-                    </span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                      / {plan.period}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2.5 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
-                    <div className="font-semibold text-slate-900 dark:text-slate-200 mb-2">
-                      Included Features:
+          {/* Pricing Cards */}
+          <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            {plans.map((plan) => {
+              const isCurrent = selectedPlan === plan.id;
+              return (
+                <div
+                  key={plan.id}
+                  className={`relative flex flex-col justify-between rounded-2xl p-6 transition-all duration-200 border ${
+                    plan.isPopular
+                      ? 'border-blue-500 dark:border-blue-600 shadow-lg bg-blue-50/20 dark:bg-blue-950/20 ring-2 ring-blue-500/20'
+                      : isCurrent
+                      ? 'border-slate-400 dark:border-slate-600 bg-slate-50/50 dark:bg-slate-800/20'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131924]'
+                  }`}
+                >
+                  {plan.isPopular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-blue-600 text-white text-[11px] font-bold rounded-full shadow-xs uppercase tracking-wider">
+                      {plan.badge}
                     </div>
-                    {plan.features.map((feat, idx) => (
-                      <div key={idx} className="flex items-start gap-2 text-slate-700 dark:text-slate-300">
-                        <Check size={14} className="text-emerald-500 shrink-0 mt-0.5" />
-                        <span>{feat}</span>
-                      </div>
-                    ))}
+                  )}
 
-                    {plan.restrictions.length > 0 && (
-                      <div className="pt-3 mt-3 border-t border-dashed border-slate-200 dark:border-slate-800">
-                        <div className="font-semibold text-slate-400 dark:text-slate-500 mb-2">
-                          Restrictions:
-                        </div>
-                        {plan.restrictions.map((rest, idx) => (
-                          <div key={idx} className="flex items-start gap-2 text-slate-400 dark:text-slate-500 text-[11px]">
-                            <X size={13} className="text-slate-400 shrink-0 mt-0.5" />
-                            <span>{rest}</span>
-                          </div>
-                        ))}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                        {plan.name}
+                      </h3>
+                      <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${plan.badgeColor}`}>
+                        {isCurrent ? 'Active Plan' : plan.badge}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 min-h-[36px]">
+                      {plan.desc}
+                    </p>
+
+                    <div className="flex items-baseline gap-1 mb-6">
+                      <span className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">
+                        {plan.price}
+                      </span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        / {plan.period}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2.5 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+                      <div className="font-semibold text-slate-900 dark:text-slate-200 mb-2">
+                        Included Features:
                       </div>
+                      {plan.features.map((feat, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-slate-700 dark:text-slate-300">
+                          <Check size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+                          <span>{feat}</span>
+                        </div>
+                      ))}
+
+                      {plan.restrictions.length > 0 && (
+                        <div className="pt-3 mt-3 border-t border-dashed border-slate-200 dark:border-slate-800">
+                          <div className="font-semibold text-slate-400 dark:text-slate-500 mb-2">
+                            Restrictions:
+                          </div>
+                          {plan.restrictions.map((rest, idx) => (
+                            <div key={idx} className="flex items-start gap-2 text-slate-400 dark:text-slate-500 text-[11px]">
+                              <X size={13} className="text-slate-400 shrink-0 mt-0.5" />
+                              <span>{rest}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 pt-4">
+                    {isCurrent ? (
+                      <Button
+                        variant="secondary"
+                        className="w-full justify-center bg-slate-100 dark:bg-slate-800 font-semibold cursor-default"
+                        disabled
+                      >
+                        Current Plan
+                      </Button>
+                    ) : (
+                      <Button
+                        variant={plan.isPopular ? 'primary' : 'outline'}
+                        className="w-full justify-center"
+                        loading={loading}
+                        onClick={() => handlePlanAction(plan.id)}
+                      >
+                        {plan.id === 'starter' ? 'Switch to Starter (Free)' : `Upgrade to ${plan.name}`}
+                      </Button>
                     )}
                   </div>
                 </div>
-
-                <div className="mt-8 pt-4">
-                  {isCurrent ? (
-                    <Button
-                      variant="secondary"
-                      className="w-full justify-center bg-slate-100 dark:bg-slate-800 font-semibold cursor-default"
-                      disabled
-                    >
-                      Current Plan
-                    </Button>
-                  ) : (
-                    <Button
-                      variant={plan.isPopular ? 'primary' : 'outline'}
-                      className="w-full justify-center"
-                      loading={loading}
-                      onClick={() => handleUpgrade(plan.id)}
-                    >
-                      {plan.id === 'starter' ? 'Switch to Starter' : `Upgrade to ${plan.name}`}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Razorpay Checkout Modal */}
+      <RazorpayCheckoutModal
+        isOpen={checkoutModalOpen}
+        onClose={() => setCheckoutModalOpen(false)}
+        productType={checkoutProductType}
+        onPaymentSuccess={(result) => {
+          const activatedPlan = checkoutProductType === 'pass_24h' ? 'professional' : checkoutProductType;
+          setSelectedPlan(activatedPlan);
+          if (onPlanChanged) onPlanChanged(activatedPlan);
+        }}
+      />
+    </>
   );
 }
 export default PlanSwitcherModal;
