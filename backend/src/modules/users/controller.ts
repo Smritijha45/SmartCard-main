@@ -53,6 +53,21 @@ export class UserController {
     }
   };
 
+  purchase24hPass = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.id;
+      const updated = await this.userService.purchase24hPass(userId);
+
+      res.status(200).json({
+        success: true,
+        message: '₹20 24-Hour Introductory Professional Pass activated successfully!',
+        data: updated
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   changePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.user!.id;

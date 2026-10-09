@@ -19,7 +19,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days matching config
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
   }
 
@@ -105,6 +105,57 @@ export class AuthController {
       res.status(200).json({
         success: true,
         message: 'Logged out successfully'
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  forgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await this.authService.forgotPassword(req.body.email);
+      res.status(200).json({
+        success: true,
+        message: result.message,
+        data: result.resetToken ? { resetToken: result.resetToken } : undefined
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await this.authService.resetPassword(req.body.token, req.body.newPassword);
+      res.status(200).json({
+        success: true,
+        message: result.message
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  verifyEmail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await this.authService.verifyEmail(req.body.token, req.body.email, req.body.code);
+      res.status(200).json({
+        success: true,
+        message: result.message,
+        data: { isVerified: result.isVerified }
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  resendVerification = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await this.authService.resendVerification(req.body.email);
+      res.status(200).json({
+        success: true,
+        message: result.message,
+        data: result.verificationToken ? { verificationToken: result.verificationToken } : undefined
       });
     } catch (error) {
       next(error);

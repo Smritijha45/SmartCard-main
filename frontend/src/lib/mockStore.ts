@@ -838,6 +838,32 @@ export const mockStore = {
     return mockStore.getUser();
   },
 
+  purchase24hPass: () => {
+    const now = new Date();
+    const passExpiry = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    mockUser.subscriptionPlan = 'professional';
+    (mockUser as any).subscription = {
+      plan: 'professional',
+      status: 'active',
+      is24hPass: true,
+      passExpiryDate: passExpiry.toISOString(),
+      currentPeriodStart: now.toISOString(),
+      currentPeriodEnd: passExpiry.toISOString(),
+      paymentHistory: [
+        {
+          id: `pay_pass_${Date.now()}`,
+          amount: 20,
+          currency: 'INR',
+          status: 'completed',
+          description: '24-Hour Introductory Professional Pass (₹20)',
+          date: now.toISOString(),
+          paymentMethod: 'UPI Instant / Card'
+        }
+      ]
+    };
+    return mockStore.getUser();
+  },
+
   getCards: () => [...mockCards],
 
   getCardById: (id: string) => {

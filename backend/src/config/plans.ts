@@ -34,6 +34,14 @@ export interface PlanDefinition {
   limits: PlanLimits;
 }
 
+export const INTRODUCTORY_PASS_24H = {
+  id: 'pass_24h_pro',
+  name: '24-Hour Professional Pass',
+  priceInr: 20,
+  durationHours: 24,
+  description: 'Full 24-hour access to all Professional features for ₹20.',
+};
+
 export const PLAN_CONFIGS: Record<SubscriptionPlanTier, PlanDefinition> = {
   starter: {
     id: 'starter',

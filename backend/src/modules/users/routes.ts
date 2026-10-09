@@ -1,28 +1,21 @@
 import { Router } from 'express';
 import UserController from './controller';
-import { authenticate, requireRole } from '../../middlewares/auth';
+import { authenticate } from '../../middlewares/auth';
 import { validateRequest } from '../../middlewares/validateRequest';
-import { updateUserSchema, changePasswordSchema, updateRoleSchema } from './validation';
-import { UserRole } from '../../constants/roles';
+import { updateProfileSchema, changePasswordSchema, updateUserRoleSchema, updatePlanSchema } from './validation';
 
 const router = Router();
 const controller = new UserController();
 
-// All user routes require authentication
 router.use(authenticate);
 
 router.get('/me', controller.getProfile);
-router.patch('/me', validateRequest(updateUserSchema), controller.updateProfile);
-router.patch('/me/plan', controller.updatePlan);
+router.patch('/me', validateRequest(updateProfileSchema), controller.updateProfile);
+router.patch('/me/plan', validateRequest(updatePlanSchema), controller.updatePlan);
+router.post('/me/pass-24h', controller.purchase24hPass);
 router.post('/me/change-password', validateRequest(changePasswordSchema), controller.changePassword);
 
-// Role modification requires admin role or higher
-router.patch(
-  '/:id/role',
-  requireRole(UserRole.ADMIN),
-  validateRequest(updateRoleSchema),
-  controller.changeUserRole
-);
+router.patch('/:id/role', validateRequest(updateUserRoleSchema), controller.changeUserRole);
 
 export default router;
 export { router as userRoutes };

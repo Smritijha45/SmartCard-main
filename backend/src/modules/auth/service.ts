@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { UserRepository } from '../users/repository';
 import { getRedisClient } from '../../lib/redis';
 import config from '../../config';
@@ -41,12 +42,33 @@ export class AuthService {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(data.password, salt);
 
+    // Stable Account ID: e.g. ACC-A7B8C9
+    const randomHex = crypto.randomBytes(4).toString('hex').toUpperCase();
+    const accountId = `ACC-${randomHex}`;
+
+    // Email verification token
+    const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+    const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     const newUser = await this.userRepository.create({
+      accountId,
       name: data.name,
-      email: data.email,
+      email: data.email.toLowerCase().trim(),
       passwordHash,
       role: UserRole.USER,
+      subscriptionPlan: 'starter',
+      subscription: {
+        plan: 'starter',
+        status: 'active',
+        is24hPass: false,
+        currentPeriodStart: new Date(),
+        paymentHistory: []
+      },
       profilePhoto: data.profilePhoto,
+      isSuspended: false,
+      isEmailVerified: false,
+      emailVerificationToken,
+      emailVerificationExpires,
       refreshTokens: []
     });
 
@@ -57,7 +79,7 @@ export class AuthService {
     );
 
     // Persist refresh token session
-    const refreshExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days matching config
+    const refreshExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     await this.userRepository.addRefreshToken(newUser.id, tokens.refreshToken, refreshExpiry);
 
     return {
@@ -70,6 +92,10 @@ export class AuthService {
     const user = await this.userRepository.findByEmail(credentials.email);
     if (!user) {
       throw new UnauthorizedError('Invalid email or password');
+    }
+
+    if (user.isSuspended) {
+      throw new ForbiddenError('Your account has been suspended. Please contact organization admin.');
     }
 
     if (!credentials.password) {
@@ -114,7 +140,6 @@ export class AuthService {
     // Refresh Token Rotation & Reuse Detection
     const isActiveSession = await this.userRepository.findActiveSession(userId, oldRefreshToken);
     if (!isActiveSession) {
-      // Possible token reuse attack! Log breach alert, invalidate all sessions
       logger.error({ userId, oldRefreshToken }, 'REFRESH TOKEN REUSE DETECTED. Revoking all user sessions.');
       await this.userRepository.update(userId, { $set: { refreshTokens: [] } });
       throw new ForbiddenError('Session revoked due to security violation');
@@ -141,29 +166,123 @@ export class AuthService {
     await this.userRepository.revokeRefreshToken(userId, refreshToken);
   }
 
+  async forgotPassword(email: string): Promise<{ message: string; resetToken?: string }> {
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      // Return success message to prevent user enumeration
+      return { message: 'If this email is registered, a password reset link has been dispatched.' };
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await this.userRepository.update(user.id, {
+      $set: {
+        resetPasswordToken: resetToken,
+        resetPasswordExpires: resetExpires
+      }
+    });
+
+    logger.info({ email, resetToken }, 'Password reset token generated');
+
+    return {
+      message: 'Password reset link sent to your email address.',
+      resetToken
+    };
+  }
+
+  async resetPassword(token: string, newPass: string): Promise<{ message: string }> {
+    const user = await this.userRepository.findByResetToken(token);
+    if (!user) {
+      throw new BadRequestError('Invalid or expired password reset token');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(newPass, salt);
+
+    await this.userRepository.update(user.id, {
+      $set: {
+        passwordHash,
+        refreshTokens: [] // Revoke all existing sessions for security
+      },
+      $unset: {
+        resetPasswordToken: '',
+        resetPasswordExpires: ''
+      }
+    });
+
+    return { message: 'Password updated successfully. You can now log in.' };
+  }
+
+  async verifyEmail(token?: string, email?: string, code?: string): Promise<{ message: string; isVerified: boolean }> {
+    if (token) {
+      const user = await this.userRepository.findByVerificationToken(token);
+      if (!user) {
+        throw new BadRequestError('Invalid or expired email verification token');
+      }
+
+      await this.userRepository.update(user.id, {
+        $set: { isEmailVerified: true },
+        $unset: { emailVerificationToken: '', emailVerificationExpires: '' }
+      });
+
+      return { message: 'Email successfully verified!', isVerified: true };
+    }
+
+    if (email && code) {
+      const redis = getRedisClient(config.REDIS_URI);
+      const cached = await redis.get(`email_verify:${email.toLowerCase()}`);
+      if (!cached || cached !== code) {
+        throw new BadRequestError('Invalid or expired verification code');
+      }
+
+      const user = await this.userRepository.findByEmail(email);
+      if (!user) throw new NotFoundError('User not found');
+
+      await this.userRepository.update(user.id, {
+        $set: { isEmailVerified: true }
+      });
+      await redis.del(`email_verify:${email.toLowerCase()}`);
+
+      return { message: 'Email successfully verified!', isVerified: true };
+    }
+
+    throw new BadRequestError('Verification token or code required');
+  }
+
+  async resendVerification(email: string): Promise<{ message: string; verificationToken?: string }> {
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      return { message: 'Verification link sent if account exists.' };
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await this.userRepository.update(user.id, {
+      $set: {
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires
+      }
+    });
+
+    return {
+      message: 'Verification link re-sent to your email.',
+      verificationToken
+    };
+  }
+
   async requestOtp(email: string): Promise<void> {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
       throw new NotFoundError('User not registered');
     }
 
-    // Generate 6-digit code
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const redis = getRedisClient(config.REDIS_URI);
 
-    // Cache in Redis for 5 minutes (300 seconds)
     const redisKey = `otp:${email.toLowerCase()}`;
     await redis.setex(redisKey, 300, otpCode);
-
-    // Enqueue background email delivery task via BullMQ
-    try {
-      const { createQueue } = require('../../lib/queue');
-      const emailQueue = createQueue('email-queue', config.REDIS_URI);
-      await emailQueue.add('send-otp', { email, code: otpCode });
-      logger.info({ email }, 'OTP task enqueued in background email-queue');
-    } catch (err) {
-      logger.error({ err }, 'Failed to enqueue OTP email task');
-    }
   }
 
   async verifyOtp(email: string, code: string, ip?: string, device?: string): Promise<AuthResponse> {
@@ -175,7 +294,6 @@ export class AuthService {
       throw new BadRequestError('Invalid or expired OTP code');
     }
 
-    // Remove OTP once verified
     await redis.del(redisKey);
 
     const user = await this.userRepository.findByEmail(email);
@@ -197,11 +315,6 @@ export class AuthService {
       user: toUserResponseDTO(user),
       tokens
     };
-  }
-
-  async googleOAuthReady(): Promise<string> {
-    // Boilerplate setup for Google OAuth redirection
-    return 'https://accounts.google.com/o/oauth2/v2/auth?...';
   }
 }
 export default AuthService;
