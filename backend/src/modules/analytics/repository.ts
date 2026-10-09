@@ -8,6 +8,11 @@ export interface IAnalyticsRepository extends IBaseRepository<IAnalyticsDocument
     startDate: Date,
     endDate: Date
   ): Promise<any>;
+  getAggregateStatsMultiCards(
+    cardIds: string[],
+    startDate: Date,
+    endDate: Date
+  ): Promise<any>;
 }
 
 export class AnalyticsRepository extends BaseRepository<IAnalyticsDocument> implements IAnalyticsRepository {
@@ -16,12 +21,16 @@ export class AnalyticsRepository extends BaseRepository<IAnalyticsDocument> impl
   }
 
   async getAggregateStats(cardId: string, startDate: Date, endDate: Date): Promise<any> {
-    const cardObjectId = new Types.ObjectId(cardId);
+    return this.getAggregateStatsMultiCards([cardId], startDate, endDate);
+  }
+
+  async getAggregateStatsMultiCards(cardIds: string[], startDate: Date, endDate: Date): Promise<any> {
+    const cardObjectIds = cardIds.map(id => new Types.ObjectId(id));
 
     const stats = await this.model.aggregate([
       {
         $match: {
-          cardId: cardObjectId,
+          cardId: { $in: cardObjectIds },
           timestamp: { $gte: startDate, $lte: endDate }
         }
       },
@@ -34,6 +43,16 @@ export class AnalyticsRepository extends BaseRepository<IAnalyticsDocument> impl
                 count: { $sum: 1 }
               }
             }
+          ],
+          referrerSummary: [
+            {
+              $group: {
+                _id: { $ifNull: ['$referrer', 'Direct / QR Scan'] },
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { count: -1 } },
+            { $limit: 8 }
           ],
           deviceSummary: [
             {
@@ -93,6 +112,7 @@ export class AnalyticsRepository extends BaseRepository<IAnalyticsDocument> impl
 
     return stats[0] || {
       eventSummary: [],
+      referrerSummary: [],
       deviceSummary: [],
       browserSummary: [],
       locationSummary: [],

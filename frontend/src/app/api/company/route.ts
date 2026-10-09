@@ -1,0 +1,72 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { mockStore } from '@/lib/mockStore';
+
+export async function GET(req: NextRequest) {
+  try {
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+    if (backendUrl) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      try {
+        const headers: Record<string, string> = {};
+        const auth = req.headers.get('authorization');
+        if (auth) headers['Authorization'] = auth;
+        const cookie = req.headers.get('cookie');
+        if (cookie) headers['Cookie'] = cookie;
+
+        const res = await fetch(`${backendUrl}/api/company/workspace`, {
+          headers,
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json();
+          return NextResponse.json(data.data || data);
+        }
+      } catch {
+        clearTimeout(timeoutId);
+      }
+    }
+
+    return NextResponse.json(mockStore.getCompany());
+  } catch {
+    return NextResponse.json(mockStore.getCompany());
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+    if (backendUrl) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        const auth = req.headers.get('authorization');
+        if (auth) headers['Authorization'] = auth;
+        const cookie = req.headers.get('cookie');
+        if (cookie) headers['Cookie'] = cookie;
+
+        const res = await fetch(`${backendUrl}/api/company`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json();
+          return NextResponse.json(data);
+        }
+      } catch {
+        clearTimeout(timeoutId);
+      }
+    }
+
+    const company = mockStore.updateCompany({ name: body.name, domain: body.domain });
+    return NextResponse.json({ success: true, data: company });
+  } catch (error: any) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+}

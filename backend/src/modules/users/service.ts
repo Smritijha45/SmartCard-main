@@ -3,6 +3,7 @@ import { UserRepository, IUserRepository } from './repository';
 import { UserResponseDTO, toUserResponseDTO } from './types';
 import { NotFoundError, BadRequestError } from '../../errors/AppError';
 import { UserRole } from '../../constants/roles';
+import { normalizePlanTier } from '../../config/plans';
 
 export class UserService {
   private userRepository: IUserRepository;
@@ -19,7 +20,7 @@ export class UserService {
     return toUserResponseDTO(user);
   }
 
-  async updateUserProfile(userId: string, updateData: { name?: string; email?: string }): Promise<UserResponseDTO> {
+  async updateUserProfile(userId: string, updateData: { name?: string; email?: string; profilePhoto?: string }): Promise<UserResponseDTO> {
     if (updateData.email) {
       const existingUser = await this.userRepository.findByEmail(updateData.email);
       if (existingUser && existingUser.id !== userId) {
@@ -30,6 +31,19 @@ export class UserService {
     const updatedUser = await this.userRepository.update(userId, { $set: updateData });
     if (!updatedUser) {
       throw new NotFoundError('User profile not found for updating');
+    }
+
+    return toUserResponseDTO(updatedUser);
+  }
+
+  async updateSubscriptionPlan(userId: string, plan: string): Promise<UserResponseDTO> {
+    const normalized = normalizePlanTier(plan);
+    const updatedUser = await this.userRepository.update(userId, {
+      $set: { subscriptionPlan: normalized }
+    });
+
+    if (!updatedUser) {
+      throw new NotFoundError('User profile not found');
     }
 
     return toUserResponseDTO(updatedUser);

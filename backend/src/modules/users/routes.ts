@@ -13,6 +13,7 @@ router.use(authenticate);
 
 router.get('/me', controller.getProfile);
 router.patch('/me', validateRequest(updateUserSchema), controller.updateProfile);
+router.patch('/me/plan', controller.updatePlan);
 router.post('/me/change-password', validateRequest(changePasswordSchema), controller.changePassword);
 
 // Role modification requires admin role or higher
@@ -24,5 +25,4 @@ router.patch(
 );
 
 export default router;
-// Named export
 export { router as userRoutes };

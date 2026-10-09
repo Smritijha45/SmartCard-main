@@ -49,6 +49,9 @@ export interface ICard {
   themeColor: string;
   template: string;
   employeeCode?: string;
+  customBadge?: string;
+  leadCaptureEnabled?: boolean;
+  isSuspended?: boolean;
   socialLinks: ICardSocialLinks;
   resumeUrl?: string;
   calendarUrl?: string;
@@ -107,6 +110,9 @@ const CardSchema = new Schema<ICardDocument>({
   themeColor: { type: String, default: '#3B82F6' },
   template: { type: String, default: 'modern' },
   employeeCode: { type: String, trim: true },
+  customBadge: { type: String, trim: true },
+  leadCaptureEnabled: { type: Boolean, default: true },
+  isSuspended: { type: Boolean, default: false, index: true },
   socialLinks: {
     linkedin: { type: String, trim: true },
     twitter: { type: String, trim: true },

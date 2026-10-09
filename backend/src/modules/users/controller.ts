@@ -37,6 +37,22 @@ export class UserController {
     }
   };
 
+  updatePlan = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.id;
+      const { plan } = req.body;
+      const updated = await this.userService.updateSubscriptionPlan(userId, plan);
+
+      res.status(200).json({
+        success: true,
+        message: `Plan upgraded to ${updated.planConfig.name}`,
+        data: updated
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   changePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.user!.id;

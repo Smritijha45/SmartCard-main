@@ -18,8 +18,6 @@ export class AnalyticsController {
         buttonId
       };
 
-      // Execute asynchronously, don't await!
-      // This allows immediate response to the tracker client
       this.analyticsService.track(cardId, eventType, clientDetails);
 
       res.status(202).json({
@@ -31,13 +29,47 @@ export class AnalyticsController {
     }
   };
 
-  getStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getOverview = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const actorId = req.user!.id;
+      const rangeDays = parseInt(req.query.rangeDays as string || '30', 10);
+      const overview = await this.analyticsService.getUserOverviewAnalytics(actorId, rangeDays);
+
+      res.status(200).json({
+        success: true,
+        data: overview
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getCardStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const actorId = req.user!.id;
       const cardId = req.query.cardId as string;
       const rangeDays = parseInt(req.query.rangeDays as string || '7', 10);
 
       const stats = await this.analyticsService.getCardAnalytics(cardId, actorId, rangeDays);
+
+      res.status(200).json({
+        success: true,
+        data: stats
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getTeamStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const companyId = req.user?.companyId;
+      if (!companyId) {
+        res.status(400).json({ success: false, message: 'User does not belong to an organization' });
+        return;
+      }
+      const rangeDays = parseInt(req.query.rangeDays as string || '30', 10);
+      const stats = await this.analyticsService.getTeamAnalytics(companyId.toString(), rangeDays);
 
       res.status(200).json({
         success: true,

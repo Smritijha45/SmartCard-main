@@ -30,16 +30,17 @@ export async function GET(req: NextRequest) {
     }
 
     const cards = mockStore.getCards().filter(c => 
-      c.name.toLowerCase().includes(q) || 
-      c.role.toLowerCase().includes(q) || 
-      c.company.toLowerCase().includes(q) || 
-      c.email.toLowerCase().includes(q)
+      (c.name && c.name.toLowerCase().includes(q)) || 
+      (c.role && c.role.toLowerCase().includes(q)) || 
+      (c.company && c.company.toLowerCase().includes(q)) || 
+      (c.email && c.email.toLowerCase().includes(q))
     );
 
     const leads = mockStore.getLeads().filter(l => 
-      l.name.toLowerCase().includes(q) || 
+      (l.name && l.name.toLowerCase().includes(q)) || 
       (l.company && l.company.toLowerCase().includes(q)) || 
-      l.email.toLowerCase().includes(q)
+      (l.email && l.email.toLowerCase().includes(q)) ||
+      (l.notes && l.notes.toLowerCase().includes(q))
     );
 
     return NextResponse.json({ cards, leads });

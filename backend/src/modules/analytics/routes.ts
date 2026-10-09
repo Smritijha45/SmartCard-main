@@ -3,7 +3,7 @@ import AnalyticsController from './controller';
 import { authenticate } from '../../middlewares/auth';
 import { rateLimiter } from '../../middlewares/rateLimiter';
 import { validateRequest } from '../../middlewares/validateRequest';
-import { trackEventSchema, queryAnalyticsSchema } from './validation';
+import { trackEventSchema } from './validation';
 
 const router = Router();
 const controller = new AnalyticsController();
@@ -16,13 +16,10 @@ router.post(
   controller.track
 );
 
-// Protected stats query route
-router.get(
-  '/stats',
-  authenticate,
-  validateRequest(queryAnalyticsSchema),
-  controller.getStats
-);
+// Protected stats query routes
+router.get('/overview', authenticate, controller.getOverview);
+router.get('/team', authenticate, controller.getTeamStats);
+router.get('/stats', authenticate, controller.getCardStats);
 
 export default router;
 export { router as analyticsRoutes };

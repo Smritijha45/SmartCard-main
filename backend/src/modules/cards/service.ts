@@ -1,19 +1,26 @@
 import { CardRepository, ICardRepository } from './repository';
 import { CardResponseDTO, PublicCardDTO, toCardResponseDTO, toPublicCardDTO } from './types';
+import { UserRepository } from '../users/repository';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../errors/AppError';
+import { getPlanConfig } from '../../config/plans';
 
 export const RESERVED_USERNAMES = [
   'admin', 'administrator', 'dashboard', 'login', 'signup', 'signin', 'register',
   'api', 'settings', 'pricing', 'features', 'about', 'notifications', 'analytics',
   'profile', 'contacts', 'cards', 'leads', 'demo', 'c', '_not-found', 'help',
-  'terms', 'privacy', 'auth', 'app', 'www', 'root', 'support', 'status', 'account'
+  'terms', 'privacy', 'auth', 'app', 'www', 'root', 'support', 'status', 'account', 'team'
 ];
 
 export class CardService {
   private cardRepository: ICardRepository;
+  private userRepository: UserRepository;
 
-  constructor(cardRepository = new CardRepository()) {
+  constructor(
+    cardRepository = new CardRepository(),
+    userRepository = new UserRepository()
+  ) {
     this.cardRepository = cardRepository;
+    this.userRepository = userRepository;
   }
 
   private generateSlug(name: string): string {
@@ -63,6 +70,28 @@ export class CardService {
   }
 
   async createCard(userId: string, companyId?: string, cardData?: any): Promise<CardResponseDTO> {
+    // Check User Plan Limits
+    const user = await this.userRepository.findById(userId);
+    if (user) {
+      const planConfig = getPlanConfig(user.subscriptionPlan);
+      const maxCards = user.customLimits?.maxActiveCards ?? planConfig.limits.maxActiveCards;
+      
+      const existingCards = await this.cardRepository.findByUser(userId);
+      const activeCount = existingCards.filter(c => !c.deletedAt).length;
+
+      if (activeCount >= maxCards) {
+        if (planConfig.id === 'starter') {
+          throw new ForbiddenError(
+            `Starter plan is limited to ${maxCards} active card. Please upgrade to Professional (₹199/mo) to create multiple cards.`
+          );
+        } else {
+          throw new ForbiddenError(
+            `Your plan limit of ${maxCards} active cards has been reached. Please upgrade your subscription.`
+          );
+        }
+      }
+    }
+
     const rawUsername = cardData?.username || this.generateSlug(cardData?.name || 'user');
     const username = await this.ensureUniqueUsername(rawUsername);
     const appBaseUrl = (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://smartcard.app').replace(/\/+$/, '');
@@ -71,7 +100,7 @@ export class CardService {
     const card = await this.cardRepository.create({
       ...cardData,
       userId,
-      companyId,
+      companyId: companyId || (user ? user.companyId?.toString() : undefined),
       username,
       qrCodeUrl: publicCardUrl,
       cardTheme: cardData?.cardTheme || 'minimal-modern',
@@ -82,6 +111,9 @@ export class CardService {
       linkedin: cardData?.linkedin || cardData?.socialLinks?.linkedin,
       instagram: cardData?.instagram || cardData?.socialLinks?.instagram,
       twitter: cardData?.twitter || cardData?.socialLinks?.twitter || cardData?.socialLinks?.x,
+      customBadge: cardData?.customBadge,
+      leadCaptureEnabled: cardData?.leadCaptureEnabled !== undefined ? cardData.leadCaptureEnabled : true,
+      isSuspended: false,
     });
 
     return toCardResponseDTO(card);
@@ -91,6 +123,10 @@ export class CardService {
     const card = await this.cardRepository.findByIdOrUsername(username);
     if (!card) {
       throw new NotFoundError('SmartCard not found');
+    }
+
+    if (card.isSuspended) {
+      throw new ForbiddenError('This SmartCard has been temporarily suspended by the organization');
     }
 
     if (!card.isPublic) {
@@ -109,7 +145,7 @@ export class CardService {
       throw new NotFoundError('SmartCard not found');
     }
 
-    // Access control: If card is private, only owner can view
+    // Access control: If card is private, only owner or org admin can view
     if (!card.isPublic && card.userId.toString() !== requestActorId) {
       throw new ForbiddenError('This SmartCard is currently private');
     }
@@ -125,13 +161,18 @@ export class CardService {
     return cards.map(toCardResponseDTO);
   }
 
-  async updateCard(cardId: string, actorId: string, updateData: any): Promise<CardResponseDTO> {
+  async getCardsByCompany(companyId: string): Promise<CardResponseDTO[]> {
+    const cards = await this.cardRepository.find({ companyId, deletedAt: null });
+    return cards.map(toCardResponseDTO);
+  }
+
+  async updateCard(cardId: string, actorId: string, updateData: any, isOrgAdmin = false): Promise<CardResponseDTO> {
     const card = await this.cardRepository.findByIdOrUsername(cardId);
     if (!card) {
       throw new NotFoundError('SmartCard not found');
     }
 
-    if (card.userId.toString() !== actorId) {
+    if (!isOrgAdmin && card.userId.toString() !== actorId) {
       throw new ForbiddenError('You do not own this SmartCard');
     }
 
@@ -153,6 +194,20 @@ export class CardService {
     const updated = await this.cardRepository.update(card._id.toString(), { $set: payload });
     if (!updated) {
       throw new NotFoundError('Failed to apply card updates');
+    }
+
+    return toCardResponseDTO(updated);
+  }
+
+  async setCardSuspension(cardId: string, isSuspended: boolean): Promise<CardResponseDTO> {
+    const card = await this.cardRepository.findByIdOrUsername(cardId);
+    if (!card) {
+      throw new NotFoundError('SmartCard not found');
+    }
+
+    const updated = await this.cardRepository.update(card._id.toString(), { $set: { isSuspended } });
+    if (!updated) {
+      throw new NotFoundError('Failed to update card suspension status');
     }
 
     return toCardResponseDTO(updated);
@@ -183,13 +238,13 @@ export class CardService {
     await this.deleteCard(cards[0]._id.toString(), userId);
   }
 
-  async deleteCard(cardId: string, actorId: string): Promise<void> {
+  async deleteCard(cardId: string, actorId: string, isOrgAdmin = false): Promise<void> {
     const card = await this.cardRepository.findByIdOrUsername(cardId);
     if (!card) {
       throw new NotFoundError('SmartCard not found');
     }
 
-    if (card.userId.toString() !== actorId) {
+    if (!isOrgAdmin && card.userId.toString() !== actorId) {
       throw new ForbiddenError('You do not own this SmartCard');
     }
 

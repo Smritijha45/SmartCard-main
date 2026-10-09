@@ -1,5 +1,6 @@
 import { Schema, model, Document } from 'mongoose';
 import { UserRole } from '../../constants/roles';
+import { SubscriptionPlanTier } from '../../config/plans';
 
 export interface IUserSession {
   token: string;
@@ -8,13 +9,21 @@ export interface IUserSession {
   ip?: string;
 }
 
+export interface IUserCustomLimits {
+  maxActiveCards?: number;
+  maxTeamMembers?: number;
+}
+
 export interface IUser {
   name: string;
   email: string;
   passwordHash: string;
   role: UserRole;
+  subscriptionPlan: SubscriptionPlanTier;
+  customLimits?: IUserCustomLimits;
   companyId?: Schema.Types.ObjectId;
   profilePhoto?: string;
+  isSuspended: boolean;
   otp?: {
     code: string;
     expiresAt: Date;
@@ -51,8 +60,19 @@ const UserSchema = new Schema<IUserDocument>({
     default: UserRole.USER,
     index: true
   },
+  subscriptionPlan: {
+    type: String,
+    enum: ['starter', 'professional', 'enterprise'],
+    default: 'starter',
+    index: true
+  },
+  customLimits: {
+    maxActiveCards: { type: Number },
+    maxTeamMembers: { type: Number }
+  },
   companyId: { type: Schema.Types.ObjectId, ref: 'Company', index: true },
   profilePhoto: { type: String },
+  isSuspended: { type: Boolean, default: false },
   otp: {
     code: { type: String },
     expiresAt: { type: Date }

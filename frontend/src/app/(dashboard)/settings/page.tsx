@@ -10,11 +10,16 @@ import {
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { Button } from '@/components/ui/Button';
 import { validateUsername, getAppUrl, getCardPublicUrl } from '@/lib/usernameValidation';
+import { PlanSwitcherModal } from '@/components/PlanSwitcherModal';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [toast, setToast] = useState<string | null>(null);
+
+  // Subscription Plan State
+  const [currentPlan, setCurrentPlan] = useState<string>('starter');
+  const [showPlanModal, setShowPlanModal] = useState(false);
 
   // Account State
   const [name, setName] = useState('Smriti Jha');
@@ -83,6 +88,18 @@ export default function SettingsPage() {
         }
       });
 
+    // Load user plan
+    fetch('/api/user/plan')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.data && data.data.plan) {
+          setCurrentPlan(data.data.plan);
+        } else if (data && data.plan) {
+          setCurrentPlan(data.plan);
+        }
+      })
+      .catch(() => {});
+
     if (typeof window !== 'undefined') {
       const storedUser = localStorage.getItem('smartcard_user');
       if (storedUser) {
@@ -91,6 +108,7 @@ export default function SettingsPage() {
           if (parsed.name) setName(parsed.name);
           if (parsed.email) setEmail(parsed.email);
           if (parsed.avatar) setProfilePhoto(parsed.avatar);
+          if (parsed.subscriptionPlan) setCurrentPlan(parsed.subscriptionPlan);
         } catch (e) {
           console.error(e);
         }
@@ -392,6 +410,60 @@ export default function SettingsPage() {
 
         <div className="border-t border-slate-100 dark:border-slate-800/80" />
 
+        {/* SUBSCRIPTION PLAN & LIMITS */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Sparkles size={16} className="text-amber-500" />
+                <span>Subscription Plan &amp; Limits</span>
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Manage your tier, active card capacity, CRM leads access, and team features.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPlanModal(true)}
+              className="text-xs font-semibold border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40"
+            >
+              Change Plan
+            </Button>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50/60 via-slate-50 to-indigo-50/40 dark:from-blue-950/20 dark:via-slate-900/40 dark:to-indigo-950/20 border border-slate-200/90 dark:border-slate-800/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
+                  {currentPlan === 'enterprise' ? 'Team & Enterprise Plan' : currentPlan === 'professional' ? 'Professional Plan' : 'Starter Plan (Free)'}
+                </span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200">
+                  {currentPlan === 'enterprise' ? '₹799 / mo' : currentPlan === 'professional' ? '₹199 / mo' : '₹0 Forever'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                {currentPlan === 'enterprise'
+                  ? 'Includes Organization workspace (25 seats), Team admin, SSO, Custom domains, Audit logs & Centralized leads.'
+                  : currentPlan === 'professional'
+                  ? 'Includes up to 10 active cards, CRM leads capture (5 statuses), time-range analytics, CSV/JSON export & custom branding.'
+                  : 'Includes 1 active card, personal profile editor, and standard theme. Upgrade to unlock CRM leads & multi-cards.'}
+              </p>
+            </div>
+
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setShowPlanModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium shrink-0"
+            >
+              {currentPlan === 'enterprise' ? 'Manage Plan' : 'Upgrade Plan →'}
+            </Button>
+          </div>
+        </section>
+
+        <div className="border-t border-slate-100 dark:border-slate-800/80" />
+
         {/* SECTION 3: ACCOUNT */}
         <section className="space-y-5">
           <div>
@@ -655,13 +727,16 @@ export default function SettingsPage() {
 
       </div>
 
-      {/* Toast Notification */}
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-medium shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
-          <CheckCircle2 size={15} className="text-emerald-400 dark:text-emerald-600 shrink-0" />
-          <span>{toast}</span>
-        </div>
-      )}
+      {/* Plan Switcher Modal */}
+      <PlanSwitcherModal
+        isOpen={showPlanModal}
+        onClose={() => setShowPlanModal(false)}
+        currentPlan={currentPlan}
+        onPlanChanged={(newPlan) => {
+          setCurrentPlan(newPlan);
+          showNotification(`Subscription updated to ${newPlan.toUpperCase()}!`);
+        }}
+      />
 
     </div>
   );
