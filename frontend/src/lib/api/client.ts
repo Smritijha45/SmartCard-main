@@ -52,7 +52,14 @@ export async function apiClient<T = any>(
     }
   }
 
-  const response = await fetch(endpoint, {
+  const baseUrl = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+  const url = endpoint.startsWith('http')
+    ? endpoint
+    : baseUrl
+    ? `${baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`
+    : endpoint;
+
+  const response = await fetch(url, {
     ...options,
     headers,
     credentials: options.credentials || 'include',

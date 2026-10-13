@@ -36,8 +36,8 @@ async function bootstrap() {
   const { initEmailWorker } = require('./jobs/emailWorker');
   initEmailWorker();
 
-  server = httpServer.listen(port, () => {
-    logger.info(`Server successfully listening on port ${port}`);
+  server = httpServer.listen(port, '0.0.0.0', () => {
+    logger.info(`Server successfully listening on port ${port} on 0.0.0.0`);
   });
 }
 

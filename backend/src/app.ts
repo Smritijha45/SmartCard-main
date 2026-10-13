@@ -57,6 +57,15 @@ app.use((req, _res, next) => {
   next();
 });
 
+// Root health check endpoint
+app.get('/', (_req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'SmartCard API is running',
+    status: 'healthy'
+  });
+});
+
 // Health check endpoint
 app.get('/health', async (_req, res, next) => {
   try {
@@ -90,6 +99,7 @@ app.get('/health', async (_req, res, next) => {
 // App Router routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/cards', cardRoutes);
 app.use('/api/company', companyRoutes);
 app.use('/api/analytics', analyticsRoutes);

@@ -10,7 +10,9 @@ const controller = new UserController();
 router.use(authenticate);
 
 router.get('/me', controller.getProfile);
+router.get('/profile', controller.getProfile);
 router.patch('/me', validateRequest(updateProfileSchema), controller.updateProfile);
+router.patch('/profile', validateRequest(updateProfileSchema), controller.updateProfile);
 router.patch('/me/plan', validateRequest(updatePlanSchema), controller.updatePlan);
 router.post('/me/pass-24h', controller.purchase24hPass);
 router.post('/me/change-password', validateRequest(changePasswordSchema), controller.changePassword);
