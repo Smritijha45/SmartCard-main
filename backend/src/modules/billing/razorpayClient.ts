@@ -25,17 +25,24 @@ export function verifyRazorpayPaymentSignature(params: {
   signature: string;
 }): boolean {
   try {
+    if (!params.signature || typeof params.signature !== 'string') {
+      return false;
+    }
+    if (!params.orderId || !params.paymentId) {
+      return false;
+    }
     const text = `${params.orderId}|${params.paymentId}`;
     const generatedSignature = crypto
       .createHmac('sha256', config.RAZORPAY_KEY_SECRET)
       .update(text)
       .digest('hex');
 
-    const isValid = crypto.timingSafeEqual(
-      Buffer.from(generatedSignature, 'utf-8'),
-      Buffer.from(params.signature, 'utf-8')
-    );
-    return isValid;
+    const genBuf = Buffer.from(generatedSignature, 'utf-8');
+    const sigBuf = Buffer.from(params.signature, 'utf-8');
+    if (genBuf.length !== sigBuf.length) {
+      return false;
+    }
+    return crypto.timingSafeEqual(genBuf, sigBuf);
   } catch (err) {
     logger.error({ err }, 'Error verifying Razorpay payment signature');
     return false;
@@ -51,17 +58,21 @@ export function verifyRazorpayWebhookSignature(
   signature: string
 ): boolean {
   try {
+    if (!signature || typeof signature !== 'string') {
+      return false;
+    }
     const bodyStr = typeof rawBody === 'string' ? rawBody : rawBody.toString('utf-8');
     const expectedSignature = crypto
       .createHmac('sha256', config.RAZORPAY_WEBHOOK_SECRET)
       .update(bodyStr)
       .digest('hex');
 
-    const isValid = crypto.timingSafeEqual(
-      Buffer.from(expectedSignature, 'utf-8'),
-      Buffer.from(signature, 'utf-8')
-    );
-    return isValid;
+    const expectedBuf = Buffer.from(expectedSignature, 'utf-8');
+    const actualBuf = Buffer.from(signature, 'utf-8');
+    if (expectedBuf.length !== actualBuf.length) {
+      return false;
+    }
+    return crypto.timingSafeEqual(expectedBuf, actualBuf);
   } catch (err) {
     logger.error({ err }, 'Error verifying Razorpay webhook signature');
     return false;

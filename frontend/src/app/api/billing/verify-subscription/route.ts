@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { mockStore } from '@/lib/mockStore';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+    const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000').replace(/\/$/, '');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     const auth = req.headers.get('authorization');
     if (auth) headers['Authorization'] = auth;
@@ -12,7 +11,7 @@ export async function POST(req: NextRequest) {
     if (cookie) headers['Cookie'] = cookie;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
       const res = await fetch(`${backendUrl}/api/billing/verify-subscription`, {
@@ -24,27 +23,18 @@ export async function POST(req: NextRequest) {
       clearTimeout(timeoutId);
       const data = await res.json();
       return NextResponse.json(data, { status: res.status });
-    } catch {
+    } catch (fetchErr: any) {
       clearTimeout(timeoutId);
-    }
-
-    const plan = body.plan === 'enterprise' ? 'enterprise' : 'professional';
-    const updated = mockStore.setPlan(plan);
-
-    return NextResponse.json({
-      success: true,
-      message: `${plan.toUpperCase()} Monthly Subscription verified and activated successfully!`,
-      data: {
-        subscription: (updated as any).subscription || { plan, status: 'active' },
-        transaction: {
-          orderId: body.razorpay_order_id || 'order_sub_test',
-          paymentId: body.razorpay_payment_id || 'pay_sub_test',
-          amount: plan === 'enterprise' ? 79900 : 19900,
-          currency: 'INR',
-          status: 'paid',
+      return NextResponse.json(
+        {
+          success: false,
+          message: fetchErr.name === 'AbortError'
+            ? 'Backend verification request timed out. Please refresh and check your subscription status.'
+            : 'Unable to connect to backend verification service. Please verify backend deployment and connectivity.',
         },
-      },
-    });
+        { status: 502 }
+      );
+    }
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }

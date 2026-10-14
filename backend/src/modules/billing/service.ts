@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { Types } from 'mongoose';
 import { getRazorpayClient, verifyRazorpayPaymentSignature, verifyRazorpayWebhookSignature } from './razorpayClient';
 import { PaymentTransactionModel } from './transactionModel';
@@ -105,10 +104,18 @@ export class BillingService {
         }
       });
       orderId = order.id;
+      logger.info({ orderId, userId: user.id, amountInPaise }, 'Razorpay introductory pass order created');
     } catch (err: any) {
-      logger.warn({ err: err.message }, 'Razorpay API create order fallback');
-      // In local dev/test or sandbox without live Razorpay connectivity
-      orderId = `order_${crypto.randomBytes(8).toString('hex')}`;
+      logger.error(
+        { 
+          err: err.message, 
+          statusCode: err.statusCode,
+          code: err.error?.code,
+          description: err.error?.description 
+        }, 
+        'Razorpay API create introductory order failed'
+      );
+      throw new BadRequestError(`Payment gateway order creation failed: ${err.error?.description || err.message || 'Gateway error'}`);
     }
 
     // Persist transaction record in MongoDB
@@ -141,29 +148,55 @@ export class BillingService {
   /**
    * Verifies Razorpay payment signature & activates 24-Hour Professional Entitlement
    */
-  async verifyIntroductoryPayment(userId: string, data: { orderId: string; paymentId: string; signature: string }) {
+  async verifyIntroductoryPayment(userId: string, data: { 
+    orderId?: string; 
+    razorpay_order_id?: string;
+    paymentId?: string; 
+    razorpay_payment_id?: string;
+    signature?: string; 
+    razorpay_signature?: string;
+  }) {
+    const orderId = data.orderId || data.razorpay_order_id;
+    const paymentId = data.paymentId || data.razorpay_payment_id;
+    const signature = data.signature || data.razorpay_signature;
+
+    if (!orderId || !paymentId || !signature) {
+      throw new BadRequestError('Missing required payment verification parameters: orderId, paymentId, and signature are required');
+    }
+
     const user = await UserModel.findById(userId);
     if (!user) {
       throw new NotFoundError('User not found');
     }
 
-    const transaction = await PaymentTransactionModel.findOne({ orderId: data.orderId });
+    const transaction = await PaymentTransactionModel.findOne({ orderId });
     if (!transaction) {
       throw new NotFoundError('Payment order not found in records');
     }
 
-    // Verify cryptographic signature
+    // Ensure order belongs to authenticated user
+    if (transaction.userId && user._id && transaction.userId.toString() !== user._id.toString()) {
+      logger.warn({ orderUserId: transaction.userId, authUserId: user._id, orderId }, 'User mismatch during payment verification');
+      throw new UnauthorizedError('Payment order does not belong to the authenticated user');
+    }
+
+    // Idempotent safeguard: If already captured, return current user state without re-activating
+    if (transaction.status === 'captured') {
+      logger.info({ orderId, userId }, 'Introductory payment already verified and captured (idempotent replay)');
+      return toUserResponseDTO(user);
+    }
+
+    // Verify cryptographic HMAC-SHA256 signature
     const isValidSignature = verifyRazorpayPaymentSignature({
-      orderId: data.orderId,
-      paymentId: data.paymentId,
-      signature: data.signature
+      orderId,
+      paymentId,
+      signature
     });
 
-    // In test mode with placeholder keys, allow test verification
-    const isTestMode = config.NODE_ENV !== 'production' || config.RAZORPAY_KEY_ID.includes('placeholder') || config.RAZORPAY_KEY_ID.includes('rzp_test');
-    if (!isValidSignature && !isTestMode) {
+    if (!isValidSignature) {
       transaction.status = 'failed';
       await transaction.save();
+      logger.warn({ orderId, paymentId }, 'Razorpay payment signature verification failed');
       throw new BadRequestError('Payment signature verification failed. Transaction was not authorized.');
     }
 
@@ -172,13 +205,13 @@ export class BillingService {
 
     // Atomic transaction update
     transaction.status = 'captured';
-    transaction.paymentId = data.paymentId;
-    transaction.signature = data.signature;
+    transaction.paymentId = paymentId;
+    transaction.signature = signature;
     transaction.paymentMethod = 'UPI / Card (Razorpay Verified)';
     await transaction.save();
 
     const paymentLedgerRecord = {
-      id: data.paymentId,
+      id: paymentId,
       amount: transaction.amount,
       currency: 'INR',
       status: 'completed' as const,
@@ -197,7 +230,7 @@ export class BillingService {
       currentPeriodStart: now,
       currentPeriodEnd: passExpiry,
       paymentProvider: 'razorpay',
-      paymentProviderId: data.paymentId,
+      paymentProviderId: paymentId,
       cancelAtPeriodEnd: false,
       paymentHistory: [paymentLedgerRecord, ...(user.subscription?.paymentHistory || [])]
     };
@@ -219,7 +252,7 @@ export class BillingService {
       { upsert: true, new: true }
     );
 
-    logger.info({ userId: user.id, orderId: data.orderId, passExpiry }, '₹20 24-Hour Professional Pass Entitlement Activated');
+    logger.info({ userId: user.id, orderId, passExpiry }, '₹20 24-Hour Professional Pass Entitlement Activated');
 
     return toUserResponseDTO(user);
   }
@@ -256,9 +289,18 @@ export class BillingService {
         }
       });
       orderId = order.id;
+      logger.info({ orderId, userId: user.id, plan: tier, amountInPaise }, 'Razorpay subscription order created');
     } catch (err: any) {
-      logger.warn({ err: err.message }, 'Razorpay API subscription order fallback');
-      orderId = `order_${crypto.randomBytes(8).toString('hex')}`;
+      logger.error(
+        { 
+          err: err.message, 
+          statusCode: err.statusCode,
+          code: err.error?.code,
+          description: err.error?.description 
+        }, 
+        'Razorpay API create subscription order failed'
+      );
+      throw new BadRequestError(`Payment gateway subscription order creation failed: ${err.error?.description || err.message || 'Gateway error'}`);
     }
 
     await PaymentTransactionModel.create({
@@ -291,44 +333,75 @@ export class BillingService {
   /**
    * Verifies monthly subscription payment & activates recurring entitlement
    */
-  async verifySubscriptionPayment(userId: string, data: { orderId: string; paymentId: string; signature: string; plan: string }) {
+  async verifySubscriptionPayment(userId: string, data: { 
+    orderId?: string; 
+    razorpay_order_id?: string;
+    paymentId?: string; 
+    razorpay_payment_id?: string;
+    signature?: string; 
+    razorpay_signature?: string;
+    plan?: string;
+  }) {
+    const orderId = data.orderId || data.razorpay_order_id;
+    const paymentId = data.paymentId || data.razorpay_payment_id;
+    const signature = data.signature || data.razorpay_signature;
+
+    if (!orderId || !paymentId || !signature) {
+      throw new BadRequestError('Missing required payment verification parameters: orderId, paymentId, and signature are required');
+    }
+
     const user = await UserModel.findById(userId);
     if (!user) {
       throw new NotFoundError('User not found');
     }
 
-    const tier = normalizePlanTier(data.plan);
-    const planDef = PLAN_CONFIGS[tier];
-
-    const transaction = await PaymentTransactionModel.findOne({ orderId: data.orderId });
+    const transaction = await PaymentTransactionModel.findOne({ orderId });
     if (!transaction) {
-      throw new NotFoundError('Order transaction not found');
+      throw new NotFoundError('Order transaction not found in records');
     }
 
+    // Ensure order belongs to authenticated user
+    if (transaction.userId && user._id && transaction.userId.toString() !== user._id.toString()) {
+      logger.warn({ orderUserId: transaction.userId, authUserId: user._id, orderId }, 'User mismatch during subscription payment verification');
+      throw new UnauthorizedError('Payment order does not belong to the authenticated user');
+    }
+
+    // Idempotent safeguard: If already captured, return current user state without re-activating
+    if (transaction.status === 'captured') {
+      logger.info({ orderId, userId }, 'Subscription payment already verified and captured (idempotent replay)');
+      return toUserResponseDTO(user);
+    }
+
+    // Strictly verify cryptographic HMAC-SHA256 signature
     const isValidSignature = verifyRazorpayPaymentSignature({
-      orderId: data.orderId,
-      paymentId: data.paymentId,
-      signature: data.signature
+      orderId,
+      paymentId,
+      signature
     });
 
-    const isTestMode = config.NODE_ENV !== 'production' || config.RAZORPAY_KEY_ID.includes('placeholder') || config.RAZORPAY_KEY_ID.includes('rzp_test');
-    if (!isValidSignature && !isTestMode) {
+    if (!isValidSignature) {
       transaction.status = 'failed';
       await transaction.save();
-      throw new BadRequestError('Payment signature verification failed.');
+      logger.warn({ orderId, paymentId }, 'Razorpay subscription payment signature verification failed');
+      throw new BadRequestError('Payment signature verification failed. Transaction was not authorized.');
     }
+
+    // Determine tier from transaction record or fallback to validated plan in request
+    const tierFromTx = transaction.productType === 'plan_enterprise_monthly' ? 'enterprise' : 'professional';
+    const tier = data.plan ? normalizePlanTier(data.plan) : tierFromTx;
+    const planDef = PLAN_CONFIGS[tier];
 
     const now = new Date();
     const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
     transaction.status = 'captured';
-    transaction.paymentId = data.paymentId;
-    transaction.signature = data.signature;
+    transaction.paymentId = paymentId;
+    transaction.signature = signature;
     transaction.paymentMethod = 'UPI / Card (Razorpay Verified)';
     await transaction.save();
 
     const paymentLedgerRecord = {
-      id: data.paymentId,
+      id: paymentId,
       amount: planDef.priceMonthlyInr,
       currency: 'INR',
       status: 'completed' as const,
@@ -345,7 +418,7 @@ export class BillingService {
       currentPeriodStart: now,
       currentPeriodEnd: periodEnd,
       paymentProvider: 'razorpay',
-      paymentProviderId: data.paymentId,
+      paymentProviderId: paymentId,
       cancelAtPeriodEnd: false,
       paymentHistory: [paymentLedgerRecord, ...(user.subscription?.paymentHistory || [])]
     };
@@ -365,7 +438,7 @@ export class BillingService {
       { upsert: true, new: true }
     );
 
-    logger.info({ userId: user.id, plan: tier }, 'Monthly Subscription Entitlement Activated');
+    logger.info({ userId: user.id, plan: tier, orderId }, 'Monthly Subscription Entitlement Activated');
 
     return toUserResponseDTO(user);
   }

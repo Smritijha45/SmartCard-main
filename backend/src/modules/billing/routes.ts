@@ -5,6 +5,7 @@ import { validateRequest } from '../../middlewares/validateRequest';
 import { 
   verifyPaymentSchema, 
   createSubscriptionOrderSchema,
+  verifySubscriptionSchema,
   cancelSubscriptionSchema 
 } from './validation';
 
@@ -29,7 +30,7 @@ router.post('/verify-payment', validateRequest(verifyPaymentSchema), controller.
 
 // Monthly Subscription Order & Verification
 router.post('/subscription-order', validateRequest(createSubscriptionOrderSchema), controller.createSubscriptionOrder);
-router.post('/verify-subscription', controller.verifySubscription);
+router.post('/verify-subscription', validateRequest(verifySubscriptionSchema), controller.verifySubscription);
 router.post('/cancel', validateRequest(cancelSubscriptionSchema), controller.cancelSubscription);
 
 export default router;

@@ -21,12 +21,18 @@ const app = express();
 // Security and utility Middlewares
 app.use(helmet());
 
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
-const allowedOrigins = [clientUrl, 'http://localhost:3000', 'http://127.0.0.1:3000'].filter(Boolean);
+const clientUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || config.FRONTEND_URL || 'http://localhost:3000';
+const allowedOrigins = [
+  clientUrl,
+  config.FRONTEND_URL,
+  'https://smart-card-main.vercel.app',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000'
+].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.some(o => origin.startsWith(o))) {
+    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.some(o => o && origin.startsWith(o))) {
       callback(null, true);
     } else {
       callback(null, true);

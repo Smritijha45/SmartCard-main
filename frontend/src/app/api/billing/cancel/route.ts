@@ -3,7 +3,7 @@ import { mockStore } from '@/lib/mockStore';
 
 export async function POST(req: NextRequest) {
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+    const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000').replace(/\/$/, '');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     const auth = req.headers.get('authorization');
     if (auth) headers['Authorization'] = auth;
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     if (cookie) headers['Cookie'] = cookie;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
       const res = await fetch(`${backendUrl}/api/billing/cancel`, {

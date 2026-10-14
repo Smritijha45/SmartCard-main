@@ -12,13 +12,18 @@ interface JWTPayload {
 }
 
 export const authenticate = (req: Request, _res: Response, next: NextFunction): void => {
-  const authHeader = req.headers.authorization;
+  let token: string | undefined;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return next(new UnauthorizedError('Missing or malformed authorization token'));
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.split(' ')[1];
+  } else if ((req as any).cookies?.token || (req as any).cookies?.accessToken || (req as any).cookies?.auth_token) {
+    token = (req as any).cookies.token || (req as any).cookies.accessToken || (req as any).cookies.auth_token;
   }
 
-  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return next(new UnauthorizedError('Missing or malformed authorization token'));
+  }
 
   try {
     const payload = jwt.verify(token, config.JWT_ACCESS_SECRET) as JWTPayload;

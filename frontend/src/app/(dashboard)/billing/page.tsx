@@ -28,10 +28,14 @@ export default function BillingPage() {
   const fetchBillingData = async () => {
     setLoading(true);
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const [subRes, histRes, userRes] = await Promise.all([
-        fetch('/api/billing/subscription'),
-        fetch('/api/billing/history'),
-        fetch('/api/auth/me'),
+        fetch('/api/billing/subscription', { headers, credentials: 'include' }),
+        fetch('/api/billing/history', { headers, credentials: 'include' }),
+        fetch('/api/auth/me', { headers, credentials: 'include' }),
       ]);
 
       if (subRes.ok) {
@@ -94,8 +98,14 @@ export default function BillingPage() {
 
     setCancelLoading(true);
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const res = await fetch('/api/billing/cancel', {
         method: 'POST',
+        headers,
+        credentials: 'include',
       });
       const data = await res.json();
       if (res.ok && data.success) {

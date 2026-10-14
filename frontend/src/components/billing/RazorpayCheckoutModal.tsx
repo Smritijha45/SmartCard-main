@@ -36,7 +36,11 @@ export function RazorpayCheckoutModal({
   // Load user data for prefilling Razorpay checkout
   useEffect(() => {
     if (isOpen) {
-      fetch('/api/auth/me')
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      fetch('/api/auth/me', { headers, credentials: 'include' })
         .then((res) => res.json())
         .then((data) => {
           if (data && (data._id || data.id || data.email)) {
@@ -138,24 +142,32 @@ export function RazorpayCheckoutModal({
         throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
       }
 
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       // Step 1: Create Order on Backend
       let orderRes;
       if (productType === 'pass_24h') {
         orderRes = await fetch('/api/billing/introductory-order', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'include',
         });
       } else {
         orderRes = await fetch('/api/billing/subscription-order', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'include',
           body: JSON.stringify({ plan: productType }),
         });
       }
 
       const orderData = await orderRes.json();
       if (!orderRes.ok || !orderData.success) {
-        throw new Error(orderData.message || 'Failed to initiate payment order.');
+        throw new Error(orderData.message || orderData.error?.message || 'Failed to initiate payment order.');
       }
 
       const { orderId, amount, currency, keyId } = orderData.data;
@@ -185,13 +197,23 @@ export function RazorpayCheckoutModal({
         handler: async (response: any) => {
           try {
             setLoading(true);
+            const verifyToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+            const verifyHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (verifyToken) {
+              verifyHeaders['Authorization'] = `Bearer ${verifyToken}`;
+            }
+
             // Step 3: Verify Payment Signature on Backend
             let verifyRes;
             if (productType === 'pass_24h') {
               verifyRes = await fetch('/api/billing/verify-payment', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: verifyHeaders,
+                credentials: 'include',
                 body: JSON.stringify({
+                  orderId: response.razorpay_order_id,
+                  paymentId: response.razorpay_payment_id,
+                  signature: response.razorpay_signature,
                   razorpay_order_id: response.razorpay_order_id,
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature,
@@ -200,9 +222,13 @@ export function RazorpayCheckoutModal({
             } else {
               verifyRes = await fetch('/api/billing/verify-subscription', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: verifyHeaders,
+                credentials: 'include',
                 body: JSON.stringify({
                   plan: productType,
+                  orderId: response.razorpay_order_id,
+                  paymentId: response.razorpay_payment_id,
+                  signature: response.razorpay_signature,
                   razorpay_order_id: response.razorpay_order_id,
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature,
@@ -217,7 +243,7 @@ export function RazorpayCheckoutModal({
                 onPaymentSuccess(verifyData.data);
               }
             } else {
-              setErrorMsg(verifyData.message || 'Payment signature verification failed.');
+              setErrorMsg(verifyData.message || verifyData.error?.message || 'Payment signature verification failed.');
             }
           } catch (err: any) {
             setErrorMsg(err.message || 'Verification request failed.');
@@ -230,7 +256,8 @@ export function RazorpayCheckoutModal({
       // Step 4: Open Razorpay Modal
       const rzp = new window.Razorpay(options);
       rzp.on('payment.failed', (resp: any) => {
-        setErrorMsg(`Payment failed: ${resp.error?.description || 'Transaction declined'}`);
+        const desc = resp.error?.description || resp.error?.reason || 'Transaction declined';
+        setErrorMsg(`Payment failed: ${desc}`);
         setLoading(false);
       });
       rzp.open();

@@ -3,9 +3,9 @@ import { mockStore, PLAN_CONFIGS } from '@/lib/mockStore';
 
 export async function GET(req: NextRequest) {
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+    const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000').replace(/\/$/, '');
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1500);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     const headers: Record<string, string> = {};
     const auth = req.headers.get('authorization');
